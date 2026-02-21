@@ -33,7 +33,7 @@ app.post('/push', async (req, res) => {
             payment_code: process.env.PAYMENT_CODE,
             phone: phone,
             amount: amount,
-            callback_url: "https://electronic-pay-prince.onrender.com/callback"
+            callback_url: "https://electronic-pay.onrender.com/callback"
         });
         res.send("<h2>Push Sent!</h2><p>Ask customer to enter M-Pesa PIN.</p><a href='/'>Go Back</a>");
     } catch (err) {
