@@ -7,19 +7,22 @@ app.use(express.urlencoded({ extended: true }));
 
 let transactions = []; 
 
-// Get Nairobi Time
 const getKenyaTime = () => {
     return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit' });
 };
 
-const translateStatus = (status, message) => {
-    const s = String(status || message).toLowerCase();
-    if (s.includes('success') || s === '0' || s.includes('complete')) return 'Successful ✅';
-    if (s.includes('cancel') || s === '1032') return 'Cancelled ❌';
-    if (s.includes('timeout') || s === '1037') return 'Timeout ⏳';
-    if (s.includes('wrong') || s.includes('pin') || s === '2001') return 'Wrong PIN 🔑';
-    if (s.includes('insufficient') || s === '1') return 'Low Balance 💸';
-    return 'Failed/Other ⚠️';
+// IMPROVED TRANSLATOR
+const translateStatus = (rawBody) => {
+    // Convert everything to a string to search for keywords
+    const data = JSON.stringify(rawBody).toLowerCase();
+    
+    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
+    if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
+    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
+    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
+    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
+    
+    return 'Pending/Other ⚠️';
 };
 
 app.get('/', (req, res) => {
@@ -46,9 +49,9 @@ app.get('/', (req, res) => {
         <style>
             body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
             .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-            .profile-pic { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #28a745; margin-bottom: 10px; }
+            .profile-pic { width: 110px; height: 110px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; }
             input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-            .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+            .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; }
             .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         </style></head>
         <body>
@@ -76,7 +79,6 @@ app.get('/', (req, res) => {
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
-
     try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: process.env.PAYMENT_CODE,
@@ -88,31 +90,24 @@ app.post('/push', async (req, res) => {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
 
-        // Track by MerchantRequestID for pinpoint accuracy
+        // Use any ID provided to track it
         const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id;
 
-        transactions.unshift({ 
-            id: trackingId,
-            phone: phone, 
-            amount: amount, 
-            status: 'Processing... 🔄', 
-            time: getKenyaTime() 
-        });
+        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        if (transactions.length > 10) transactions.pop();
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.post('/callback', (req, res) => {
-    // Log the data to see exactly what Paynecta sends
-    console.log("Paynecta Callback Received:", JSON.stringify(req.body));
+    console.log("FULL CALLBACK DATA:", JSON.stringify(req.body));
     
-    const { merchant_request_id, transaction_id, status, message, request_id } = req.body;
-    
-    // Find matching transaction
-    let tx = transactions.find(t => t.id == merchant_request_id || t.id == transaction_id || t.id == request_id);
+    // Search for the transaction in our list
+    const bodyText = JSON.stringify(req.body);
+    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
     
     if (tx) {
-        tx.status = translateStatus(status, message);
+        tx.status = translateStatus(req.body);
     }
     res.sendStatus(200);
 });
