@@ -9,15 +9,32 @@ app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
         <html>
-        <head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-        <body style="font-family:sans-serif; background:#f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
-            <form action="/push" method="POST" style="background:white; padding:30px; border-radius:20px; width:90%; max-width:400px;">
-                <h2 style="text-align:center;">Shop Payment</h2>
-                <input type="password" name="password" placeholder="PIN (Try 5566)" required style="width:100%; padding:15px; margin:10px 0; border:1px solid #ddd; border-radius:10px;">
-                <input type="number" name="phone" placeholder="2547..." required style="width:100%; padding:15px; margin:10px 0; border:1px solid #ddd; border-radius:10px;">
-                <input type="number" name="amount" placeholder="Amount" required style="width:100%; padding:15px; margin:10px 0; border:1px solid #ddd; border-radius:10px;">
-                <button type="submit" style="width:100%; padding:15px; background:#28a745; color:white; border:none; border-radius:10px; font-weight:bold;">SEND PUSH</button>
-            </form>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+                .container { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+                input { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 18px; box-sizing: border-box; }
+                button { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 10px; font-size: 20px; font-weight: bold; cursor: pointer; }
+                label { font-size: 14px; color: #666; font-weight: bold; margin-left: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2 style="text-align:center; color: #333;">Authorize Payment</h2>
+                <form action="/push" method="POST">
+                    <label>Manager PIN</label>
+                    <input type="password" name="password" placeholder="••••" required>
+                    
+                    <label>Customer Phone</label>
+                    <input type="number" name="phone" placeholder="2547XXXXXXXX" required>
+                    
+                    <label>Amount (KES)</label>
+                    <input type="number" name="amount" placeholder="0.00" required>
+                    
+                    <button type="submit">CONFIRM & SEND STK</button>
+                </form>
+            </div>
         </body>
         </html>
     `);
@@ -25,9 +42,11 @@ app.get('/', (req, res) => {
 
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
-    if (password != "5566") { 
-        return res.send("<h2>❌ Wrong PIN! You entered: " + password + "</h2><a href='/'>Try again</a>");
+    
+    if (String(password).trim() !== "5566") { 
+        return res.send("<body style='text-align:center;font-family:sans-serif;padding-top:50px;'><h2 style='color:red;'>❌ Access Denied</h2><p>Incorrect Authorization PIN.</p><br><a href='/'>Try again</a></body>");
     }
+
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: process.env.PAYMENT_CODE,
@@ -37,9 +56,9 @@ app.post('/push', async (req, res) => {
         }, {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
-        res.send("<h2>✔️ Success! Push Sent.</h2><a href='/'>Back</a>");
+        res.send("<body style='text-align:center;font-family:sans-serif;padding-top:100px;'><h1>✔️</h1><h2>Request Sent!</h2><p>Tell the customer to check their phone.</p><br><a href='/' style='padding:10px 20px; background:#007bff; color:white; border-radius:5px; text-decoration:none;'>Next Customer</a></body>");
     } catch (err) {
-        res.status(500).send("Error: " + err.message);
+        res.status(500).send("Error: " + (err.response ? JSON.stringify(err.response.data) : err.message));
     }
 });
 app.listen(process.env.PORT || 3000);
