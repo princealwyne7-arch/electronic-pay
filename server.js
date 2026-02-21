@@ -7,16 +7,14 @@ app.use(express.urlencoded({ extended: true }));
 
 let transactions = []; 
 
-// STATUS TRANSLATOR: Maps API codes to human-friendly English
-const translateStatus = (status) => {
-    const s = String(status).toLowerCase();
-    if (s.includes('success') || s === 'completed') return 'Successful ✅';
-    if (s.includes('cancel')) return 'Prompt Cancelled ❌';
-    if (s.includes('timeout')) return 'Prompt Timeout ⏳';
-    if (s.includes('wrong') || s.includes('pin')) return 'Wrong PIN Entered 🔑';
-    if (s.includes('insufficient')) return 'Insufficient Funds 💸';
-    if (s.includes('processing')) return 'Processing... 🔄';
-    return status || 'Pending Response'; 
+const translateStatus = (status, message) => {
+    const s = String(status || message).toLowerCase();
+    if (s.includes('success') || s === 'completed' || s === '0') return 'Successful ✅';
+    if (s.includes('cancel') || s === '1032') return 'Cancelled ❌';
+    if (s.includes('timeout') || s === '1037') return 'Timeout ⏳';
+    if (s.includes('wrong') || s.includes('pin') || s === '2001') return 'Wrong PIN 🔑';
+    if (s.includes('insufficient') || s === '1') return 'Low Balance 💸';
+    return 'Failed/Other';
 };
 
 app.get('/', (req, res) => {
@@ -39,38 +37,34 @@ app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
         <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body { font-family: -apple-system, sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; box-sizing: border-box; }
-                .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-                .profile-pic { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #28a745; margin-bottom: 10px; }
-                input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
-                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-                .refresh-link { font-size: 12px; color: #1a73e8; text-decoration: none; font-weight: bold; }
-            </style>
-        </head>
+        <head><meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+            .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
+            .profile-pic { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 4px solid #28a745; margin-bottom: 10px; }
+            input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+            .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+            .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        </style></head>
         <body>
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <h2 style="margin:0 0 15px 0;">Electronic Pay</h2>
+                <h2>Electronic Pay</h2>
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
-                    <input type="number" name="phone" placeholder="Customer Phone" required>
+                    <input type="number" name="phone" placeholder="2547..." required>
                     <input type="number" name="amount" placeholder="Amount" required>
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
                 </form>
             </div>
             <div class="history-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0; font-size:16px; color:#555;">Live Status</h3>
-                    <a href="/" class="refresh-link">REFRESH STATUS</a>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0; font-size:16px;">Live Status</h3>
+                    <a href="/" style="font-size:12px; font-weight:bold; color:#1a73e8; text-decoration:none;">REFRESH</a>
                 </div>
                 <div class="history-list">${historyHtml || 'No activity'}</div>
             </div>
-        </body>
-        </html>
+        </body></html>
     `);
 });
 
@@ -89,22 +83,32 @@ app.post('/push', async (req, res) => {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
 
+        // Save tracking data
         transactions.unshift({ 
-            id: response.data.transaction_id || response.data.request_id, 
-            phone, amount, status: 'Processing... 🔄', 
+            id: response.data.transaction_id || response.data.request_id,
+            phone: phone, 
+            amount: amount, 
+            status: 'Processing... 🔄', 
             time: new Date().toLocaleTimeString() 
         });
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
+// IMPROVED CALLBACK LOGIC
 app.post('/callback', (req, res) => {
-    const { transaction_id, status, request_id, message } = req.body;
-    // Look for the transaction by ID or Request ID
-    const tx = transactions.find(t => t.id == transaction_id || t.id == request_id);
+    console.log("Incoming Callback:", req.body);
+    const { transaction_id, status, request_id, message, mobile_number, amount } = req.body;
+    
+    // Try to find by ID first, then by phone and amount as backup
+    let tx = transactions.find(t => t.id == transaction_id || t.id == request_id);
+    
+    if (!tx && mobile_number) {
+        tx = transactions.find(t => t.phone == mobile_number && t.status.includes('Processing'));
+    }
+
     if (tx) {
-        // We prioritize the 'message' or 'status' provided by Paynecta
-        tx.status = translateStatus(message || status);
+        tx.status = translateStatus(status, message);
     }
     res.sendStatus(200);
 });
