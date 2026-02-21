@@ -23,9 +23,9 @@ const translateStatus = (rawBody) => {
 
 app.get('/', (req, res) => {
     let historyHtml = transactions.map(t => `
-        <div class="tx-row" data-status="${t.status}">
+        <div class="tx-row" data-status="${t.status}" data-id="${t.id}">
             <div style="text-align:left;">
-                <div style="font-weight:bold; color:#333;">${t.phone}</div>
+                <div class="tx-phone" style="font-weight:bold; color:#333;">${t.phone}</div>
                 <div style="font-size:11px; color:#999;">${t.time}</div>
             </div>
             <div style="text-align:right;">
@@ -46,14 +46,14 @@ app.get('/', (req, res) => {
             <style>
                 body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
                 .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-                .profile-pic { width: 110px; height: 110px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; }
-                input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; width:100%; box-sizing:border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; }
-                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing:border-box; }
+                .profile-pic { width: 110px; height: 110px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
+                input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:14px; }
             </style>
         </head>
-        <body>
+        <body onclick="enableAudio()">
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
                 <h2>Electronic Pay</h2>
@@ -75,14 +75,20 @@ app.get('/', (req, res) => {
             <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
             <script>
-                // Check if the most recent transaction is successful
+                function enableAudio() {
+                    const audio = document.getElementById('successSound');
+                    audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(() => {});
+                }
+
                 const rows = document.querySelectorAll('.tx-row');
                 if (rows.length > 0) {
-                    const latestStatus = rows[0].getAttribute('data-status');
-                    // Play sound only if it was just successful and we haven't played it yet
-                    if (latestStatus.includes('Successful') && !sessionStorage.getItem('played_'${rows[0].querySelector('div').innerText})) {
-                        document.getElementById('successSound').play().catch(e => console.log("Click page to enable sound"));
-                        sessionStorage.setItem('played_'${rows[0].querySelector('div').innerText}, 'true');
+                    const latestRow = rows[0];
+                    const status = latestRow.getAttribute('data-status');
+                    const txId = latestRow.getAttribute('data-id');
+                    
+                    if (status.includes('Successful') && !localStorage.getItem('ding_' + txId)) {
+                        document.getElementById('successSound').play().catch(e => console.log("Tap screen to enable audio"));
+                        localStorage.setItem('ding_' + txId, 'true');
                     }
                 }
             </script>
@@ -104,9 +110,9 @@ app.post('/push', async (req, res) => {
         }, {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
-        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id;
+        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
         transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
-        if (transactions.length > 10) transactions.pop();
+        if (transactions.length > 15) transactions.pop();
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
