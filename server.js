@@ -7,6 +7,18 @@ app.use(express.urlencoded({ extended: true }));
 
 let transactions = []; 
 
+// STATUS TRANSLATOR: Maps API codes to human-friendly English
+const translateStatus = (status) => {
+    const s = String(status).toLowerCase();
+    if (s.includes('success') || s === 'completed') return 'Successful ✅';
+    if (s.includes('cancel')) return 'Prompt Cancelled ❌';
+    if (s.includes('timeout')) return 'Prompt Timeout ⏳';
+    if (s.includes('wrong') || s.includes('pin')) return 'Wrong PIN Entered 🔑';
+    if (s.includes('insufficient')) return 'Insufficient Funds 💸';
+    if (s.includes('processing')) return 'Processing... 🔄';
+    return status || 'Pending Response'; 
+};
+
 app.get('/', (req, res) => {
     let historyHtml = transactions.map(t => `
         <div style="display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:14px;">
@@ -17,9 +29,8 @@ app.get('/', (req, res) => {
             <div style="text-align:right;">
                 <div style="font-weight:bold; color:#28a745;">KES ${t.amount}</div>
                 <div style="font-size:11px; font-weight:bold; color:${
-                    t.status === 'Completed' ? '#28a745' : 
-                    t.status === 'Cancelled' ? '#d9534f' : 
-                    t.status === 'Processing' ? '#f0ad4e' : '#d9534f'
+                    t.status.includes('Successful') ? '#28a745' : 
+                    t.status.includes('Processing') ? '#f0ad4e' : '#d9534f'
                 };">${t.status}</div>
             </div>
         </div>
@@ -37,7 +48,7 @@ app.get('/', (req, res) => {
                 input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
                 .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
                 .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-                .refresh-link { font-size: 12px; color: #1a73e8; text-decoration: none; font-weight: bold; cursor: pointer; }
+                .refresh-link { font-size: 12px; color: #1a73e8; text-decoration: none; font-weight: bold; }
             </style>
         </head>
         <body>
@@ -79,8 +90,8 @@ app.post('/push', async (req, res) => {
         });
 
         transactions.unshift({ 
-            id: response.data.transaction_id || Date.now(), 
-            phone, amount, status: 'Processing', 
+            id: response.data.transaction_id || response.data.request_id, 
+            phone, amount, status: 'Processing... 🔄', 
             time: new Date().toLocaleTimeString() 
         });
         res.redirect('/');
@@ -88,12 +99,12 @@ app.post('/push', async (req, res) => {
 });
 
 app.post('/callback', (req, res) => {
-    const { transaction_id, status, request_id } = req.body;
-    const tx = transactions.find(t => t.id == transaction_id || t.request_id == request_id);
+    const { transaction_id, status, request_id, message } = req.body;
+    // Look for the transaction by ID or Request ID
+    const tx = transactions.find(t => t.id == transaction_id || t.id == request_id);
     if (tx) {
-        if (status === 'success') tx.status = 'Completed';
-        else if (status === 'failed') tx.status = 'Cancelled/Error';
-        else tx.status = status;
+        // We prioritize the 'message' or 'status' provided by Paynecta
+        tx.status = translateStatus(message || status);
     }
     res.sendStatus(200);
 });
