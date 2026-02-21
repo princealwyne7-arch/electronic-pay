@@ -28,11 +28,11 @@ app.get('/', (req, res) => {
 app.post('/push', async (req, res) => {
     const { phone, amount } = req.body;
     try {
-        // Paynecta expects 'code' instead of 'payment_code' and 'mobile_number' for their newer API
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: process.env.PAYMENT_CODE,
             mobile_number: phone,
-            amount: amount
+            amount: amount,
+            email: "princealwyne7@gmail.com" // Added your email here to satisfy the API
         }, {
             headers: {
                 'X-API-Key': process.env.PAYNECTA_KEY,
@@ -40,10 +40,8 @@ app.post('/push', async (req, res) => {
             }
         });
 
-        console.log("Success:", response.data);
-        res.send("<h2>Push Sent!</h2><p>Check your phone for the M-Pesa popup.</p><a href='/'>Go Back</a>");
+        res.send("<h2>Push Sent!</h2><p>Ask customer to check their phone for the M-Pesa popup.</p><a href='/'>Go Back</a>");
     } catch (err) {
-        console.error("Error Response:", err.response ? err.response.data : err.message);
         res.status(500).send("Error: " + (err.response ? JSON.stringify(err.response.data) : err.message));
     }
 });
