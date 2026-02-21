@@ -5,6 +5,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const SHOP_PASSWORD = "5566";
+
 app.get('/', (req, res) => {
     res.send(`
         <!DOCTYPE html>
@@ -14,24 +16,11 @@ app.get('/', (req, res) => {
             <style>
                 body { font-family: -apple-system, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
                 .container { background: white; padding: 40px; border-radius: 30px; width: 90%; max-width: 450px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; margin: 20px; }
-                
-                .profile-pic { 
-                    width: 180px; 
-                    height: 180px; 
-                    border-radius: 50%; 
-                    object-fit: cover; 
-                    border: 6px solid #28a745; 
-                    margin-bottom: 20px;
-                    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-                }
-
+                .profile-pic { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; border: 6px solid #28a745; margin-bottom: 20px; box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
                 h2 { color: #333; margin: 0 0 25px 0; font-size: 28px; font-weight: 800; }
                 label { display: block; text-align: left; font-weight: bold; color: #555; margin: 15px 0 5px 5px; font-size: 16px; }
-                input { width: 100%; padding: 20px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 15px; font-size: 18px; box-sizing: border-box; transition: 0.3s; }
-                input:focus { border-color: #28a745; outline: none; background: #f9fff9; }
-                button { width: 100%; padding: 22px; background: #28a745; color: white; border: none; border-radius: 15px; font-size: 22px; font-weight: bold; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); }
-                button:active { transform: scale(0.97); }
-                .footer { margin-top: 25px; font-size: 12px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+                input { width: 100%; padding: 20px; margin-bottom: 10px; border: 2px solid #eee; border-radius: 15px; font-size: 18px; box-sizing: border-box; }
+                button { width: 100%; padding: 22px; background: #28a745; color: white; border: none; border-radius: 15px; font-size: 22px; font-weight: bold; cursor: pointer; margin-top: 20px; }
             </style>
         </head>
         <body>
@@ -47,7 +36,6 @@ app.get('/', (req, res) => {
                     <input type="number" name="amount" placeholder="0.00" required>
                     <button type="submit">CONFIRM & SEND STK</button>
                 </form>
-                <div class="footer">Secure Payment Portal</div>
             </div>
         </body>
         </html>
@@ -56,8 +44,8 @@ app.get('/', (req, res) => {
 
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
-    if (String(password).trim() !== "5566") { 
-        return res.send("<body style='text-align:center;font-family:sans-serif;padding-top:100px;'><h2>❌ Access Denied</h2><a href='/'>Try again</a></body>");
+    if (String(password).trim() !== SHOP_PASSWORD) { 
+        return res.send("<body style='font-family:sans-serif;text-align:center;padding-top:100px;background:#f0f2f5;'><div style='background:white;padding:50px;display:inline-block;border-radius:20px;'><h1 style='color:red;font-size:60px;'>❌</h1><h2>Wrong PIN</h2><a href='/'>Try Again</a></div></body>");
     }
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
@@ -68,7 +56,20 @@ app.post('/push', async (req, res) => {
         }, {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
-        res.send("<body style='text-align:center;font-family:sans-serif;padding-top:100px;'><h1>✔️</h1><h2>Request Sent!</h2><p>Customer should enter PIN.</p><br><a href='/'>Next Sale</a></body>");
+
+        // UPDATED STYLISH SUCCESS PAGE
+        res.send(`
+            <head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+            <body style="font-family:-apple-system,sans-serif; background:#f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
+                <div style="background:white; padding:50px; border-radius:30px; width:90%; max-width:400px; text-align:center; box-shadow:0 15px 35px rgba(0,0,0,0.1);">
+                    <div style="font-size:80px; color:#28a745; margin-bottom:20px;">✔️</div>
+                    <h1 style="color:#333; margin-bottom:10px; font-size:32px;">Push Sent!</h1>
+                    <p style="color:#666; font-size:20px; line-height:1.5;">The STK Push has been sent to <b>${phone}</b> for <b>KES ${amount}</b>.</p>
+                    <p style="color:#888; margin-bottom:30px;">Ask the customer to enter their M-Pesa PIN.</p>
+                    <a href="/" style="display:block; padding:20px; background:#1a73e8; color:white; text-decoration:none; border-radius:15px; font-weight:bold; font-size:20px;">NEXT CUSTOMER</a>
+                </div>
+            </body>
+        `);
     } catch (err) {
         res.status(500).send("Error: " + err.message);
     }
