@@ -7,14 +7,19 @@ app.use(express.urlencoded({ extended: true }));
 
 let transactions = []; 
 
+// Get Nairobi Time
+const getKenyaTime = () => {
+    return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+};
+
 const translateStatus = (status, message) => {
     const s = String(status || message).toLowerCase();
-    if (s.includes('success') || s === 'completed' || s === '0') return 'Successful ✅';
+    if (s.includes('success') || s === '0' || s.includes('complete')) return 'Successful ✅';
     if (s.includes('cancel') || s === '1032') return 'Cancelled ❌';
     if (s.includes('timeout') || s === '1037') return 'Timeout ⏳';
     if (s.includes('wrong') || s.includes('pin') || s === '2001') return 'Wrong PIN 🔑';
     if (s.includes('insufficient') || s === '1') return 'Low Balance 💸';
-    return 'Failed/Other';
+    return 'Failed/Other ⚠️';
 };
 
 app.get('/', (req, res) => {
@@ -83,30 +88,29 @@ app.post('/push', async (req, res) => {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
 
-        // Save tracking data
+        // Track by MerchantRequestID for pinpoint accuracy
+        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id;
+
         transactions.unshift({ 
-            id: response.data.transaction_id || response.data.request_id,
+            id: trackingId,
             phone: phone, 
             amount: amount, 
             status: 'Processing... 🔄', 
-            time: new Date().toLocaleTimeString() 
+            time: getKenyaTime() 
         });
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
-// IMPROVED CALLBACK LOGIC
 app.post('/callback', (req, res) => {
-    console.log("Incoming Callback:", req.body);
-    const { transaction_id, status, request_id, message, mobile_number, amount } = req.body;
+    // Log the data to see exactly what Paynecta sends
+    console.log("Paynecta Callback Received:", JSON.stringify(req.body));
     
-    // Try to find by ID first, then by phone and amount as backup
-    let tx = transactions.find(t => t.id == transaction_id || t.id == request_id);
+    const { merchant_request_id, transaction_id, status, message, request_id } = req.body;
     
-    if (!tx && mobile_number) {
-        tx = transactions.find(t => t.phone == mobile_number && t.status.includes('Processing'));
-    }
-
+    // Find matching transaction
+    let tx = transactions.find(t => t.id == merchant_request_id || t.id == transaction_id || t.id == request_id);
+    
     if (tx) {
         tx.status = translateStatus(status, message);
     }
