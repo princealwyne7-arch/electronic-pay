@@ -28,16 +28,23 @@ app.get('/', (req, res) => {
 app.post('/push', async (req, res) => {
     const { phone, amount } = req.body;
     try {
-        const response = await axios.post('https://api.paynecta.co.ke/v1/stk/push', {
-            api_key: process.env.PAYNECTA_KEY,
-            payment_code: process.env.PAYMENT_CODE,
-            phone: phone,
-            amount: amount,
-            callback_url: "https://electronic-pay.onrender.com/callback"
+        // Paynecta expects 'code' instead of 'payment_code' and 'mobile_number' for their newer API
+        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
+            code: process.env.PAYMENT_CODE,
+            mobile_number: phone,
+            amount: amount
+        }, {
+            headers: {
+                'X-API-Key': process.env.PAYNECTA_KEY,
+                'Content-Type': 'application/json'
+            }
         });
-        res.send("<h2>Push Sent!</h2><p>Ask customer to enter M-Pesa PIN.</p><a href='/'>Go Back</a>");
+
+        console.log("Success:", response.data);
+        res.send("<h2>Push Sent!</h2><p>Check your phone for the M-Pesa popup.</p><a href='/'>Go Back</a>");
     } catch (err) {
-        res.status(500).send("Error: " + err.message);
+        console.error("Error Response:", err.response ? err.response.data : err.message);
+        res.status(500).send("Error: " + (err.response ? JSON.stringify(err.response.data) : err.message));
     }
 });
 
