@@ -1,31 +1,58 @@
 const express = require('express');
 const axios = require('axios');
+const fs = require('fs');
 require('dotenv').config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let transactions = []; 
+const DB_FILE = './database.json';
+
+// Load or Create Database
+let transactions = [];
+if (fs.existsSync(DB_FILE)) {
+    transactions = JSON.parse(fs.readFileSync(DB_FILE));
+}
+
+const saveDB = () => fs.writeFileSync(DB_FILE, JSON.stringify(transactions, null, 2));
 
 const getKenyaTime = () => {
-    return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    return {
+        display: now.toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' }),
+        raw: new Date(now.toLocaleString("en-US", {timeZone: "Africa/Nairobi"}))
+    };
 };
 
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
     if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
     if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
-    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
     if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
-    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
-    return 'Pending/Other ⚠️';
+    return 'Failed/Pending ⚠️';
 };
 
 app.get('/api/status', (req, res) => {
-    const todayTotal = transactions
-        .filter(t => t.status.includes('Successful'))
-        .reduce((sum, t) => sum + parseInt(t.amount), 0);
-    res.json({ transactions, todayTotal });
+    const now = getKenyaTime().raw;
+    const isToday = (d) => new Date(d).toDateString() === now.toDateString();
+    const isYesterday = (d) => {
+        const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+        return new Date(d).toDateString() === yest.toDateString();
+    };
+
+    const totals = {
+        today: transactions.filter(t => t.status.includes('Successful') && isToday(t.date)).reduce((s, t) => s + parseInt(t.amount), 0),
+        yesterday: transactions.filter(t => t.status.includes('Successful') && isYesterday(t.date)).reduce((s, t) => s + parseInt(t.amount), 0),
+        month: transactions.filter(t => t.status.includes('Successful') && new Date(t.date).getMonth() === now.getMonth()).reduce((s, t) => s + parseInt(t.amount), 0)
+    };
+
+    res.json({ transactions: transactions.slice(0, 50), totals });
+});
+
+app.post('/api/delete', (req, res) => {
+    transactions = transactions.filter(t => t.id !== req.body.id);
+    saveDB();
+    res.json({ success: true });
 });
 
 app.get('/', (req, res) => {
@@ -35,22 +62,27 @@ app.get('/', (req, res) => {
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-                body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
-                .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-                .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
-                input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
-                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
-                .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
-                .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
-                .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
+                body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+                .container { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; }
+                .profile-pic { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #28a745; margin-bottom: 10px; }
+                .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-bottom: 15px; }
+                .stat-card { background: #f8f9fa; padding: 10px; border-radius: 10px; font-size: 11px; font-weight: bold; color: #2e7d32; }
+                input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+                .btn-send { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; }
+                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+                .tx-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; align-items: center; font-size: 13px; }
+                .del-btn { color: #d9534f; border: none; background: none; font-size: 18px; cursor: pointer; }
             </style>
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <h2 style="margin:5px 0;">Electronic Pay</h2>
-                <div id="dailyTotal" class="total-box">Today: KES 0</div>
+                <h3 style="margin:5px;">Electronic Pay</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">Today<br><span id="totToday">0</span></div>
+                    <div class="stat-card">Yest.<br><span id="totYest">0</span></div>
+                    <div class="stat-card">Month<br><span id="totMonth">0</span></div>
+                </div>
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
                     <input type="number" name="phone" placeholder="2547..." required>
@@ -59,43 +91,35 @@ app.get('/', (req, res) => {
                 </form>
             </div>
             <div class="history-card">
-                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
+                <h4 style="margin:0 0 10px 0;">Recent Transactions</h4>
                 <div id="history-list">Loading...</div>
             </div>
-
-            <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
+            <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
             <script>
+                async function delTx(id) { if(confirm('Delete this record?')) { await fetch('/api/delete', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id}) }); updateStatus(); } }
                 async function updateStatus() {
-                    try {
-                        const res = await fetch('/api/status');
-                        const data = await res.json();
-                        document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        const list = document.getElementById('history-list');
-                        let html = '';
-                        data.transactions.forEach((t, index) => {
-                            const isSuccess = t.status.includes('Successful');
-                            if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
-                                document.getElementById('successSound').play().catch(() => {});
-                                localStorage.setItem('ding_' + t.id, 'true');
-                            }
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
-                        });
-                        list.innerHTML = html || 'No activity';
-                    } catch(e) {}
+                    const res = await fetch('/api/status'); const data = await res.json();
+                    document.getElementById('totToday').innerText = data.totals.today;
+                    document.getElementById('totYest').innerText = data.totals.yesterday;
+                    document.getElementById('totMonth').innerText = data.totals.month;
+                    const list = document.getElementById('history-list');
+                    list.innerHTML = data.transactions.map(t => {
+                        const isSuccess = t.status.includes('Successful');
+                        if (isSuccess && !localStorage.getItem('ding_'+t.id)) { document.getElementById('successSound').play(); localStorage.setItem('ding_'+t.id, 'true'); }
+                        return \`<div class="tx-row">
+                            <div style="text-align:left;"><b>\${t.phone}</b><br><small>\${t.time}</small></div>
+                            <div style="text-align:right;">
+                                <b>KES \${t.amount}</b><br>
+                                <span style="color:\${isSuccess?'#28a745':t.status.includes('Processing')?'#f0ad4e':'#d9534f'}">\${t.status}</span>
+                                <button class="del-btn" onclick="delTx('\${t.id}')">×</button>
+                            </div>
+                        </div>\`;
+                    }).join('') || 'No records';
                 }
-
-                function shareReceipt(phone, amt, time) {
-                    const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
-                    window.open("https://wa.me/?text=" + encodeURIComponent(text));
-                }
-
-                setInterval(updateStatus, 3000);
-                updateStatus();
+                setInterval(updateStatus, 3000); updateStatus();
             </script>
-        </body>
-        </html>
-    `);
+        </body></html>
+    \`);
 });
 
 app.post('/push', async (req, res) => {
@@ -103,25 +127,20 @@ app.post('/push', async (req, res) => {
     if (password !== "5566") return res.send("Invalid PIN");
     try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: process.env.PAYMENT_CODE,
-            mobile_number: phone,
-            amount: amount,
-            email: "princealwyne7@gmail.com",
-            callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
-        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
-        if (transactions.length > 20) transactions.pop();
-        res.redirect('/');
+            code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
+            email: "princealwyne7@gmail.com", callback_url: "https://electronic-pay.onrender.com/callback"
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' } });
+        const trackingId = response.data.merchant_request_id || response.data.transaction_id || Date.now().toString();
+        const kTime = getKenyaTime();
+        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: kTime.display, date: kTime.raw });
+        saveDB(); res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.post('/callback', (req, res) => {
     const bodyText = JSON.stringify(req.body);
     let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
-    if (tx) { tx.status = translateStatus(req.body); }
+    if (tx) { tx.status = translateStatus(req.body); saveDB(); }
     res.sendStatus(200);
 });
 
