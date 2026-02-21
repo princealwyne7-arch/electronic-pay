@@ -25,7 +25,6 @@ app.get('/api/status', (req, res) => {
     const totals = { today: transactions.filter(t => t.status.includes('Successful') && t.dateStr === now.dateStr).reduce((s, t) => s + parseInt(t.amount), 0) };
     res.json({ transactions: transactions.slice(0, 30), totals });
 });
-
 app.get('/', (req, res) => {
     res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
     body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
