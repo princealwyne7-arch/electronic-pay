@@ -91,7 +91,7 @@ function clearData(){if(confirm("Clear all records?"))fetch("/api/clear",{method
                     window.open("https://wa.me/?text=" + encodeURIComponent(text));
                 }
 
-                setInterval(updateStatus, 3000);
+                if(window.txInterval) clearInterval(window.txInterval); window.txInterval = setInterval(updateStatus, 3000);
                 updateStatus();
             </script>
         </body>
