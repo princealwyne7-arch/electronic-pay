@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-                body { font-family: sans-serif; background: #f8fafc; margin: 0; padding-bottom: 80px; text-align: center; }
+                body { font-family: sans-serif; background: #f8fafc; margin: 0; padding-bottom: 40px; text-align: center; }
                 .top-banner { width: 100%; background: linear-gradient(135deg, #28a745, #1e7e34); padding: 40px 0; margin-bottom: -50px; border-radius: 0 0 30px 30px; display: flex; justify-content: center; }
                 .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: white; }
                 .container { background: white; padding: 25px; border-radius: 25px; width: 90%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin: 0 auto 15px auto; position: relative; z-index: 2; }
@@ -47,7 +47,8 @@ app.get('/', (req, res) => {
                 .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; }
                 .history-card { width: 90%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .total-box { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
-                .status-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 8px 0; font-size: 14px; }
+                .status-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; }
+                .admin-box { width: 90%; max-width: 400px; margin: 30px auto; padding: 15px; background: #f1f5f9; border-radius: 15px; border: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
             </style>
         </head>
         <body>
@@ -64,15 +65,20 @@ app.get('/', (req, res) => {
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
                 </form>
             </div>
+
             <div class="history-card">
-                <h3 style="margin-top:0;">Live Activity</h3>
-                <div id="history-list">Loading...</div>
-                <hr style="border:0; border-top:1px dashed #ccc; margin: 20px 0;">
-                <p style="font-size:12px; color:#666;">📸 Update Logo</p>
+                <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
+                <div id="history-list">No activity yet...</div>
+            </div>
+
+            <div class="admin-box">
+                <p>⚙️ <b>System Settings</b></p>
                 <form action="/upload-logo" method="POST" enctype="multipart/form-data">
-                    <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="font-size:10px;">
+                    <label>Change Logo Photo:</label><br>
+                    <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="margin-top:10px;">
                 </form>
             </div>
+
             <script>
                 async function updateStatus() {
                     try {
@@ -80,7 +86,10 @@ app.get('/', (req, res) => {
                         const data = await res.json();
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                         document.getElementById('history-list').innerHTML = data.transactions.map(t => 
-                            \`<div class="status-row"><span><b>\${t.phone}</b></span><span>KES \${t.amount}</span></div>\`
+                            \`<div class="status-row">
+                                <div style="text-align:left;"><b>\${t.phone}</b><br><small style="color:#94a3b8;">\${t.time}</small></div>
+                                <div style="color:#28a745; font-weight:bold;">KES \${t.amount}</div>
+                            </div>\`
                         ).join('') || 'No activity';
                     } catch(e) {}
                 }
@@ -99,5 +108,4 @@ app.post('/push', async (req, res) => {
     res.redirect('/');
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log('Server running on port ' + PORT));
+app.listen(process.env.PORT || 3000);
