@@ -100,7 +100,14 @@ function showPage(id, el) {
     el.classList.add("active");
     window.scrollTo(0,0);
 }
-</script></body>
+</script>
+    <div class="nav-bar">
+        <button class="nav-item active" onclick="showPage('p1', this)">🏠<br>Home</button>
+        <button class="nav-item" onclick="showPage('p2', this)">📈<br>Stats</button>
+        <button class="nav-item" onclick="showPage('p3', this)">🛠️<br>Tools</button>
+        <button class="nav-item" onclick="showPage('p4', this)">⚙️<br>More</button>
+    </div>
+    </body>
         </html>
     `);
 });
