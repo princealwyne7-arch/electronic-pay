@@ -122,6 +122,20 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
         <div id='sessionClock' style='font-size:32px; font-weight:bold; color:#475569; text-align:center;'>00:00:00</div>
         <p style='font-size:11px; color:#999; text-align:center; margin-top:5px;'>Tracking online time for today</p>
     </div>
+
+    <div class='feature-card' style='background: #fff; border-left: 5px solid #28a745;'>
+        <h3 style='margin-top:0;'>📊 Daily Summary</h3>
+        <div style='display:grid; grid-template-columns: 1fr 1fr; gap:10px;'>
+            <div style='background:#f8fafc; padding:10px; border-radius:10px;'>
+                <div style='font-size:10px; color:#666;'>HIGHEST</div>
+                <div id='highTx' style='font-weight:bold; color:#28a745;'>KES 0</div>
+            </div>
+            <div style='background:#f8fafc; padding:10px; border-radius:10px;'>
+                <div style='font-size:10px; color:#666;'>LOWEST</div>
+                <div id='lowTx' style='font-weight:bold; color:#d9534f;'>KES 0</div>
+            </div>
+        </div>
+    </div>
 </body>
         </html>
     `);
