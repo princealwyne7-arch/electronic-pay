@@ -103,6 +103,23 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
         document.getElementById("sessionClock").innerText = h+":"+m+":"+s; 
     },1000);
                 updateStatus();
+        function addContact() {
+            const p = prompt('Enter Phone (254...):');
+            const n = prompt('Enter Name:');
+            if(p && n) {
+                let contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+                contacts.push({p, n});
+                localStorage.setItem('contacts', JSON.stringify(contacts));
+                loadContacts();
+            }
+        }
+        function loadContacts() {
+            const list = document.getElementById('directory-list');
+            const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
+            list.innerHTML = contacts.map(c => '<div onclick="document.getElementsByName('phone')[0].value=''+c.p+'';window.scrollTo(0,0)" style="background:#f8fafc; padding:10px; border-radius:12px; min-width:80px; text-align:center; border:1px solid #eee; cursor:pointer;"><div style="font-size:20px;">👤</div><div style="font-size:11px; font-weight:bold;">'+c.n+'</div></div>').join('') || '<p style="font-size:11px;color:#999;">No saved customers</p>';
+        }
+        loadContacts();
+
         function buildCalendar() {
             const grid = document.getElementById('calendar-grid');
             const now = new Date();
@@ -156,6 +173,13 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
         <div id='calendar-grid' style='display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;'>
             </div>
         <p style='font-size:10px; color:#999; margin-top:10px; text-align:center;'>Tap a date to view archived logs (Coming Soon)</p>
+    </div>
+
+    <div class='feature-card'>
+        <h3 style='margin-top:0;'>👥 Customer Directory</h3>
+        <div id='directory-list' style='display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;'>
+            </div>
+        <button onclick='addContact()' style='width:100%; padding:10px; background:#e7f3ff; color:#007bff; border:none; border-radius:10px; font-weight:bold;'>+ Save New Customer</button>
     </div>
 </body>
         </html>
