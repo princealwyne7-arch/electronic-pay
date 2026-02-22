@@ -1,3 +1,4 @@
+const multer = require('multer'); const path = require('path'); const fs = require('fs');
 const express = require('express');
 const axios = require('axios');
 require('dotenv').config();
@@ -95,11 +96,13 @@ function clearData(){if(confirm("Clear all records?"))fetch("/api/clear",{method
                 setInterval(updateStatus, 3000);
                 updateStatus();
             </script>
+<div class='container' style='margin-top:20px; font-size:12px; border:1px dashed #ccc;'><h4>🎨 Branding Settings</h4><form action='/upload-logo' method='POST' enctype='multipart/form-data'>Logo: <input type='file' name='logo' accept='image/*' onchange='this.form.submit()'></form><form action='/upload-banner' method='POST' enctype='multipart/form-data'>Banner: <input type='file' name='banner' accept='image/*' onchange='this.form.submit()'></form></div>
         </body>
         </html>
     `);
 });
 
+app.post('/upload-logo', upload.single('logo'), (req, res) => res.redirect('/')); app.post('/upload-banner', upload.single('banner'), (req, res) => res.redirect('/'));
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
