@@ -49,7 +49,7 @@ app.get('/', (req, res) => {
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <h2 style="margin:5px 0;">Electronic Pay</h2>
+                <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div><h2 style="margin:5px 0;font-size:20px;">Electronic Pay</h2></div>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
