@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
                 </form>
             </div>
             <div class="history-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><h3 style="margin:0; font-size:16px;">Live Activity</h3><button onclick="clearH()" style="background:#ff4444; color:white; border:none; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:12px;">Clear All</button></div><input type="text" id="qs" placeholder="Search phone number..." onkeyup="updateStatus()" style="width:100%;padding:10px;border:2px solid #28a745;border-radius:10px;margin-bottom:10px;box-sizing:border-box;">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h3 style="margin:0; font-size:16px;">Live Activity</h3><div class="action-bar"><button onclick="window.location.href='/api/report'" class="btn-pro btn-report">📊 Download Report</button><button onclick="clearH()" class="btn-pro" style="background:#f8d7da;color:#721c24">🗑️ Clear History</button></div></div><input type="text" id="qs" placeholder="Search phone number..." onkeyup="updateStatus()" style="width:100%;padding:10px;border:2px solid #28a745;border-radius:10px;margin-bottom:10px;box-sizing:border-box;">
                 <div id="history-list">Loading...</div>
             </div>
 
@@ -145,4 +145,15 @@ async function up() {
 app.post('/api/clear', (req, res) => {
     transactions = [];
     res.json({ success: true });
+});
+
+// Top Tier Feature: CSV Report Generator
+app.get('/api/report', (req, res) => {
+    let csv = "Phone,Amount,Time,Status\n";
+    transactions.forEach(t => {
+        csv += `${t.phone},${t.amount},${t.time},${t.status}\n`;
+    });
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=Daily_Sales_Report.csv');
+    res.status(200).send(csv);
 });
