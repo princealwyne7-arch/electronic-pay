@@ -45,6 +45,11 @@ app.get('/', (req, res) => {
                 .total-box { background: linear-gradient(135deg, #28a745, #1e7e34); color: white !important; box-shadow: 0 4px 15px rgba(40,167,69,0.3); padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: 800; font-size: 24px; letter-spacing: 1px; }
                 .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
 .pulse{width:8px;height:8px;background:#28a745;border-radius:50%;margin-right:10px;animation:p 2s infinite}@keyframes p{0%{box-shadow:0 0 0 0 rgba(40,167,69,0.7)}70%{box-shadow:0 0 0 10px rgba(40,167,69,0)}100%{box-shadow:0 0 0 0 rgba(40,167,69,0)}}.btn-send:active{transform:scale(0.98);filter:brightness(0.9)}
+.nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; } 
+.nav-item { font-size: 10px; color: #64748b; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; } 
+.nav-item.active { color: #28a745; font-weight: bold; } 
+.page { display: none; width: 100%; max-width: 450px; padding-bottom: 80px; } 
+.page.active { display: block; }
             </style>
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
@@ -212,7 +217,22 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
     </div>
     
     <p style='text-align:center; font-size:10px; color:#999; margin:20px 0;'>Electronic Pay v2.0 • Secured by Paynecta</p>
-</body>
+
+    <div class='nav-bar'>
+        <button class='nav-item active' onclick='showPage("p1", this)'><span>🏠</span>Home</button>
+        <button class='nav-item' onclick='showPage("p2", this)'><span>📈</span>Stats</button>
+        <button class='nav-item' onclick='showPage("p3", this)'><span>🛠️</span>Tools</button>
+        <button class='nav-item' onclick='showPage("p4", this)'><span>⚙️</span>More</button>
+    </div>
+<script>
+    function showPage(id, el) {
+        document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+        el.classList.add("active");
+        window.scrollTo(0,0);
+    }
+</script></body>
         </html>
     `);
 });
