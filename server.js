@@ -48,8 +48,8 @@ app.get('/', (req, res) => {
 .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #eee; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; } 
 .nav-item { font-size: 10px; color: #64748b; border: none; background: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; } 
 .nav-item.active { color: #28a745; font-weight: bold; } 
-.page { display: none; width: 100%; max-width: 450px; padding-bottom: 80px; } 
-.page.active { display: block; }
+.page { display: none; visibility: hidden; width: 100%; max-width: 450px; padding-bottom: 80px; } 
+.page.active { display: block !important; visibility: visible !important; }
             </style>
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
