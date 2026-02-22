@@ -282,14 +282,30 @@ app.post('/push', async (req, res) => {
 });
 
 app.post('/callback', (req, res) => {
-    const b = JSON.stringify(req.body).toLowerCase();
-    let tx = transactions.find(t => b.includes(String(t.id)) || b.includes(String(t.phone)));
+    const bodyText = JSON.stringify(req.body).toLowerCase();
+    // Find the transaction by ID or Phone
+    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
+    
     if (tx) {
-        if (b.includes('success') || b.includes('0')) tx.status = 'Successful ✅';
-        else if (b.includes('cancel')) tx.status = 'Cancelled ❌';
-        else tx.status = 'Failed ❌';
+        // Only "0" or "success" in the ResultCode field means the money moved
+        // We look for common M-Pesa failure codes
+        if (bodyText.includes('"resultcode":0') || bodyText.includes('"status":"success"') || bodyText.includes('"0"')) {
+            tx.status = 'Successful ✅';
+            playSnd('ok'); 
+        } else if (bodyText.includes('1032') || bodyText.includes('cancel')) {
+            tx.status = 'Cancelled ❌';
+            playSnd('err');
+        } else if (bodyText.includes('1') || bodyText.includes('insufficient')) {
+            tx.status = 'Low Balance 💸';
+            playSnd('err');
+        } else if (bodyText.includes('2001') || bodyText.includes('wrong')) {
+            tx.status = 'Wrong PIN 🔑';
+            playSnd('err');
+        } else {
+            tx.status = 'Failed ❌';
+            playSnd('err');
+        }
     }
-    res.sendStatus(200);
-});
+    res.sendStatus(200);});
 
 app.listen(process.env.PORT || 3000);
