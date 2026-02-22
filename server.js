@@ -98,6 +98,17 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
                 updateStatus();
             </script>
         <div class="feature-card"><h3>🧮 Business Calc</h3><input type="text" id="calcDisplay" readonly style="text-align:right; font-family:monospace; background:#f8fafc;"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;"><button onclick="calc(7)" class="receipt-btn" style="padding:15px;font-size:16px;">7</button><button onclick="calc(8)" class="receipt-btn" style="padding:15px;font-size:16px;">8</button><button onclick="calc(9)" class="receipt-btn" style="padding:15px;font-size:16px;">9</button><button onclick="calc('/')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">÷</button><button onclick="calc(4)" class="receipt-btn" style="padding:15px;font-size:16px;">4</button><button onclick="calc(5)" class="receipt-btn" style="padding:15px;font-size:16px;">5</button><button onclick="calc(6)" class="receipt-btn" style="padding:15px;font-size:16px;">6</button><button onclick="calc('*')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">×</button><button onclick="calc(1)" class="receipt-btn" style="padding:15px;font-size:16px;">1</button><button onclick="calc(2)" class="receipt-btn" style="padding:15px;font-size:16px;">2</button><button onclick="calc(3)" class="receipt-btn" style="padding:15px;font-size:16px;">3</button><button onclick="calc('-')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">-</button><button onclick="calc(0)" class="receipt-btn" style="padding:15px;font-size:16px;">0</button><button onclick="calc('C')" class="receipt-btn" style="padding:15px;font-size:16px;background:#fff0f0;">C</button><button onclick="calc('=')" class="receipt-btn" style="padding:15px;font-size:16px;background:#28a745;color:white;">=</button><button onclick="calc('+')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">+</button></div></div>
+
+    <div class='feature-card'>
+        <h3 style='margin-top:0;'>🎯 Daily Sales Goal</h3>
+        <div style='background:#eee; border-radius:10px; height:20px; width:100%; overflow:hidden;'>
+            <div id='goalBar' style='background:#28a745; height:100%; width:0%; transition: width 1s ease;'></div>
+        </div>
+        <div style='display:flex; justify-content:space-between; margin-top:5px; font-size:12px; font-weight:bold;'>
+            <span id='goalText'>Goal: KES 10,000</span>
+            <span id='goalPercent'>0%</span>
+        </div>
+    </div>
 </body>
         </html>
     `);
