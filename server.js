@@ -43,6 +43,15 @@ app.get('/', (req, res) => {
                 :root { --primary: #28a745; --bg: #f8fafc; --text: #1e293b; --dark: #1e293b; }
                 body { font-family: sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
                 
+                
+                .header-tools { position: absolute; top: 25px; right: 20px; display: flex; gap: 15px; z-index: 1001; }
+                .tool-icon { color: white; font-size: 22px; cursor: pointer; transition: 0.3s; }
+                .tool-icon:active { transform: scale(0.9); opacity: 0.7; }
+                
+                #search-container { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 90%; display: none; z-index: 1000; animation: slideDown 0.3s ease; }
+                @keyframes slideDown { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+                .search-input { width: 100%; padding: 12px 20px; border-radius: 25px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); outline: none; font-size: 14px; }
+
                 .top-banner { width: 100%; background: linear-gradient(135deg, #28a745, #1e7e34); padding: 45px 0; border-radius: 0 0 35px 35px; display: flex; justify-content: center; position: relative; }
                 .profile-pic { width: 90px; height: 90px; border-radius: 50%; border: 4px solid white; object-fit: cover; background: white; }
 
@@ -84,6 +93,14 @@ app.get('/', (req, res) => {
             </style>
         </head>
         <body>
+            <div class="header-tools">
+                <div class="tool-icon" onclick="toggleSearch()">🔍</div>
+                <div class="tool-icon" onclick="sP('activity', document.querySelectorAll('.nav-item')[1])">🔔</div>
+            </div>
+            <div id="search-container">
+                <input type="text" class="search-input" id="searchQuery" placeholder="Search phone or amount..." onkeyup="filterHistory()">
+            </div>
+
             <div class="menu-btn" onclick="toggleMenu()">☰</div>
             <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
             
@@ -226,6 +243,21 @@ app.get('/', (req, res) => {
                     new Audio(url).play().catch(() => {});
                 }
 
+                
+                function toggleSearch() {
+                    const sc = document.getElementById('search-container');
+                    sc.style.display = sc.style.display === 'block' ? 'none' : 'block';
+                    if(sc.style.display === 'block') document.getElementById('searchQuery').focus();
+                }
+
+                function filterHistory() {
+                    const q = document.getElementById('searchQuery').value.toLowerCase();
+                    const rows = document.querySelectorAll('.status-row-container'); // We will tag rows with this class
+                    rows.forEach(row => {
+                        row.style.display = row.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+                    });
+                }
+
                 function sP(id, el) {
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -252,12 +284,12 @@ app.get('/', (req, res) => {
                         });
 
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        document.getElementById('history-list').innerHTML = data.transactions.map(t => 
+                        document.getElementById('history-list').innerHTML = data.transactions.map(t => `<div class="status-row-container" style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0;"> 
                             \`<div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between">
                                 <span><b>\${t.phone}</b><br><small>\${t.status}</small></span>
                                 <b>KES \${t.amount}</b>
                             </div>\`
-                        ).join('') || 'No activity';
+                         + "</div>").join('') || 'No activity';
                     } catch(e) {}
                 }
                 setInterval(updateStatus, 3000);
