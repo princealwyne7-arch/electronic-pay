@@ -55,7 +55,7 @@ app.get('/', (req, res) => {
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
                     <input type="number" name="phone" placeholder="2547..." required>
-                    <input type="number" name="amount" placeholder="Amount" required>
+                    <input type="number" name="amount" placeholder="Amount" required><input type="text" name="note" placeholder="Payment Note (Optional)">
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
                 </form>
             </div>
@@ -81,7 +81,7 @@ app.get('/', (req, res) => {
                                 document.getElementById('successSound').play().catch(() => {});
                                 localStorage.setItem('ding_' + t.id, 'true');
                             }
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
+                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:11px;color:#666;font-style:italic;">'+(t.note || "")+'</div><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
                         });
                         list.innerHTML = html || 'No activity';
                     } catch(e) {}
@@ -104,7 +104,7 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
 });
 
 app.post('/push', async (req, res) => {
-    const { phone, amount, password } = req.body;
+    const { phone, amount, password, note } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
@@ -117,7 +117,7 @@ app.post('/push', async (req, res) => {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
         const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', note: note || 'General Payment', time: getKenyaTime() });
         if (transactions.length > 20) transactions.pop();
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
