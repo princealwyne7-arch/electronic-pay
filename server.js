@@ -65,9 +65,6 @@ app.get('/', (req, res) => {
 
             <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-            <script>
-async function updateStatus(){try{const r=await fetch("/api/status"),d=await r.json();const tx=d.transactions||[];document.getElementById("txCount").innerText=tx.length;document.getElementById("dailyTotal").innerText="Today: KES "+(d.todayTotal||0);const q=document.getElementById("searchTerm").value.toLowerCase(),l=document.getElementById("history-list");l.innerHTML=tx.filter(t=>t.phone.includes(q)).map(t=>`<div class="tx-row"><div style="text-align:left;"><b>${t.phone}</b><div style="font-size:10px;color:#999;">${t.time}</div></div><div style="text-align:right;"><b style="color:#28a745;">KES ${t.amount}</b><div style="font-size:11px;font-weight:bold;color:${t.status.includes("Successful")?"#28a745":t.status.includes("Processing")?"#f0ad4e":"#d9534f"}">${t.status}${t.status.includes("Successful")?` <button class="receipt-btn" onclick="shareReceipt('${t.phone}','${t.amount}','${t.time}')">RECEIPT</button>`:""}</div></div></div>`).join("")||"No activity"}catch(e){console.error(e)}} setInterval(updateStatus,3000);updateStatus();
-            </script>
         </body>
         </html>
     `);
