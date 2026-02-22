@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
                 </form>
             </div>
             <div class="history-card">
-                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3><input type="text" id="qs" placeholder="Search phone number..." onkeyup="updateStatus()" style="width:100%;padding:10px;border:2px solid #28a745;border-radius:10px;margin-bottom:10px;box-sizing:border-box;">
+                <div style="display:flex; justify-content:space-between; align-items:center;"><h3 style="margin:0; font-size:16px;">Live Activity</h3><button onclick="clearH()" style="background:#ff4444; color:white; border:none; padding:5px 10px; border-radius:8px; cursor:pointer; font-size:12px;">Clear All</button></div><input type="text" id="qs" placeholder="Search phone number..." onkeyup="updateStatus()" style="width:100%;padding:10px;border:2px solid #28a745;border-radius:10px;margin-bottom:10px;box-sizing:border-box;">
                 <div id="history-list">Loading...</div>
             </div>
 
@@ -85,6 +85,7 @@ app.get('/', (req, res) => {
                     } catch(e) {}
                 }
 
+function clearH(){ if(confirm("Clear all history?")){ fetch("/api/clear", {method:"POST"}).then(()=>updateStatus()); } }
                 function shareReceipt(phone, amt, time) {
                     const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
                     window.open("https://wa.me/?text=" + encodeURIComponent(text));
@@ -139,3 +140,9 @@ async function up() {
             <div style="font-size:11px; color:#666;">${t.time} - ${t.status}</div>
         </div>`).join('') || 'No matches found';
 }
+
+// Surgical Upgrade: Clear History
+app.post('/api/clear', (req, res) => {
+    transactions = [];
+    res.json({ success: true });
+});
