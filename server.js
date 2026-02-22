@@ -15,63 +15,83 @@ const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
     if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
     if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
-    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
-    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
-    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
     return 'Pending/Other ⚠️';
 };
 
 app.get('/api/status', (req, res) => {
-    const todayTotal = transactions
-        .filter(t => t.status.includes('Successful'))
-        .reduce((sum, t) => sum + parseInt(t.amount), 0);
+    const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount), 0);
     res.json({ transactions, todayTotal });
 });
 
-app.get('/', (req, res) => {
-    res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>body{font-family:"Inter",sans-serif;background:#f4f7f6;margin:0;padding:20px;display:flex;flex-direction:column;align-items:center} .glass-card{background:white;width:100%;max-width:450px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.05);padding:25px;margin-bottom:20px;box-sizing:border-box} .total-box{background:linear-gradient(135deg,#28a745,#218838);color:white;padding:20px;border-radius:18px;margin-bottom:20px;text-align:center;font-size:20px;font-weight:bold} input{width:100%;padding:15px;margin-bottom:12px;border:2px solid #eee;border-radius:14px;font-size:16px;box-sizing:border-box} .btn-pro{width:100%;padding:18px;background:#28a745;color:white;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer} .admin-btn{padding:10px;border-radius:10px;border:none;font-weight:600;cursor:pointer} .tx-row{display:flex;justify-content:space-between;padding:15px;border-bottom:1px solid #f8f9fa;align-items:center}</style>
-        </head>
-        <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
-<div class="glass-card"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:100px;border-radius:50%;border:4px solid #28a745;margin-bottom:10px;"><h2>Electronic Pay</h2><div id="dailyTotal" class="total-box">Today: KES 0</div><form action="/push" method="POST"><input type="password" name="password" placeholder="Manager PIN" required><input type="number" name="phone" placeholder="2547..." required><input type="number" name="amount" placeholder="Amount" required><button type="submit" class="btn-pro">SEND STK PUSH</button></form></div><div class="glass-card" style="text-align:left;"><h4 style="margin:0 0 15px 0;color:#666;text-transform:uppercase;letter-spacing:1px;font-size:11px">Control Center</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;"><button onclick="window.location.href='/api/report'" class="admin-btn" style="background:#e7f3ff;color:#007bff">📊 Export CSV</button><button onclick="clearH()" class="admin-btn" style="background:#fff0f0;color:#dc3545">🗑️ Purge Data</button></div><div style="position:relative"><span style="position:absolute;left:15px;top:12px">🔍</span><input type="text" id="qs" placeholder="Search transactions..." onkeyup="updateStatus()" style="padding-left:45px;margin-bottom:0"></div></div><div class="glass-card" style="text-align:left;"><h3 style="margin:0 0 15px 0;font-size:18px">Live Activity</h3><div id="history-list"></div></div><audio
+app.post('/api/clear', (req, res) => {
+    transactions = [];
+    res.json({ success: true });
+});
 
-            <script>
-async function updateStatus(){try{const r=await fetch("/api/status"),d=await r.json();document.getElementById("dailyTotal").innerText="Today: KES "+d.todayTotal;const q=document.getElementById("qs").value.toLowerCase(),l=document.getElementById("history-list");l.innerHTML=d.transactions.filter(t=>t.phone.includes(q)).map(t=>`<div class="tx-row"><div style="text-align:left;"><b>${t.phone}</b><div style="font-size:10px;color:#999;">${t.time}</div></div><div style="text-align:right;"><b style="color:#28a745;">KES ${t.amount}</b><div style="font-size:11px;font-weight:bold;color:${t.status.includes("Successful")?"#28a745":t.status.includes("Processing")?"#f0ad4e":"#d9534f"}">${t.status}${t.status.includes("Successful")?` <button class="receipt-btn" onclick="shareReceipt('${t.phone}','${t.amount}','${t.time}')">RECEIPT</button>`:""}</div></div></div>`).join("")||"No activity"}catch(e){}} setInterval(updateStatus,3000);updateStatus();
-            </script>
-        </body>
-        </html>
-    `);
+app.get('/', (req, res) => {
+    res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body{font-family:"Inter",sans-serif;background:#f4f7f6;margin:0;padding:20px;display:flex;flex-direction:column;align-items:center}
+        .glass-card{background:white;width:100%;max-width:450px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.05);padding:25px;margin-bottom:20px;box-sizing:border-box}
+        .total-box{background:linear-gradient(135deg,#28a745,#218838);color:white;padding:20px;border-radius:18px;margin-bottom:20px;text-align:center;font-size:20px;font-weight:bold}
+        input{width:100%;padding:15px;margin-bottom:12px;border:2px solid #eee;border-radius:14px;font-size:16px;box-sizing:border-box}
+        .btn-pro{width:100%;padding:18px;background:#28a745;color:white;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer}
+        .tx-row{display:flex;justify-content:space-between;padding:15px;border-bottom:1px solid #f8f9fa;align-items:center}
+    </style></head><body>
+        <div class="glass-card"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:100px;border-radius:50%;border:4px solid #28a745;margin-bottom:10px;display:block;margin-left:auto;margin-right:auto;">
+        <h2 style="text-align:center;">Electronic Pay</h2>
+        <div id="dailyTotal" class="total-box">Today: KES 0</div>
+        <form action="/push" method="POST">
+            <input type="password" name="password" placeholder="Manager PIN" required>
+            <input type="number" name="phone" placeholder="2547..." required>
+            <input type="number" name="amount" placeholder="Amount" required>
+            <button type="submit" class="btn-pro">SEND STK PUSH</button>
+        </form></div>
+        <div class="glass-card">
+            <h4 style="margin:0 0 15px 0;color:#666;text-transform:uppercase;letter-spacing:1px;font-size:11px">Control Center</h4>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
+                <button onclick="window.location.href='/api/status'" style="padding:10px;border-radius:10px;border:none;background:#e7f3ff;color:#007bff;font-weight:600;">📊 Export CSV</button>
+                <button onclick="clearH()" style="padding:10px;border-radius:10px;border:none;background:#fff0f0;color:#dc3545;font-weight:600;">🗑️ Purge Data</button>
+            </div>
+            <input type="text" id="qs" placeholder="🔍 Search transactions..." onkeyup="updateStatus()">
+        </div>
+        <div class="glass-card"><h3>Live Activity</h3><div id="history-list"></div></div>
+        <script>
+            async function updateStatus(){
+                try{
+                    const r=await fetch('/api/status');const d=await r.json();
+                    document.getElementById('dailyTotal').innerText='Today: KES '+d.todayTotal;
+                    const q=document.getElementById('qs').value.toLowerCase();
+                    const l=document.getElementById('history-list');
+                    l.innerHTML=d.transactions.filter(t=>t.phone.includes(q)).map(t=>\`
+                        <div class="tx-row">
+                            <div style="text-align:left;"><b>\${t.phone}</b><div style="font-size:10px;color:#999;">\${t.time}</div></div>
+                            <div style="text-align:right;"><b style="color:#28a745;">KES \${t.amount}</b><div style="font-size:11px;font-weight:bold;color:\${t.status.includes('Successful')?'#28a745':'#f0ad4e'}">\${t.status}</div></div>
+                        </div>\`).join('') || "No activity";
+                }catch(e){}
+            }
+            function clearH(){if(confirm("Purge?"))fetch('/api/clear',{method:'POST'}).then(()=>updateStatus());}
+            setInterval(updateStatus,3000);updateStatus();
+        </script>
+    </body></html>`);
 });
 
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     try {
-        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: process.env.PAYMENT_CODE,
-            mobile_number: phone,
-            amount: amount,
-            email: "princealwyne7@gmail.com",
-            callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
-        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
-        if (transactions.length > 20) transactions.pop();
+        await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
+            code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
+            email: "p@mail.com", callback_url: "https://electronic-pay.onrender.com/callback"
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' } });
+        transactions.unshift({ phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
-    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
+    let tx = transactions.find(t => String(req.body.mobile_number).includes(t.phone) && t.status.includes('Processing'));
     if (tx) { tx.status = translateStatus(req.body); }
     res.sendStatus(200);
 });
-
 app.listen(process.env.PORT || 3000);
