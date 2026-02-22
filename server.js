@@ -196,6 +196,22 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
             <button style='flex:1; padding:8px; border:none; border-radius:8px; background:rgba(255,255,255,0.1); color:white; font-size:11px;'>Transfer</button>
         </div>
     </div>
+
+    <div class='feature-card' style='border-left: 5px solid #64748b;'>
+        <h3 style='margin-top:0;'>🔒 Privacy & Security</h3>
+        <div style='display:flex; justify-content:space-between; align-items:center;'>
+            <span style='font-size:12px;'>Dashboard Lock</span>
+            <button onclick='alert("Security setup coming in Activation Phase")' style='background:#f1f5f9; border:none; padding:5px 15px; border-radius:20px; font-size:11px;'>ENABLE</button>
+        </div>
+    </div>
+
+    <div class='feature-card' style='background:#f8fafc; border: 1px dashed #cbd5e1;'>
+        <h3 style='margin-top:0;'>📞 Business Support</h3>
+        <p style='font-size:11px; color:#64748b;'>Need help with your Merchant Account?</p>
+        <button onclick='window.open("https://wa.me/254700000000")' style='width:100%; padding:10px; background:#25d366; color:white; border:none; border-radius:10px; font-weight:bold;'>WhatsApp Support</button>
+    </div>
+    
+    <p style='text-align:center; font-size:10px; color:#999; margin:20px 0;'>Electronic Pay v2.0 • Secured by Paynecta</p>
 </body>
         </html>
     `);
