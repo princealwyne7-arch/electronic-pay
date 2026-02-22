@@ -1,19 +1,15 @@
 {
-  "name": "my-electronic-shop",
+  "name": "electronic-pay",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "description": "M-Pesa POS System",
+  "main": "server.js",
   "dependencies": {
-    "axios": "^1.13.5",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "mongoose": "^9.2.1"
+    "express": "^4.18.2",
+    "axios": "^1.6.2",
+    "dotenv": "^16.3.1",
+    "multer": "^1.4.5-lts.1"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }
