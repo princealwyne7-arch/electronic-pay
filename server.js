@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
                 </form>
             </div>
             <div class="history-card">
-                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
+                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3><input type="text" id="qs" placeholder="Search phone number..." onkeyup="updateStatus()" style="width:100%;padding:10px;border:2px solid #28a745;border-radius:10px;margin-bottom:10px;box-sizing:border-box;">
                 <div id="history-list">Loading...</div>
             </div>
 
@@ -73,7 +73,7 @@ app.get('/', (req, res) => {
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                         const list = document.getElementById('history-list');
                         let html = '';
-                        data.transactions.forEach((t, index) => {
+                        const q=document.getElementById("qs").value; data.transactions.filter(t=>t.phone.includes(q)).forEach((t, index) => {
                             const isSuccess = t.status.includes('Successful');
                             if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
                                 document.getElementById('successSound').play().catch(() => {});
