@@ -59,7 +59,7 @@ app.get('/', (req, res) => {
                 </form>
             </div>
             <div class="history-card">
-                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h3 style="margin:0;font-size:16px;">Live Activity</h3><button onclick="clearData()" style="background:#fff0f0;color:#dc3545;border:none;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;">🗑️ PURGE</button></div><input type="text" id="searchTerm" placeholder="🔍 Search phone..." onkeyup="updateStatus()" style="padding:10px;margin-bottom:10px;border-radius:10px;border:1px solid #eee;font-size:14px;">
                 <div id="history-list">Loading...</div>
             </div>
 
@@ -73,7 +73,7 @@ app.get('/', (req, res) => {
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                         const list = document.getElementById('history-list');
                         let html = '';
-                        data.transactions.forEach((t, index) => {
+                        const query=document.getElementById("searchTerm").value; data.transactions.filter(t=>t.phone.includes(query)).forEach((t, index) => {
                             const isSuccess = t.status.includes('Successful');
                             if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
                                 document.getElementById('successSound').play().catch(() => {});
@@ -85,6 +85,7 @@ app.get('/', (req, res) => {
                     } catch(e) {}
                 }
 
+function clearData(){if(confirm("Clear all records?"))fetch("/api/clear",{method:"POST"}).then(()=>updateStatus());}
                 function shareReceipt(phone, amt, time) {
                     const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
                     window.open("https://wa.me/?text=" + encodeURIComponent(text));
