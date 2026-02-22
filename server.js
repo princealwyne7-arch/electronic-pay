@@ -40,32 +40,7 @@ app.get('/', (req, res) => {
 <div class="glass-card"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:100px;border-radius:50%;border:4px solid #28a745;margin-bottom:10px;"><h2>Electronic Pay</h2><div id="dailyTotal" class="total-box">Today: KES 0</div><form action="/push" method="POST"><input type="password" name="password" placeholder="Manager PIN" required><input type="number" name="phone" placeholder="2547..." required><input type="number" name="amount" placeholder="Amount" required><button type="submit" class="btn-pro">SEND STK PUSH</button></form></div><div class="glass-card" style="text-align:left;"><h4 style="margin:0 0 15px 0;color:#666;text-transform:uppercase;letter-spacing:1px;font-size:11px">Control Center</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;"><button onclick="window.location.href='/api/report'" class="admin-btn" style="background:#e7f3ff;color:#007bff">📊 Export CSV</button><button onclick="clearH()" class="admin-btn" style="background:#fff0f0;color:#dc3545">🗑️ Purge Data</button></div><div style="position:relative"><span style="position:absolute;left:15px;top:12px">🔍</span><input type="text" id="qs" placeholder="Search transactions..." onkeyup="updateStatus()" style="padding-left:45px;margin-bottom:0"></div></div><div class="glass-card" style="text-align:left;"><h3 style="margin:0 0 15px 0;font-size:18px">Live Activity</h3><div id="history-list"></div></div><audio
 
             <script>
-                async function updateStatus() {
-                    try {
-                        const res = await fetch('/api/status');
-                        const data = await res.json();
-                        document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        const list = document.getElementById('history-list');
-                        let html = '';
-                        data.transactions.forEach((t, index) => {
-                            const isSuccess = t.status.includes('Successful');
-                            if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
-                                document.getElementById('successSound').play().catch(() => {});
-                                localStorage.setItem('ding_' + t.id, 'true');
-                            }
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
-                        });
-                        list.innerHTML = html || 'No activity';
-                    } catch(e) {}
-                }
-
-                function shareReceipt(phone, amt, time) {
-                    const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
-                    window.open("https://wa.me/?text=" + encodeURIComponent(text));
-                }
-
-                setInterval(updateStatus, 3000);
-                updateStatus();
+async function updateStatus(){try{const r=await fetch("/api/status"),d=await r.json();document.getElementById("dailyTotal").innerText="Today: KES "+d.todayTotal;const q=document.getElementById("qs").value.toLowerCase(),l=document.getElementById("history-list");l.innerHTML=d.transactions.filter(t=>t.phone.includes(q)).map(t=>`<div class="tx-row"><div style="text-align:left;"><b>${t.phone}</b><div style="font-size:10px;color:#999;">${t.time}</div></div><div style="text-align:right;"><b style="color:#28a745;">KES ${t.amount}</b><div style="font-size:11px;font-weight:bold;color:${t.status.includes("Successful")?"#28a745":t.status.includes("Processing")?"#f0ad4e":"#d9534f"}">${t.status}${t.status.includes("Successful")?` <button class="receipt-btn" onclick="shareReceipt('${t.phone}','${t.amount}','${t.time}')">RECEIPT</button>`:""}</div></div></div>`).join("")||"No activity"}catch(e){}} setInterval(updateStatus,3000);updateStatus();
             </script>
         </body>
         </html>
