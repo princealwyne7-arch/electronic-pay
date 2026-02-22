@@ -44,12 +44,13 @@ app.get('/', (req, res) => {
                 .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
                 .total-box { background: linear-gradient(135deg, #28a745, #1e7e34); color: white !important; box-shadow: 0 4px 15px rgba(40,167,69,0.3); padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
                 .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
+.pulse{width:8px;height:8px;background:#28a745;border-radius:50%;margin-right:10px;animation:p 2s infinite}@keyframes p{0%{box-shadow:0 0 0 0 rgba(40,167,69,0.7)}70%{box-shadow:0 0 0 10px rgba(40,167,69,0)}100%{box-shadow:0 0 0 0 rgba(40,167,69,0)}}.btn-send:active{transform:scale(0.98);filter:brightness(0.9)}
             </style>
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div><h2 style="margin:5px 0;font-size:20px;">Electronic Pay</h2></div>
+                <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div><h2 style="margin:5px 0;font-size:20px;"> <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div>Electronic Pay</div></h2></div>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
