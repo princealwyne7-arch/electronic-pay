@@ -138,6 +138,26 @@ app.get('/', (req, res) => {
             <div id="more" class="page">
                 <h2>Settings</h2>
                 <div class="card">
+                    <p style="color: #64748b; font-size: 14px; font-weight: bold; margin-bottom: 15px;">🔔 Notification Sounds</p>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span>Enable Audio</span>
+                        <input type="checkbox" id="soundToggle" checked style="width: auto; margin: 0;">
+                    </div>
+                    <div style="text-align: left; font-size: 13px;">
+                        <label>Success Tone:</label>
+                        <select id="successSoundSelect" style="width: 100%; padding: 8px; margin: 5px 0 15px 0; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">Classic Chime ✅</option>
+                            <option value="https://cdn.pixabay.com/audio/2022/03/10/audio_c352c858c2.mp3">Digital Payment 📱</option>
+                        </select>
+                        <label>Error/Cancel Tone:</label>
+                        <select id="errorSoundSelect" style="width: 100%; padding: 8px; margin: 5px 0 0 0; border-radius: 8px; border: 1px solid #ddd;">
+                            <option value="https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3">Alert Titititi ⚠️</option>
+                            <option value="https://cdn.pixabay.com/audio/2021/08/04/audio_0625d15d1c.mp3">Error Buzz ❌</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
                     <p style="color: #64748b; font-size: 14px;">Update App Branding</p>
                     <form action="/upload-logo" method="POST" enctype="multipart/form-data">
                         <input type="file" name="logo" accept="image/*" onchange="this.form.submit()">
@@ -179,10 +199,32 @@ app.get('/', (req, res) => {
                     el.classList.add('active');
                 }
 
+                
+                let playedIds = new Set();
+                function playNotification(type) {
+                    if (!document.getElementById('soundToggle').checked) return;
+                    const url = type === 'success' ? document.getElementById('successSoundSelect').value : document.getElementById('errorSoundSelect').value;
+                    const audio = new Audio(url);
+                    audio.play().catch(e => console.log("Audio blocked: tap screen first"));
+                }
+
                 async function updateStatus() {
                     try {
                         const res = await fetch('/api/status');
                         const data = await res.json();
+                        
+                        data.transactions.forEach(t => {
+                            if (!playedIds.has(t.id)) {
+                                if (t.status.includes('Successful')) {
+                                    playNotification('success');
+                                    playedIds.add(t.id);
+                                } else if (t.status.includes('Cancelled') || t.status.includes('Failed') || t.status.includes('Wrong')) {
+                                    playNotification('error');
+                                    playedIds.add(t.id);
+                                }
+                            }
+                        });
+
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                         document.getElementById('history-list').innerHTML = data.transactions.map(t => {
                             let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Processing') ? '#17a2b8' : '#dc3545');
