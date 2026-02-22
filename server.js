@@ -40,6 +40,11 @@ app.get('/', (req, res) => {
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
             <style>
+                .header-tools { position: absolute; top: 25px; right: 20px; display: flex; gap: 15px; z-index: 1001; }
+                .tool-icon { color: white; font-size: 22px; cursor: pointer; }
+                #search-box { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 90%; display: none; z-index: 1000; }
+                .s-input { width: 100%; padding: 12px; border-radius: 20px; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
                 :root { --primary: #28a745; --bg: #f8fafc; --text: #1e293b; --dark: #1e293b; }
                 body { font-family: sans-serif; background: var(--bg); margin: 0; padding-bottom: 90px; overflow-x: hidden; }
                 
@@ -293,6 +298,18 @@ app.get('/', (req, res) => {
                     } catch(e) {}
                 }
                 setInterval(updateStatus, 3000);
+            
+                function tglS() { 
+                    let b = document.getElementById('search-box'); 
+                    b.style.display = b.style.display === 'block' ? 'none' : 'block'; 
+                }
+                function fltr() {
+                    let q = document.getElementById('sq').value.toLowerCase();
+                    document.querySelectorAll('#history-list div').forEach(r => {
+                        r.style.display = r.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+                    });
+                }
+
             </script>
         </body>
         </html>
