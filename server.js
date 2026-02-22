@@ -158,7 +158,7 @@ app.get('/', (req, res) => {
 
             
             <div id="home" class="page active">
-                <h2 style="margin: 10px 0 20px 0;">Electronic Pay</h2>
+                <h2>Electronic Pay</h2>
                 <div class="card">
                     <div id="dailyTotal" class="total-box">Today: KES 0</div>
                     <form action="/push" method="POST">
@@ -260,6 +260,15 @@ app.get('/', (req, res) => {
                     const rows = document.querySelectorAll('.status-row-container'); // We will tag rows with this class
                     rows.forEach(row => {
                         row.style.display = row.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+                    });
+                }
+
+                
+                function tglS() { let b = document.getElementById('search-box'); b.style.display = b.style.display === 'block' ? 'none' : 'block'; }
+                function fltr() {
+                    let q = document.getElementById('sq').value.toLowerCase();
+                    document.querySelectorAll('.status-row').forEach(r => {
+                        r.style.display = r.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
                     });
                 }
 
