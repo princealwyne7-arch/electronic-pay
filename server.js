@@ -2,40 +2,18 @@ const express = require('express');
 const axios = require('axios');
 const mongoose = require('mongoose');
 require('dotenv').config();
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Database Connected ✅'))
-  .catch(err => console.log('DB Connection Error ❌:', err));
-
-const TransactionSchema = new mongoose.Schema({
-    phone: String,
-    amount: Number,
-    status: String,
-    time: String,
-    dateStr: String,
-    createdAt: { type: Date, default: Date.now }
-});
-const Transaction = mongoose.model('Transaction', TransactionSchema);
-
+mongoose.connect(process.env.MONGO_URI).then(() => console.log('DB OK')).catch(err => console.log('DB ERR', err));
+const Transaction = mongoose.model('Transaction', new mongoose.Schema({
+    phone: String, amount: Number, status: String, time: String, dateStr: String, createdAt: { type: Date, default: Date.now }
+}));
 const getKenyaTime = () => {
     const now = new Date();
-    const kenyaTime = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Nairobi"}));
-    return { 
-        display: kenyaTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), 
-        dateStr: kenyaTime.toDateString() 
-    };
+    const k = new Date(now.toLocaleString("en-US", {timeZone: "Africa/Nairobi"}));
+    return { display: k.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }), dateStr: k.toDateString() };
 };
-
-const translateStatus = (rawBody) => {
-    const data = JSON.stringify(rawBody).toLowerCase();
-    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
-    return 'Failed/Other ⚠️';
-};
-
 app.get('/api/status', async (req, res) => {
     try {
         const now = getKenyaTime();
@@ -45,25 +23,22 @@ app.get('/api/status', async (req, res) => {
         res.json({ transactions: txs, totals: { today: total } });
     } catch (e) { res.json({ transactions: [], totals: { today: 0 } }); }
 });
-
 app.get('/', (req, res) => {
     res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
     body { font-family: sans-serif; background: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
     .container { background: white; padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; margin-bottom: 15px; }
-    .profile-pic { width: 80px; height: 80px; border-radius: 50%; border: 3px solid #28a745; margin-bottom: 10px; }
     .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; font-size: 18px; }
     input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-    .btn-send { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .btn-send { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; }
     .history-card { width: 100%; max-width: 400px; background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .tx-row { border-bottom: 1px solid #eee; padding: 12px 0; }
+    .tx-row { border-bottom: 1px solid #eee; padding: 10px 0; }
     .search-box { border: 2px solid #28a745; margin-bottom: 10px; }
     </style></head><body>
     <div class="container">
-        <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
         <h3>Electronic Pay</h3>
         <div id="dt" class="total-box">Today: KES 0</div>
         <form action="/push" method="POST">
-            <input type="password" name="password" placeholder="Manager PIN" required>
+            <input type="password" name="password" placeholder="PIN" required>
             <input type="number" name="phone" placeholder="2547..." required>
             <input type="number" name="amount" placeholder="Amount" required>
             <button type="submit" class="btn-send">SEND STK PUSH</button>
@@ -88,13 +63,12 @@ app.get('/', (req, res) => {
             <div class="tx-row">
                 <div style="display:flex; justify-content:space-between;"><b>\${t.phone}</b> <b>KES \${t.amount}</b></div>
                 <div style="font-size:11px; color:#666;">\${t.time} - \${t.status}</div>
-            </div>\`).join('') || 'No matches found';
+            </div>\`).join('') || 'No matches';
     }
     setInterval(() => { if(!document.getElementById('qs').value) up() }, 5000); 
     up();
     </script></body></html>\`);
 });
-
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
@@ -108,11 +82,10 @@ app.post('/push', async (req, res) => {
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
-
 app.post('/callback', async (req, res) => {
-    const status = translateStatus(req.body);
+    const data = JSON.stringify(req.body).toLowerCase();
+    const status = (data.includes('"success"') || data.includes('"0"')) ? 'Successful ✅' : 'Failed ⚠️';
     await Transaction.findOneAndUpdate({ phone: new RegExp(req.body.mobile_number || ''), status: 'Processing... 🔄' }, { status: status });
     res.sendStatus(200);
 });
-
 app.listen(process.env.PORT || 3000);
