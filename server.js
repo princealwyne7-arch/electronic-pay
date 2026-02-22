@@ -126,3 +126,16 @@ app.post('/callback', (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000);
+
+// --- Surgical Upgrade: Search Function ---
+async function up() {
+    const query = document.getElementById('qs').value.toLowerCase();
+    const response = await fetch('/api/status');
+    const data = await response.json();
+    const filtered = data.transactions.filter(t => t.phone.includes(query));
+    document.getElementById('hl').innerHTML = filtered.map(t => `
+        <div class="tx-row">
+            <div style="display:flex; justify-content:space-between;"><b>${t.phone}</b> <b>KES ${t.amount}</b></div>
+            <div style="font-size:11px; color:#666;">${t.time} - ${t.status}</div>
+        </div>`).join('') || 'No matches found';
+}
