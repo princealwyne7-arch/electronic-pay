@@ -140,3 +140,23 @@ app.post('/callback', (req, res) => {
 });
 
 app.listen(process.env.PORT || 3000);
+<script>
+function showPage(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    const target = document.getElementById(id);
+    if(target) target.style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    window.scrollTo(0,0);
+}
+function up() {
+    fetch('/status').then(r => r.json()).then(d => {
+        document.getElementById('tot').innerText = d.todayTotal;
+        const list = document.getElementById('history-list');
+        if(list) list.innerHTML = d.history.map(t => '<div class="history-item"><b>'+t.phone+'</b><br>'+t.status+'<hr></div>').join('') || 'No activity';
+        if(document.getElementById('walletBal')) document.getElementById('walletBal').innerText = 'KES ' + d.todayTotal;
+    });
+}
+setInterval(up, 3000);
+up();
+</script>
