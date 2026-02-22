@@ -103,6 +103,20 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
         document.getElementById("sessionClock").innerText = h+":"+m+":"+s; 
     },1000);
                 updateStatus();
+        function buildCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const now = new Date();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+            let html = '';
+            ['S','M','T','W','T','F','S'].forEach(d => html += '<b style="font-size:10px;color:#28a745;">'+d+'</b>');
+            for(let i=1; i<=daysInMonth; i++) {
+                const isToday = i === now.getDate() ? 'background:#28a745;color:white;border-radius:50%;' : '';
+                html += '<div style="font-size:12px;padding:5px;'+isToday+'">'+i+'</div>';
+            }
+            grid.innerHTML = html;
+        }
+        buildCalendar();
+
             </script>
         <div class="feature-card"><h3>🧮 Business Calc</h3><input type="text" id="calcDisplay" readonly style="text-align:right; font-family:monospace; background:#f8fafc;"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;"><button onclick="calc(7)" class="receipt-btn" style="padding:15px;font-size:16px;">7</button><button onclick="calc(8)" class="receipt-btn" style="padding:15px;font-size:16px;">8</button><button onclick="calc(9)" class="receipt-btn" style="padding:15px;font-size:16px;">9</button><button onclick="calc('/')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">÷</button><button onclick="calc(4)" class="receipt-btn" style="padding:15px;font-size:16px;">4</button><button onclick="calc(5)" class="receipt-btn" style="padding:15px;font-size:16px;">5</button><button onclick="calc(6)" class="receipt-btn" style="padding:15px;font-size:16px;">6</button><button onclick="calc('*')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">×</button><button onclick="calc(1)" class="receipt-btn" style="padding:15px;font-size:16px;">1</button><button onclick="calc(2)" class="receipt-btn" style="padding:15px;font-size:16px;">2</button><button onclick="calc(3)" class="receipt-btn" style="padding:15px;font-size:16px;">3</button><button onclick="calc('-')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">-</button><button onclick="calc(0)" class="receipt-btn" style="padding:15px;font-size:16px;">0</button><button onclick="calc('C')" class="receipt-btn" style="padding:15px;font-size:16px;background:#fff0f0;">C</button><button onclick="calc('=')" class="receipt-btn" style="padding:15px;font-size:16px;background:#28a745;color:white;">=</button><button onclick="calc('+')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">+</button></div></div>
 
@@ -135,6 +149,13 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
                 <div id='lowTx' style='font-weight:bold; color:#d9534f;'>KES 0</div>
             </div>
         </div>
+    </div>
+
+    <div class='feature-card'>
+        <h3 style='margin-top:0;'>📅 Business Calendar</h3>
+        <div id='calendar-grid' style='display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;'>
+            </div>
+        <p style='font-size:10px; color:#999; margin-top:10px; text-align:center;'>Tap a date to view archived logs (Coming Soon)</p>
     </div>
 </body>
         </html>
