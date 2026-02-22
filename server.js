@@ -1,1 +1,63 @@
-const express=require('express'),axios=require('axios'),mongoose=require('mongoose');require('dotenv').config();const app=express();app.use(express.json());app.use(express.urlencoded({extended:true}));mongoose.connect(process.env.MONGO_URI);const Transaction=mongoose.model('Transaction',new mongoose.Schema({phone:String,amount:Number,status:String,time:String,dateStr:String,createdAt:{type:Date,default:Date.now}}));const getK=()=>{const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Africa/Nairobi"}));return{t:d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}),s:d.toDateString()}};app.get('/api/status',async(req,res)=>{const k=getK(),txs=await Transaction.find().sort({createdAt:-1}).limit(10),today=await Transaction.find({dateStr:k.s,status:'Successful ✅'});res.json({transactions:txs,total:today.reduce((s,t)=>s+t.amount,0)})});app.get('/',(req,res)=>{res.send(\`<html><body style="font-family:sans-serif;text-align:center;padding:15px;"><h3>Electronic Pay</h3><div id="tot" style="background:#eee;padding:10px;font-weight:bold;">Today: KES 0</div><form action="/push" method="POST"><input type="password" name="pw" placeholder="PIN" style="width:100%;padding:10px;"><input type="number" name="ph" placeholder="254..." style="width:100%;padding:10px;"><input type="number" name="am" placeholder="Amount" style="width:100%;padding:10px;"><button type="submit" style="width:100%;padding:15px;background:green;color:white;">SEND</button></form><div style="text-align:left;"><h4>History</h4><input type="text" id="q" placeholder="Search..." onkeyup="up()" style="width:100%;padding:8px;"><div id="list"></div></div><script>let d=[];async function up(){if(!document.getElementById('q').value||d.length==0){const r=await fetch('/api/status'),j=await r.json();d=j.transactions;document.getElementById('tot').innerText='Today: KES '+j.total}const q=document.getElementById('q').value;document.getElementById('list').innerHTML=d.filter(t=>t.phone.includes(q)).map(t=>\`<div style="border-bottom:1px solid #eee;"><b>\${t.phone}</b>: KES \${t.amount}<br><small>\${t.time} - \${t.status}</small></div>\`).join('')}setInterval(()=>{if(!document.getElementById('q').value)up()},5000);up()</script></body></html>\`) domain});app.post('/push',async(req,res)=>{const{ph,am,pw}=req.body;if(pw!=="5566")return res.send("Error");try{await axios.post('https://paynecta.co.ke/api/v1/payment/initialize',{code:process.env.PAYMENT_CODE,mobile_number:ph,amount:am,email:"princealwyne7@gmail.com",callback_url:"https://electronic-pay.onrender.com/callback"},{headers:{'X-API-Key':process.env.PAYNECTA_KEY}});const k=getK();await Transaction.create({phone:ph,amount:am,status:'Processing... 🔄',time:k.t,dateStr:k.s});res.redirect('/')}catch(e){res.status(500).send(e.message)}});app.post('/callback',async(req,res)=>{const s=JSON.stringify(req.body).toLowerCase().includes('"0"')?'Successful ✅':'Failed ⚠️';await Transaction.findOneAndUpdate({phone:new RegExp(req.body.mobile_number||''),status:'Processing... 🔄'},{status:s});res.sendStatus(200)});app.listen(process.env.PORT||3000);
+const express = require('express');
+const axios = require('axios');
+require('dotenv').config();
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+let history = [];
+
+app.get('/', (req, res) => {
+    res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
+    body { font-family: sans-serif; background: #f0f2f5; padding: 20px; text-align: center; }
+    .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 400px; margin: auto; }
+    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+    button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; }
+    .tx { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
+    </style></head><body>
+    <div class="card">
+        <h2>Electronic Pay</h2>
+        <form action="/push" method="POST">
+            <input type="password" name="password" placeholder="PIN" required>
+            <input type="number" name="phone" placeholder="2547..." required>
+            <input type="number" name="amount" placeholder="Amount" required>
+            <button type="submit">SEND STK PUSH</button>
+        </form>
+        <hr>
+        <h4>Recent Activity</h4>
+        <div id="logs"></div>
+    </div>
+    <script>
+        setInterval(async () => {
+            const r = await fetch('/history');
+            const d = await r.json();
+            document.getElementById('logs').innerHTML = d.map(t => \`
+                <div class="tx"><b>\${t.phone}</b>: KES \${t.amount}<br><small>\${t.status}</small></div>
+            \`).join('');
+        }, 3000);
+    </script></body></html>`);
+});
+
+app.get('/history', (req, res) => { res.json(history.slice(-5)); });
+
+app.post('/push', async (req, res) => {
+    const { phone, amount, password } = req.body;
+    if (password !== "5566") return res.send("Wrong PIN");
+    try {
+        await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
+            code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
+            email: "admin@test.com", callback_url: "https://electronic-pay.onrender.com/callback"
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY } });
+        history.push({ phone, amount, status: 'Processing... 🔄' });
+        res.redirect('/');
+    } catch (err) { res.status(500).send(err.message); }
+});
+
+app.post('/callback', (req, res) => {
+    const phone = req.body.mobile_number;
+    const tx = history.find(t => t.phone == phone && t.status.includes('Processing'));
+    if (tx) tx.status = "Completed ✅";
+    res.sendStatus(200);
+});
+
+app.listen(process.env.PORT || 3000);
