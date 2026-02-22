@@ -181,6 +181,21 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
             </div>
         <button onclick='addContact()' style='width:100%; padding:10px; background:#e7f3ff; color:#007bff; border:none; border-radius:10px; font-weight:bold;'>+ Save New Customer</button>
     </div>
+
+    <div class='feature-card' style='background: linear-gradient(135deg, #1e293b, #334155); color: white;'>
+        <div style='display:flex; justify-content:space-between; align-items:center;'>
+            <h3 style='margin:0; font-size:14px; opacity:0.8;'>💳 Merchant Wallet</h3>
+            <span style='font-size:10px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:10px;'>ACTIVE</span>
+        </div>
+        <div style='margin-top:15px;'>
+            <div style='font-size:10px; opacity:0.7;'>AVAILABLE BALANCE</div>
+            <div id='walletBal' style='font-size:28px; font-weight:bold;'>KES 0.00</div>
+        </div>
+        <div style='margin-top:15px; display:flex; gap:10px;'>
+            <button style='flex:1; padding:8px; border:none; border-radius:8px; background:rgba(255,255,255,0.1); color:white; font-size:11px;'>Withdraw</button>
+            <button style='flex:1; padding:8px; border:none; border-radius:8px; background:rgba(255,255,255,0.1); color:white; font-size:11px;'>Transfer</button>
+        </div>
+    </div>
 </body>
         </html>
     `);
