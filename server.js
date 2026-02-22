@@ -16,6 +16,12 @@ app.use('/uploads', express.static('uploads'));
 
 let transactions = []; 
 
+// M-PESA CREDENTIALS (REPLACE THESE WITH YOURS)
+const shortcode = "174379";
+const passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
+const consumerKey = "YOUR_CONSUMER_KEY";
+const consumerSecret = "YOUR_CONSUMER_SECRET";
+
 const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
 app.get('/api/status', (req, res) => {
@@ -49,7 +55,6 @@ app.get('/', (req, res) => {
                 .total-box { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
                 .status-row { border-bottom: 1px solid #f1f5f9; padding: 10px 0; font-size: 13px; text-align: left; }
                 .flex-row { display: flex; justify-content: space-between; align-items: center; }
-                .status-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
                 .admin-box { width: 90%; max-width: 400px; margin: 30px auto; padding: 15px; background: #f1f5f9; border-radius: 15px; border: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
             </style>
         </head>
@@ -67,12 +72,10 @@ app.get('/', (req, res) => {
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
                 </form>
             </div>
-
             <div class="history-card">
                 <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
                 <div id="history-list">No transactions yet...</div>
             </div>
-
             <div class="admin-box">
                 <p>⚙️ <b>System Settings</b></p>
                 <form action="/upload-logo" method="POST" enctype="multipart/form-data">
@@ -80,16 +83,14 @@ app.get('/', (req, res) => {
                     <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="margin-top:10px;">
                 </form>
             </div>
-
             <script>
                 async function updateStatus() {
                     try {
                         const res = await fetch('/api/status');
                         const data = await res.json();
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        
                         document.getElementById('history-list').innerHTML = data.transactions.map(t => {
-                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Cancelled') ? '#dc3545' : '#64748b');
+                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Cancelled') ? '#dc3545' : '#17a2b8');
                             return \`
                                 <div class="status-row">
                                     <div class="flex-row">
@@ -115,14 +116,15 @@ app.get('/', (req, res) => {
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
-    // Initial status: Processing
+    
     transactions.unshift({ 
         id: Date.now(), 
         phone, 
         amount, 
-        status: 'Processing... 🔄', 
+        status: 'Triggering Push... ⏳', 
         time: getKenyaTime() 
     });
+    
     res.redirect('/');
 });
 
