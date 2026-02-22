@@ -16,11 +16,21 @@ app.use('/uploads', express.static('uploads'));
 
 let transactions = []; 
 
-// PAYNECTA CREDENTIALS
-const PAYNECTA_API_KEY = "hmp_AegEZDHxA8uOAel2wp3ttkpK4FeBPwVa6bNiJcfE";
-const PAYNECTA_SHORTCODE = "PNT_957342";
+// PAYNECTA CREDENTIALS (RESTORED)
+const PAYNECTA_KEY = "hmp_AegEZDHxA8uOAel2wp3ttkpK4FeBPwVa6bNiJcfE";
+const PAYMENT_CODE = "PNT_957342";
 
 const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
+
+const translateStatus = (rawBody) => {
+    const data = JSON.stringify(rawBody).toLowerCase();
+    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
+    if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
+    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
+    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
+    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
+    return 'Pending/Other ⚠️';
+};
 
 app.get('/api/status', (req, res) => {
     const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
@@ -72,7 +82,7 @@ app.get('/', (req, res) => {
             </div>
             <div class="history-card">
                 <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
-                <div id="history-list">No transactions yet...</div>
+                <div id="history-list">No activity...</div>
             </div>
             <div class="admin-box">
                 <p>⚙️ <b>System Settings</b></p>
@@ -88,7 +98,7 @@ app.get('/', (req, res) => {
                         const data = await res.json();
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                         document.getElementById('history-list').innerHTML = data.transactions.map(t => {
-                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Failed') ? '#dc3545' : '#17a2b8');
+                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Processing') ? '#17a2b8' : '#dc3545');
                             return \`
                                 <div class="status-row">
                                     <div class="flex-row">
@@ -100,7 +110,7 @@ app.get('/', (req, res) => {
                                         <span style="color:\${statusColor}; font-size:11px;">\${t.status}</span>
                                     </div>
                                 </div>\`;
-                        }).join('') || 'No transactions yet...';
+                        }).join('') || 'No activity';
                     } catch(e) {}
                 }
                 setInterval(updateStatus, 3000);
@@ -115,29 +125,31 @@ app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     
-    const transId = Date.now();
-    transactions.unshift({ 
-        id: transId, 
-        phone, 
-        amount, 
-        status: 'Sent to Paynecta... ⏳', 
-        time: getKenyaTime() 
-    });
-
     try {
-        await axios.post('https://api.paynecta.com/v1/stk/push', {
-            apiKey: PAYNECTA_API_KEY,
-            shortCode: PAYNECTA_SHORTCODE,
-            phone: phone,
+        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
+            code: PAYMENT_CODE,
+            mobile_number: phone,
             amount: amount,
-            callbackUrl: `https://${req.get('host')}/callback`
+            email: "princealwyne7@gmail.com",
+            callback_url: "https://electronic-pay.onrender.com/callback"
+        }, {
+            headers: { 'X-API-Key': PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
-    } catch (error) {
-        let index = transactions.findIndex(t => t.id === transId);
-        if (index !== -1) transactions[index].status = 'Failed ❌';
+
+        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
+        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        if (transactions.length > 20) transactions.pop();
+        res.redirect('/');
+    } catch (err) { 
+        res.status(500).send("API Error: " + err.message); 
     }
-    
-    res.redirect('/');
+});
+
+app.post('/callback', (req, res) => {
+    const bodyText = JSON.stringify(req.body);
+    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
+    if (tx) { tx.status = translateStatus(req.body); }
+    res.sendStatus(200);
 });
 
 app.listen(process.env.PORT || 3000);
