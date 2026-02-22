@@ -37,11 +37,13 @@ const translateStatus = (rawBody) => {
 };
 
 app.get('/api/status', async (req, res) => {
-    const now = getKenyaTime();
-    const txs = await Transaction.find().sort({ createdAt: -1 }).limit(50);
-    const todayTxs = await Transaction.find({ dateStr: now.dateStr, status: 'Successful ✅' });
-    const total = todayTxs.reduce((s, t) => s + t.amount, 0);
-    res.json({ transactions: txs, totals: { today: total } });
+    try {
+        const now = getKenyaTime();
+        const txs = await Transaction.find().sort({ createdAt: -1 }).limit(50);
+        const todayTxs = await Transaction.find({ dateStr: now.dateStr, status: 'Successful ✅' });
+        const total = todayTxs.reduce((s, t) => s + t.amount, 0);
+        res.json({ transactions: txs, totals: { today: total } });
+    } catch (e) { res.json({ transactions: [], totals: { today: 0 } }); }
 });
 
 app.get('/', (req, res) => {
@@ -54,7 +56,7 @@ app.get('/', (req, res) => {
     .btn-send { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
     .history-card { width: 100%; max-width: 400px; background: white; border-radius: 15px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
     .tx-row { border-bottom: 1px solid #eee; padding: 12px 0; }
-    .search-box { margin-bottom: 15px; border: 2px solid #28a745; }
+    .search-box { border: 2px solid #28a745; margin-bottom: 10px; }
     </style></head><body>
     <div class="container">
         <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
@@ -69,19 +71,19 @@ app.get('/', (req, res) => {
     </div>
     <div class="history-card">
         <h4>History (Cloud 🍃)</h4>
-        <input type="text" id="qs" class="search-box" placeholder="Search phone number..." onkeyup="up()">
+        <input type="text" id="qs" class="search-box" placeholder="Search phone..." onkeyup="up()">
         <div id="hl"></div>
     </div>
     <script>
     let allTxs = [];
     async function up() {
-        if (!document.getElementById('qs').value) {
+        const searchVal = document.getElementById('qs').value;
+        if (!searchVal || allTxs.length === 0) {
             const r = await fetch('/api/status'); const d = await r.json();
             allTxs = d.transactions;
             document.getElementById('dt').innerText = 'Today: KES ' + d.totals.today;
         }
-        const q = document.getElementById('qs').value;
-        const filtered = allTxs.filter(t => t.phone.includes(q));
+        const filtered = allTxs.filter(t => t.phone.includes(searchVal));
         document.getElementById('hl').innerHTML = filtered.map(t => \`
             <div class="tx-row">
                 <div style="display:flex; justify-content:space-between;"><b>\${t.phone}</b> <b>KES \${t.amount}</b></div>
