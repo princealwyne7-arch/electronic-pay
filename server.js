@@ -19,7 +19,7 @@ let transactions = [];
 const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
 app.get('/api/status', (req, res) => {
-    const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount), 0);
+    const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
     res.json({ transactions, todayTotal });
 });
 
@@ -47,7 +47,9 @@ app.get('/', (req, res) => {
                 .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; }
                 .history-card { width: 90%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .total-box { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
-                .status-row { display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; }
+                .status-row { border-bottom: 1px solid #f1f5f9; padding: 10px 0; font-size: 13px; text-align: left; }
+                .flex-row { display: flex; justify-content: space-between; align-items: center; }
+                .status-badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
                 .admin-box { width: 90%; max-width: 400px; margin: 30px auto; padding: 15px; background: #f1f5f9; border-radius: 15px; border: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
             </style>
         </head>
@@ -68,7 +70,7 @@ app.get('/', (req, res) => {
 
             <div class="history-card">
                 <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
-                <div id="history-list">No activity yet...</div>
+                <div id="history-list">No transactions yet...</div>
             </div>
 
             <div class="admin-box">
@@ -85,12 +87,21 @@ app.get('/', (req, res) => {
                         const res = await fetch('/api/status');
                         const data = await res.json();
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        document.getElementById('history-list').innerHTML = data.transactions.map(t => 
-                            \`<div class="status-row">
-                                <div style="text-align:left;"><b>\${t.phone}</b><br><small style="color:#94a3b8;">\${t.time}</small></div>
-                                <div style="color:#28a745; font-weight:bold;">KES \${t.amount}</div>
-                            </div>\`
-                        ).join('') || 'No activity';
+                        
+                        document.getElementById('history-list').innerHTML = data.transactions.map(t => {
+                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Cancelled') ? '#dc3545' : '#64748b');
+                            return \`
+                                <div class="status-row">
+                                    <div class="flex-row">
+                                        <b>\${t.phone}</b>
+                                        <b style="color:\${statusColor};">KES \${t.amount}</b>
+                                    </div>
+                                    <div class="flex-row" style="margin-top:4px;">
+                                        <small style="color:#94a3b8;">\${t.time}</small>
+                                        <span style="color:\${statusColor}; font-size:11px;">\${t.status}</span>
+                                    </div>
+                                </div>\`;
+                        }).join('') || 'No transactions yet...';
                     } catch(e) {}
                 }
                 setInterval(updateStatus, 3000);
@@ -104,7 +115,14 @@ app.get('/', (req, res) => {
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
-    transactions.unshift({ id: Date.now(), phone, amount, status: 'Processing...', time: getKenyaTime() });
+    // Initial status: Processing
+    transactions.unshift({ 
+        id: Date.now(), 
+        phone, 
+        amount, 
+        status: 'Processing... 🔄', 
+        time: getKenyaTime() 
+    });
     res.redirect('/');
 });
 
