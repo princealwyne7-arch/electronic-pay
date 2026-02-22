@@ -1,100 +1,11 @@
-const express = require('express');
-const axios = require('axios');
-require('dotenv').config();
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-let transactions = []; 
-
-const getKenyaTime = () => {
-    return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
-};
-
-const translateStatus = (rawBody) => {
-    const data = JSON.stringify(rawBody).toLowerCase();
-    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
-    if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
-    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
-    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
-    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
-    return 'Pending/Other ⚠️';
-};
-
-app.get('/api/status', (req, res) => {
-    const todayTotal = transactions
-        .filter(t => t.status.includes('Successful'))
-        .reduce((sum, t) => sum + parseInt(t.amount), 0);
-    res.json({ transactions, todayTotal });
-});
-
-app.get('/', (req, res) => {
-    res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body { font-family: sans-serif; background: #f8fafc; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
-                .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-                .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
-                input:focus { border-color: #28a745; box-shadow: 0 0 0 3px rgba(40,167,69,0.1); outline: none; } input { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #e2e8f0; transition: all 0.3s ease; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
-                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
-                .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
-                .total-box { background: linear-gradient(135deg, #28a745, #1e7e34); color: white !important; box-shadow: 0 4px 15px rgba(40,167,69,0.3); padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
-                .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
-            </style>
-        </head>
-        <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
-            <div class="container">
-                <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <h2 style="margin:5px 0;">Electronic Pay</h2>
-                <div id="dailyTotal" class="total-box">Today: KES 0</div>
-                <form action="/push" method="POST">
-                    <input type="password" name="password" placeholder="Manager PIN" required>
-                    <input type="number" name="phone" placeholder="2547..." required>
-                    <input type="number" name="amount" placeholder="Amount" required>
-                    <button type="submit" class="btn-send">SEND STK PUSH</button>
-                </form>
-            </div>
-            <div class="history-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h3 style="margin:0;font-size:16px;display:flex;align-items:center;">Live Activity <span id="txCount" style="margin-left:8px;background:#e2e8f0;color:#475569;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:bold;">0</span></h3><button onclick="clearData()" style="background:#fff0f0;color:#dc3545;border:none;padding:5px 10px;border-radius:8px;font-size:12px;font-weight:bold;cursor:pointer;">🗑️ PURGE</button></div><input type="text" id="searchTerm" placeholder="🔍 Search phone..." onkeyup="updateStatus()" style="padding:10px;margin-bottom:10px;border-radius:10px;border:1px solid #eee;font-size:14px;">
-                <div id="history-list">Loading...</div>
-            </div>
-
-            <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
-        </body>
-        </html>
-    `);
-});
-
-app.post('/push', async (req, res) => {
-    const { phone, amount, password } = req.body;
-    if (password !== "5566") return res.send("Invalid PIN");
-    try {
-        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: process.env.PAYMENT_CODE,
-            mobile_number: phone,
-            amount: amount,
-            email: "princealwyne7@gmail.com",
-            callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
-        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
-        if (transactions.length > 20) transactions.pop();
-        res.redirect('/');
-    } catch (err) { res.status(500).send(err.message); }
-});
-
-app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
-    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
-    if (tx) { tx.status = translateStatus(req.body); }
-    res.sendStatus(200);
-});
-
-app.listen(process.env.PORT || 3000);
+const express=require('express'),axios=require('axios');require('dotenv').config();const app=express();app.use(express.json());app.use(express.urlencoded({extended:true}));let txs=[];const getK=()=>new Date().toLocaleTimeString('en-GB',{timeZone:'Africa/Nairobi',hour:'2-digit',minute:'2-digit'});
+app.get('/api/status',(req,res)=>{const total=txs.filter(t=>t.status.includes('Successful')).reduce((s,t)=>s+parseInt(t.amount),0);res.json({transactions:txs,todayTotal:total})});
+app.post('/api/clear',(req,res)=>{txs=[];res.json({success:true})});
+app.get('/',(req,res)=>{res.send(`<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:sans-serif;background:#f8fafc;margin:0;padding:20px;display:flex;flex-direction:column;align-items:center}.card{background:white;width:100%;max-width:400px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.05);padding:25px;margin-bottom:15px;box-sizing:border-box}.total{background:linear-gradient(135deg,#28a745,#1e7e34);color:white;padding:20px;border-radius:18px;margin-bottom:15px;text-align:center;font-size:20px;font-weight:bold}input{width:100%;padding:15px;margin-bottom:10px;border:1px solid #e2e8f0;border-radius:12px;font-size:16px;box-sizing:border-box}.btn{width:100%;padding:18px;background:#28a745;color:white;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer}.tx-row{display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid #f0f0f0;font-size:13px;align-items:center}.badge{background:#e2e8f0;color:#475569;font-size:11px;padding:2px 8px;border-radius:20px;margin-left:8px}</style></head><body>
+<div class="card"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:80px;border-radius:50%;display:block;margin:0 auto 10px;border:3px solid #28a745;"><h2 style="text-align:center;margin:5px 0;">Electronic Pay</h2><div id="tot" class="total">Today: KES 0</div>
+<form action="/push" method="POST"><input type="password" name="password" placeholder="PIN" required><input type="number" name="phone" placeholder="2547..." required><input type="number" name="amount" placeholder="Amount" required><button type="submit" class="btn">SEND STK PUSH</button></form></div>
+<div class="card"><h4>Control Center</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;"><button onclick="window.location.href='/api/status'" style="background:#e7f3ff;color:#007bff;border:none;padding:10px;border-radius:10px;font-weight:bold;">📊 Report</button><button onclick="clr()" style="background:#fff0f0;color:#dc3545;border:none;padding:10px;border-radius:10px;font-weight:bold;">🗑️ Purge</button></div><input type="text" id="q" placeholder="🔍 Search phone..." onkeyup="up()"></div>
+<div class="card"><h3 style="display:flex;align-items:center;margin:0 0 10px 0;">Live Activity <span id="cnt" class="badge">0</span></h3><div id="list"></div></div>
+<script>async function up(){try{const r=await fetch('/api/status'),d=await r.json();const t=d.transactions||[];document.getElementById('cnt').innerText=t.length;document.getElementById('tot').innerText='Today: KES '+d.todayTotal;const q=document.getElementById('q').value.toLowerCase(),l=document.getElementById('list');l.innerHTML=t.filter(x=>x.phone.includes(q)).map(x=>`<div class="tx-row"><div><b>${x.phone}</b><div style="color:#999;font-size:10px;">${x.time}</div></div><div style="text-align:right;"><b style="color:#28a745;">KES ${x.amount}</b><div style="font-weight:bold;color:${x.status.includes('Succ')?'#28a745':'#f0ad4e'}">${x.status}</div></div></div>`).join('')||'No activity'}catch(e){}}function clr(){if(confirm("Purge?"))fetch('/api/clear',{method:'POST'}).then(()=>up())}setInterval(up,3000);up();</script></body></html>`)});
+app.post('/push',async(req,res)=>{const{phone,amount,password}=req.body;if(password!=="5566")return res.send("PIN Error");try{await axios.post('https://paynecta.co.ke/api/v1/payment/initialize',{code:process.env.PAYMENT_CODE,mobile_number:phone,amount:amount,email:"p@mail.com",callback_url:"https://electronic-pay.onrender.com/callback"},{headers:{'X-API-Key':process.env.PAYNECTA_KEY}});txs.unshift({phone,amount,status:'Processing... 🔄',time:getK()});res.redirect('/')}catch(e){res.status(500).send(e.message)}});
+app.post('/callback',(req,res)=>{let t=txs.find(x=>String(req.body.mobile_number).includes(x.phone)&&x.status.includes('Processing'));if(t)t.status=JSON.stringify(req.body).toLowerCase().includes('"0"')?'Successful ✅':'Failed ⚠️';res.sendStatus(200)});app.listen(process.env.PORT||3000);
