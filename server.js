@@ -58,8 +58,7 @@ app.get('/', (req, res) => {
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
                 </form>
             </div>
-            <div class="history-card">
-                <div style="display:flex; justify-content:space-between; align-items:center;"><h3 style="margin:0; font-size:16px;">Live Activity</h3><div class="action-bar"><button onclick="window.location.href='/api/report'" class="btn-pro btn-report">📊 Download Report</button><button onclick="clearH()" class="btn-pro" style="background:#f8d7da;color:#721c24">🗑️ Clear History</button></div></div><input type="text" id="qs" placeholder="Search phone number..." onkeyup="updateStatus()" style="width:100%;padding:10px;border:2px solid #28a745;border-radius:10px;margin-bottom:10px;box-sizing:border-box;">
+$(cat dashboard.html)
                 <div id="history-list">Loading...</div>
             </div>
 
