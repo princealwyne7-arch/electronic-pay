@@ -100,7 +100,7 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
                 }
 
                 setInterval(updateStatus, 3000);
-    let sec=0; setInterval(()=>{ 
+    let sec = parseInt(localStorage.getItem("sessionSec") || 0); setInterval(() => { sec++; localStorage.setItem("sessionSec", sec); let h=Math.floor(sec/3600).toString().padStart(2,"0"); let m=Math.floor((sec%3600)/60).toString().padStart(2,"0"); let s=(sec%60).toString().padStart(2,"0"); if(document.getElementById("sessionClock")) document.getElementById("sessionClock").innerText = h+":"+m+":"+s; }, 1000); setInterval(()=>{ 
         sec++; 
         let h=Math.floor(sec/3600).toString().padStart(2,"0"); 
         let m=Math.floor((sec%3600)/60).toString().padStart(2,"0"); 
