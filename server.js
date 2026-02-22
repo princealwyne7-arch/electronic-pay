@@ -95,12 +95,19 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
                 }
 
                 setInterval(updateStatus, 3000);
+    let sec=0; setInterval(()=>{ 
+        sec++; 
+        let h=Math.floor(sec/3600).toString().padStart(2,"0"); 
+        let m=Math.floor((sec%3600)/60).toString().padStart(2,"0"); 
+        let s=(sec%60).toString().padStart(2,"0"); 
+        document.getElementById("sessionClock").innerText = h+":"+m+":"+s; 
+    },1000);
                 updateStatus();
             </script>
         <div class="feature-card"><h3>🧮 Business Calc</h3><input type="text" id="calcDisplay" readonly style="text-align:right; font-family:monospace; background:#f8fafc;"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;"><button onclick="calc(7)" class="receipt-btn" style="padding:15px;font-size:16px;">7</button><button onclick="calc(8)" class="receipt-btn" style="padding:15px;font-size:16px;">8</button><button onclick="calc(9)" class="receipt-btn" style="padding:15px;font-size:16px;">9</button><button onclick="calc('/')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">÷</button><button onclick="calc(4)" class="receipt-btn" style="padding:15px;font-size:16px;">4</button><button onclick="calc(5)" class="receipt-btn" style="padding:15px;font-size:16px;">5</button><button onclick="calc(6)" class="receipt-btn" style="padding:15px;font-size:16px;">6</button><button onclick="calc('*')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">×</button><button onclick="calc(1)" class="receipt-btn" style="padding:15px;font-size:16px;">1</button><button onclick="calc(2)" class="receipt-btn" style="padding:15px;font-size:16px;">2</button><button onclick="calc(3)" class="receipt-btn" style="padding:15px;font-size:16px;">3</button><button onclick="calc('-')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">-</button><button onclick="calc(0)" class="receipt-btn" style="padding:15px;font-size:16px;">0</button><button onclick="calc('C')" class="receipt-btn" style="padding:15px;font-size:16px;background:#fff0f0;">C</button><button onclick="calc('=')" class="receipt-btn" style="padding:15px;font-size:16px;background:#28a745;color:white;">=</button><button onclick="calc('+')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">+</button></div></div>
 
     <div class='feature-card'>
-        <h3 style='margin-top:0;'>🎯 Daily Sales Goal</h3><input type="number" id="goalInput" placeholder="Set Goal (e.g. 5000)" style="padding:8px; font-size:12px; margin-bottom:10px; border-radius:8px; border:1px solid #eee;" onchange="localStorage.setItem('myGoal', this.value); up();">
+        <h3 style='margin-top:0;'>🎯 Daily Sales Goal</h3><input type="number" id="goalInput" oninput="updateGoal(this.value)" placeholder="Set Goal (e.g. 5000)" style="padding:8px; font-size:12px; margin-bottom:10px; border-radius:8px; border:1px solid #eee;" onchange="localStorage.setItem('myGoal', this.value); up();">
         <div style='background:#eee; border-radius:10px; height:20px; width:100%; overflow:hidden;'>
             <div id='goalBar' style='background:#28a745; height:100%; width:0%; transition: width 1s ease;'></div>
         </div>
@@ -108,6 +115,12 @@ function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d
             <span id='goalText'>Goal: KES 10,000</span>
             <span id='goalPercent'>0%</span>
         </div>
+    </div>
+
+    <div class='feature-card'>
+        <h3 style='margin-top:0;'>⏱️ Active Session</h3>
+        <div id='sessionClock' style='font-size:32px; font-weight:bold; color:#475569; text-align:center;'>00:00:00</div>
+        <p style='font-size:11px; color:#999; text-align:center; margin-top:5px;'>Tracking online time for today</p>
     </div>
 </body>
         </html>
