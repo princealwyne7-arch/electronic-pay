@@ -16,11 +16,9 @@ app.use('/uploads', express.static('uploads'));
 
 let transactions = []; 
 
-// M-PESA CREDENTIALS (REPLACE THESE WITH YOURS)
-const shortcode = "174379";
-const passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
-const consumerKey = "YOUR_CONSUMER_KEY";
-const consumerSecret = "YOUR_CONSUMER_SECRET";
+// PAYNECTA CREDENTIALS
+const PAYNECTA_API_KEY = "hmp_AegEZDHxA8uOAel2wp3ttkpK4FeBPwVa6bNiJcfE";
+const PAYNECTA_SHORTCODE = "PNT_957342";
 
 const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
@@ -50,7 +48,7 @@ app.get('/', (req, res) => {
                 .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid white; object-fit: cover; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: white; }
                 .container { background: white; padding: 25px; border-radius: 25px; width: 90%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin: 0 auto 15px auto; position: relative; z-index: 2; }
                 input { width: 100%; padding: 15px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; }
+                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
                 .history-card { width: 90%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .total-box { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
                 .status-row { border-bottom: 1px solid #f1f5f9; padding: 10px 0; font-size: 13px; text-align: left; }
@@ -90,7 +88,7 @@ app.get('/', (req, res) => {
                         const data = await res.json();
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                         document.getElementById('history-list').innerHTML = data.transactions.map(t => {
-                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Cancelled') ? '#dc3545' : '#17a2b8');
+                            let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Failed') ? '#dc3545' : '#17a2b8');
                             return \`
                                 <div class="status-row">
                                     <div class="flex-row">
@@ -117,13 +115,27 @@ app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     
+    const transId = Date.now();
     transactions.unshift({ 
-        id: Date.now(), 
+        id: transId, 
         phone, 
         amount, 
-        status: 'Triggering Push... ⏳', 
+        status: 'Sent to Paynecta... ⏳', 
         time: getKenyaTime() 
     });
+
+    try {
+        await axios.post('https://api.paynecta.com/v1/stk/push', {
+            apiKey: PAYNECTA_API_KEY,
+            shortCode: PAYNECTA_SHORTCODE,
+            phone: phone,
+            amount: amount,
+            callbackUrl: `https://${req.get('host')}/callback`
+        });
+    } catch (error) {
+        let index = transactions.findIndex(t => t.id === transId);
+        if (index !== -1) transactions[index].status = 'Failed ❌';
+    }
     
     res.redirect('/');
 });
