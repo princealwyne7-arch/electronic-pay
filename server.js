@@ -50,7 +50,13 @@ app.get('/', (req, res) => {
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
             <div class="container">
-                <div class="top-banner"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic"></div>
+                <div class="top-banner">
+<style>
+  .top-banner { width:100%; background:linear-gradient(135deg,#28a745,#1e7e34); padding:30px 0; display:flex; justify-content:center; margin-bottom:10px; border-radius:0 0 25px 25px; }
+  .branding-panel { background:white; padding:15px; border-radius:15px; margin-top:20px; border:1px dashed #28a745; font-size:12px; }
+</style>
+<div class='top-banner'><img src='/uploads/logo.png' onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class='profile-pic' style='border:3px solid white;'></div>
+</div>
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
                 <form action="/push" method="POST">
@@ -130,4 +136,10 @@ app.post('/callback', (req, res) => {
     res.sendStatus(200);
 });
 
+
+app.use('/uploads', express.static('uploads'));
+app.post('/upload-logo', upload.single('logo'), (req, res) => {
+    if (req.file) fs.renameSync(req.file.path, 'uploads/logo.png');
+    res.redirect('/');
+});
 app.listen(process.env.PORT || 3000);
