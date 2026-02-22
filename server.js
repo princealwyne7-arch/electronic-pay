@@ -66,33 +66,7 @@ app.get('/', (req, res) => {
             <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
             <script>
-                async function updateStatus() {
-                    try {
-                        const res = await fetch('/api/status');
-                        const data = await res.json();
-                        document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        const list = document.getElementById('history-list');
-                        let html = '';
-                        const query=document.getElementById("searchTerm").value; data.transactions.filter(t=>t.phone.includes(query)).forEach((t, index) => {
-                            const isSuccess = t.status.includes('Successful');
-                            if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
-                                document.getElementById('successSound').play().catch(() => {});
-                                localStorage.setItem('ding_' + t.id, 'true');
-                            }
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
-                        });
-                        list.innerHTML = html || 'No activity';
-                    } catch(e) {}
-                }
-
-function clearData(){if(confirm("Clear all records?"))fetch("/api/clear",{method:"POST"}).then(()=>updateStatus());}
-                function shareReceipt(phone, amt, time) {
-                    const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
-                    window.open("https://wa.me/?text=" + encodeURIComponent(text));
-                }
-
-                if(window.txInterval) clearInterval(window.txInterval); window.txInterval = setInterval(updateStatus, 3000);
-                updateStatus();
+async function updateStatus(){try{const r=await fetch("/api/status"),d=await r.json();const tx=d.transactions||[];document.getElementById("txCount").innerText=tx.length;document.getElementById("dailyTotal").innerText="Today: KES "+(d.todayTotal||0);const q=document.getElementById("searchTerm").value.toLowerCase(),l=document.getElementById("history-list");l.innerHTML=tx.filter(t=>t.phone.includes(q)).map(t=>`<div class="tx-row"><div style="text-align:left;"><b>${t.phone}</b><div style="font-size:10px;color:#999;">${t.time}</div></div><div style="text-align:right;"><b style="color:#28a745;">KES ${t.amount}</b><div style="font-size:11px;font-weight:bold;color:${t.status.includes("Successful")?"#28a745":t.status.includes("Processing")?"#f0ad4e":"#d9534f"}">${t.status}${t.status.includes("Successful")?` <button class="receipt-btn" onclick="shareReceipt('${t.phone}','${t.amount}','${t.time}')">RECEIPT</button>`:""}</div></div></div>`).join("")||"No activity"}catch(e){console.error(e)}} setInterval(updateStatus,3000);updateStatus();
             </script>
         </body>
         </html>
