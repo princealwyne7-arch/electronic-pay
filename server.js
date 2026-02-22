@@ -34,36 +34,10 @@ app.get('/', (req, res) => {
         <html>
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
-                .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-                .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
-                input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
-                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
-                .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
-                .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
-                .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
-            </style>
+<style>body{font-family:"Inter",sans-serif;background:#f4f7f6;margin:0;padding:20px;display:flex;flex-direction:column;align-items:center} .glass-card{background:white;width:100%;max-width:450px;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,0.05);padding:25px;margin-bottom:20px;box-sizing:border-box} .total-box{background:linear-gradient(135deg,#28a745,#218838);color:white;padding:20px;border-radius:18px;margin-bottom:20px;text-align:center;font-size:20px;font-weight:bold} input{width:100%;padding:15px;margin-bottom:12px;border:2px solid #eee;border-radius:14px;font-size:16px;box-sizing:border-box} .btn-pro{width:100%;padding:18px;background:#28a745;color:white;border:none;border-radius:14px;font-size:18px;font-weight:700;cursor:pointer} .admin-btn{padding:10px;border-radius:10px;border:none;font-weight:600;cursor:pointer} .tx-row{display:flex;justify-content:space-between;padding:15px;border-bottom:1px solid #f8f9fa;align-items:center}</style>
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
-            <div class="container">
-                <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <h2 style="margin:5px 0;">Electronic Pay</h2>
-                <div id="dailyTotal" class="total-box">Today: KES 0</div>
-                <form action="/push" method="POST">
-                    <input type="password" name="password" placeholder="Manager PIN" required>
-                    <input type="number" name="phone" placeholder="2547..." required>
-                    <input type="number" name="amount" placeholder="Amount" required>
-                    <button type="submit" class="btn-send">SEND STK PUSH</button>
-                </form>
-            </div>
-            <div class="history-card">
-                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
-                <div id="history-list">Loading...</div>
-            </div>
-
-            <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+<div class="glass-card"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:100px;border-radius:50%;border:4px solid #28a745;margin-bottom:10px;"><h2>Electronic Pay</h2><div id="dailyTotal" class="total-box">Today: KES 0</div><form action="/push" method="POST"><input type="password" name="password" placeholder="Manager PIN" required><input type="number" name="phone" placeholder="2547..." required><input type="number" name="amount" placeholder="Amount" required><button type="submit" class="btn-pro">SEND STK PUSH</button></form></div><div class="glass-card" style="text-align:left;"><h4 style="margin:0 0 15px 0;color:#666;text-transform:uppercase;letter-spacing:1px;font-size:11px">Control Center</h4><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;"><button onclick="window.location.href='/api/report'" class="admin-btn" style="background:#e7f3ff;color:#007bff">📊 Export CSV</button><button onclick="clearH()" class="admin-btn" style="background:#fff0f0;color:#dc3545">🗑️ Purge Data</button></div><div style="position:relative"><span style="position:absolute;left:15px;top:12px">🔍</span><input type="text" id="qs" placeholder="Search transactions..." onkeyup="updateStatus()" style="padding-left:45px;margin-bottom:0"></div></div><div class="glass-card" style="text-align:left;"><h3 style="margin:0 0 15px 0;font-size:18px">Live Activity</h3><div id="history-list"></div></div><audio
 
             <script>
                 async function updateStatus() {
