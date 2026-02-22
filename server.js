@@ -42,7 +42,7 @@ app.get('/', (req, res) => {
                 .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
                 .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
-                .total-box { background: linear-gradient(135deg, #28a745, #1e7e34); color: white !important; box-shadow: 0 4px 15px rgba(40,167,69,0.3); padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
+                .total-box { background: linear-gradient(135deg, #28a745, #1e7e34); color: white !important; box-shadow: 0 4px 15px rgba(40,167,69,0.3); padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: 800; font-size: 24px; letter-spacing: 1px; }
                 .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
 .pulse{width:8px;height:8px;background:#28a745;border-radius:50%;margin-right:10px;animation:p 2s infinite}@keyframes p{0%{box-shadow:0 0 0 0 rgba(40,167,69,0.7)}70%{box-shadow:0 0 0 10px rgba(40,167,69,0)}100%{box-shadow:0 0 0 0 rgba(40,167,69,0)}}.btn-send:active{transform:scale(0.98);filter:brightness(0.9)}
             </style>
@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
-                <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div><h2 style="margin:5px 0;font-size:20px;"> <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div>Electronic Pay</div></h2></div>
+                <h2 style="margin:5px 0;font-size:20px;"> <div style="display:flex;align-items:center;justify-content:center;"><div class="pulse"></div>Electronic Pay</div></div></h2></div>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
