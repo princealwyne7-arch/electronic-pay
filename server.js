@@ -168,23 +168,17 @@ app.get('/', (req, res) => {
     `);
 });
 
-app.post('/push', async (req, res) => {
-    const { phone, amount, password } = req.body;
-    if (password !== "5566") return res.send("Invalid PIN");
-    try {
+app.post('/push', async (req, res) => { const { phone, amount, password } = req.body; if (password !== '5566') return res.send('Invalid PIN'); try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: PAYMENT_CODE, mobile_number: phone, amount: amount, email: "princealwyne7@gmail.com",
-            callback_url: "https://electronic-pay.onrender.com/callback"
+            callback_url: "https://" + req.get('host') + "/callback"
         }, { headers: { 'X-API-Key': PAYNECTA_KEY, 'Content-Type': 'application/json' } });
-
         const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
         transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
         res.redirect('/');
-    } catch (err) { res.status(500).send("API Error: " + err.message); }
-});
+    } catch (err) { res.status(500).send("API Error: " + err.message); } });
 
-app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
+app.post('/callback', (req, res) => { const bodyText = JSON.stringify(req.body);
     let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
     if (tx) { 
         const data = bodyText.toLowerCase();
@@ -192,7 +186,6 @@ app.post('/callback', (req, res) => {
         else if (data.includes('cancel') || data.includes('1032')) tx.status = 'Cancelled ❌';
         else tx.status = 'Failed ❌';
     }
-    res.sendStatus(200);
-});
+    res.sendStatus(200); });
 
 app.listen(process.env.PORT || 3000);
