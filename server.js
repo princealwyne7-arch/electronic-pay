@@ -73,165 +73,33 @@ app.get('/', (req, res) => {
             <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
             <script>
-                async function updateStatus() {
-                    try {
-                        const res = await fetch('/api/status');
-                        const data = await res.json();
-                        document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        const list = document.getElementById('history-list');
-                        let html = '';
-                        const query=document.getElementById("searchTerm").value; data.transactions.filter(t=>t.phone.includes(query)).forEach((t, index) => {
-                            const isSuccess = t.status.includes('Successful');
-                            if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
-                                document.getElementById('successSound').play().catch(() => {});
-                                localStorage.setItem('ding_' + t.id, 'true');
-                            }
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:11px;color:#666;font-style:italic;">'+(t.note || "")+'</div><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
-                        });
-                        list.innerHTML = html || 'No activity';
-                    } catch(e) {}
-                }
-
-function clearData(){if(confirm("Clear all records?"))fetch("/api/clear",{method:"POST"}).then(()=>updateStatus());}
-function calc(v){const d=document.getElementById("calcDisplay");if(v=="="){try{d.value=eval(d.value)}catch(e){d.value="Error"}}else if(v=="C"){d.value=""}else{d.value+=v}}
-                function shareReceipt(phone, amt, time) {
-                    const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
-                    window.open("https://wa.me/?text=" + encodeURIComponent(text));
-                }
-
-                setInterval(updateStatus, 3000);
-    let sec = parseInt(localStorage.getItem("sessionSec") || 0); setInterval(() => { sec++; localStorage.setItem("sessionSec", sec); let h=Math.floor(sec/3600).toString().padStart(2,"0"); let m=Math.floor((sec%3600)/60).toString().padStart(2,"0"); let s=(sec%60).toString().padStart(2,"0"); if(document.getElementById("sessionClock")) document.getElementById("sessionClock").innerText = h+":"+m+":"+s; }, 1000); setInterval(()=>{ 
-        sec++; 
-        let h=Math.floor(sec/3600).toString().padStart(2,"0"); 
-        let m=Math.floor((sec%3600)/60).toString().padStart(2,"0"); 
-        let s=(sec%60).toString().padStart(2,"0"); 
-        document.getElementById("sessionClock").innerText = h+":"+m+":"+s; 
-    },1000);
-                updateStatus();
-        function addContact() {
-            const p = prompt('Enter Phone (254...):');
-            const n = prompt('Enter Name:');
-            if(p && n) {
-                let contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-                contacts.push({p, n});
-                localStorage.setItem('contacts', JSON.stringify(contacts));
-                loadContacts();
-            }
+function up() {
+    fetch('/status').then(r => r.json()).then(d => {
+        // Update Home
+        document.getElementById('tot').innerText = d.todayTotal;
+        const list = document.getElementById('history-list');
+        if(list) list.innerHTML = d.history.map(t => '<div class="history-item"><b>'+t.phone+'</b><br>'+t.status+'<hr></div>').join('') || 'No activity';
+        
+        // Update Wallet & Stats
+        if(document.getElementById('walletBal')) document.getElementById('walletBal').innerText = 'KES ' + d.todayTotal.toLocaleString();
+        const goal = parseFloat(localStorage.getItem('myGoal')) || 10000;
+        const pct = Math.min((d.todayTotal / goal) * 100, 100);
+        if(document.getElementById('goalBar')) {
+            document.getElementById('goalBar').style.width = pct + '%';
+            document.getElementById('goalPercent').innerText = Math.round(pct) + '%';
         }
-        function loadContacts() {
-            const list = document.getElementById('directory-list');
-            const contacts = JSON.parse(localStorage.getItem('contacts') || '[]');
-            list.innerHTML = contacts.map(c => '<div onclick="document.getElementsByName('phone')[0].value=''+c.p+'';window.scrollTo(0,0)" style="background:#f8fafc; padding:10px; border-radius:12px; min-width:80px; text-align:center; border:1px solid #eee; cursor:pointer;"><div style="font-size:20px;">👤</div><div style="font-size:11px; font-weight:bold;">'+c.n+'</div></div>').join('') || '<p style="font-size:11px;color:#999;">No saved customers</p>';
-        }
-        loadContacts();
+    });
+}
+setInterval(up, 3000);
+up();
 
-        function buildCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            const now = new Date();
-            const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
-            let html = '';
-            ['S','M','T','W','T','F','S'].forEach(d => html += '<b style="font-size:10px;color:#28a745;">'+d+'</b>');
-            for(let i=1; i<=daysInMonth; i++) {
-                const isToday = i === now.getDate() ? 'background:#28a745;color:white;border-radius:50%;' : '';
-                html += '<div style="font-size:12px;padding:5px;'+isToday+'">'+i+'</div>';
-            }
-            grid.innerHTML = html;
-        }
-        buildCalendar();
-
-            </script>
-        </div><div id="p3" class="page"><div class="feature-card"><h3>🧮 Business Calc</h3><input type="text" id="calcDisplay" readonly style="text-align:right; font-family:monospace; background:#f8fafc;"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;"><button onclick="calc(7)" class="receipt-btn" style="padding:15px;font-size:16px;">7</button><button onclick="calc(8)" class="receipt-btn" style="padding:15px;font-size:16px;">8</button><button onclick="calc(9)" class="receipt-btn" style="padding:15px;font-size:16px;">9</button><button onclick="calc('/')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">÷</button><button onclick="calc(4)" class="receipt-btn" style="padding:15px;font-size:16px;">4</button><button onclick="calc(5)" class="receipt-btn" style="padding:15px;font-size:16px;">5</button><button onclick="calc(6)" class="receipt-btn" style="padding:15px;font-size:16px;">6</button><button onclick="calc('*')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">×</button><button onclick="calc(1)" class="receipt-btn" style="padding:15px;font-size:16px;">1</button><button onclick="calc(2)" class="receipt-btn" style="padding:15px;font-size:16px;">2</button><button onclick="calc(3)" class="receipt-btn" style="padding:15px;font-size:16px;">3</button><button onclick="calc('-')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">-</button><button onclick="calc(0)" class="receipt-btn" style="padding:15px;font-size:16px;">0</button><button onclick="calc('C')" class="receipt-btn" style="padding:15px;font-size:16px;background:#fff0f0;">C</button><button onclick="calc('=')" class="receipt-btn" style="padding:15px;font-size:16px;background:#28a745;color:white;">=</button><button onclick="calc('+')" class="receipt-btn" style="padding:15px;font-size:16px;background:#e7f3ff;">+</button></div></div>
-
-    <div class='feature-card'>
-        <h3 style='margin-top:0;'>🎯 Daily Sales Goal</h3><input type="number" id="goalInput" oninput="updateGoal(this.value)" placeholder="Set Goal (e.g. 5000)" style="padding:8px; font-size:12px; margin-bottom:10px; border-radius:8px; border:1px solid #eee;" onchange="localStorage.setItem('myGoal', this.value); up();">
-        <div style='background:#eee; border-radius:10px; height:20px; width:100%; overflow:hidden;'>
-            <div id='goalBar' style='background:#28a745; height:100%; width:0%; transition: width 1s ease;'></div>
-        </div>
-        <div style='display:flex; justify-content:space-between; margin-top:5px; font-size:12px; font-weight:bold;'>
-            <span id='goalText'>Goal: KES 10,000</span>
-            <span id='goalPercent'>0%</span>
-        </div>
-    </div>
-
-    <div class='feature-card'>
-        <h3 style='margin-top:0;'>⏱️ Active Session</h3>
-        <div id='sessionClock' style='font-size:32px; font-weight:bold; color:#475569; text-align:center;'>00:00:00</div>
-        <p style='font-size:11px; color:#999; text-align:center; margin-top:5px;'>Tracking online time for today</p>
-    </div>
-
-    <div class='feature-card' style='background: #fff; border-left: 5px solid #28a745;'>
-        <h3 style='margin-top:0;'>📊 Daily Summary</h3>
-        <div style='display:grid; grid-template-columns: 1fr 1fr; gap:10px;'>
-            <div style='background:#f8fafc; padding:10px; border-radius:10px;'>
-                <div style='font-size:10px; color:#666;'>HIGHEST</div>
-                <div id='highTx' style='font-weight:bold; color:#28a745;'>KES 0</div>
-            </div>
-            <div style='background:#f8fafc; padding:10px; border-radius:10px;'>
-                <div style='font-size:10px; color:#666;'>LOWEST</div>
-                <div id='lowTx' style='font-weight:bold; color:#d9534f;'>KES 0</div>
-            </div>
-        </div>
-    </div>
-
-    <div class='feature-card'>
-        <h3 style='margin-top:0;'>📅 Business Calendar</h3>
-        <div id='calendar-grid' style='display:grid; grid-template-columns:repeat(7,1fr); gap:5px; text-align:center;'>
-            </div>
-        <p style='font-size:10px; color:#999; margin-top:10px; text-align:center;'>Tap a date to view archived logs (Coming Soon)</p>
-    </div>
-
-    <div class='feature-card'>
-        <h3 style='margin-top:0;'>👥 Customer Directory</h3>
-        <div id='directory-list' style='display:flex; gap:10px; overflow-x:auto; padding-bottom:10px;'>
-            </div>
-        <button onclick='addContact()' style='width:100%; padding:10px; background:#e7f3ff; color:#007bff; border:none; border-radius:10px; font-weight:bold;'>+ Save New Customer</button>
-    </div>
-
-    <div class='feature-card' style='background: linear-gradient(135deg, #1e293b, #334155); color: white;'>
-        <div style='display:flex; justify-content:space-between; align-items:center;'>
-            <h3 style='margin:0; font-size:14px; opacity:0.8;'>💳 Merchant Wallet</h3>
-            <span style='font-size:10px; background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:10px;'>ACTIVE</span>
-        </div>
-        <div style='margin-top:15px;'>
-            <div style='font-size:10px; opacity:0.7;'>AVAILABLE BALANCE</div>
-            <div id='walletBal' style='font-size:28px; font-weight:bold;'>KES 0.00</div>
-        </div>
-        <div style='margin-top:15px; display:flex; gap:10px;'>
-            <button style='flex:1; padding:8px; border:none; border-radius:8px; background:rgba(255,255,255,0.1); color:white; font-size:11px;'>Withdraw</button>
-            <button style='flex:1; padding:8px; border:none; border-radius:8px; background:rgba(255,255,255,0.1); color:white; font-size:11px;'>Transfer</button>
-        </div>
-    </div>
-
-    <div class='feature-card' style='border-left: 5px solid #64748b;'>
-        <h3 style='margin-top:0;'>🔒 Privacy & Security</h3>
-        <div style='display:flex; justify-content:space-between; align-items:center;'>
-            <span style='font-size:12px;'>Dashboard Lock</span>
-            <button onclick='alert("Security setup coming in Activation Phase")' style='background:#f1f5f9; border:none; padding:5px 15px; border-radius:20px; font-size:11px;'>ENABLE</button>
-        </div>
-    </div>
-
-    <div class='feature-card' style='background:#f8fafc; border: 1px dashed #cbd5e1;'>
-        <h3 style='margin-top:0;'>📞 Business Support</h3>
-        <p style='font-size:11px; color:#64748b;'>Need help with your Merchant Account?</p>
-        <button onclick='window.open("https://wa.me/254700000000")' style='width:100%; padding:10px; background:#25d366; color:white; border:none; border-radius:10px; font-weight:bold;'>WhatsApp Support</button>
-    </div>
-    
-    <p style='text-align:center; font-size:10px; color:#999; margin:20px 0;'>Electronic Pay v2.0 • Secured by Paynecta</p>
-
-    <div class='nav-bar'>
-        <button class='nav-item active' onclick='showPage("p1", this)'><span>🏠</span>Home</button>
-        <button class='nav-item' onclick='showPage("p2", this)'><span>📈</span>Stats</button>
-        <button class='nav-item' onclick='showPage("p3", this)'><span>🛠️</span>Tools</button>
-        <button class='nav-item' onclick='showPage("p4", this)'><span>⚙️</span>More</button>
-    </div>
-<script>
-    function showPage(id, el) {
-        document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-        document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
-        el.classList.add("active");
-        window.scrollTo(0,0);
-    }
+function showPage(id, el) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+    el.classList.add("active");
+    window.scrollTo(0,0);
+}
 </script></body>
         </html>
     `);
