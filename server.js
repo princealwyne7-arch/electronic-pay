@@ -23,12 +23,8 @@ app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     const now = Date.now();
     let auth = (password === '5566');
-
-    if (auth) {
-        authSession = { active: true, expiry: now + 300000 };
-    } else if (authSession.active && now < authSession.expiry) {
-        auth = true;
-    }
+    if (auth) { authSession = { active: true, expiry: now + 300000 }; } 
+    else if (authSession.active && now < authSession.expiry) { auth = true; }
 
     if (!auth) return res.status(401).send('Invalid PIN');
 
@@ -38,10 +34,24 @@ app.post('/push', async (req, res) => {
             email: 'princealwyne7@gmail.com', callback_url: 'https://electronic-pay.onrender.com/callback'
         }, { headers: { 'X-API-Key': P_KEY } });
         
-        const tid = response.data.merchant_request_id || response.data.transaction_id || phone;
-        transactions.unshift({ id: tid, phone, amount, status: 'Processing... 🔄', time: new Date().toLocaleTimeString() });
-        res.redirect('/');
-    } catch (e) { res.status(500).send('Error'); }
+        const tid = r.data.merchant_request_id || phone;
+        transactions.unshift({ id: tid, phone, amount, status: 'Processing... 🔄', time: new Date().toLocaleTimeString('en-GB', {timeZone:'Africa/Nairobi'}) });
+        res.redirect('/'); // FIXED: No more white page
+    } catch (e) { 
+        console.log("Push Error");
+        res.redirect('/?error=api'); // FIXED: Redirects even on error
+    }
+});
+
+app.post('/callback', (req, res) => {
+    const b = JSON.stringify(req.body).toLowerCase();
+    let tx = transactions.find(t => b.includes(String(t.id).toLowerCase()) || b.includes(String(t.phone)));
+    if (tx) {
+        if (b.includes('success') || b.includes('"0"')) tx.status = 'Successful ✅';
+        else if (b.includes('1032')) tx.status = 'Cancelled ❌';
+        else tx.status = 'Failed ⚠️';
+    }
+    res.sendStatus(200);
 });
 
 app.listen(process.env.PORT || 3000);
