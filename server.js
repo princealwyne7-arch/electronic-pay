@@ -95,9 +95,20 @@ app.get('/', (req, res) => {
                 .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; padding: 10px 0 25px 0; border-top: 1px solid #eee; z-index: 1000; }
                 .nav-item { flex: 1; text-align: center; color: #94a3b8; text-decoration: none; font-size: 11px; }
                 .nav-item.active { color: var(--primary); }
-            </style>
+            
+    .header-tools { position: absolute; top: 25px; right: 20px; display: flex; gap: 18px; z-index: 1001; }
+    .tool-icon { color: white; font-size: 22px; cursor: pointer; transition: 0.3s; }
+    #search-box { position: absolute; top: 85px; left: 50%; transform: translateX(-50%); width: 90%; display: none; z-index: 1000; animation: fadeIn 0.3s ease; }
+    .s-input { width: 100%; padding: 14px; border-radius: 25px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.1); outline: none; }
+</style>
         </head>
-        <body><div class="header-tools"><div class="tool-icon" onclick="tglS()">🔍</div><div class="tool-icon" onclick="sP("activity", document.querySelectorAll(".nav-item")[1])">🔔</div></div><div id="search-box"><input type="text" class="s-input" id="sq" placeholder="Search..." onkeyup="fltr()"></div>
+        <body>
+    <div class="header-tools">
+        <div class="tool-icon" onclick="tglS()">🔍</div>
+        <div class="tool-icon" onclick="sP('activity', document.querySelectorAll('.nav-item')[1])">🔔</div>
+    </div>
+    <div id="search-box"><input type="text" class="s-input" id="sq" placeholder="Search phone or amount..." onkeyup="fltr()"></div>
+<div class="tool-icon" onclick="sP("activity", document.querySelectorAll(".nav-item")[1])">🔔</div></div>
             <div class="header-tools">
                 <div class="tool-icon" onclick="toggleSearch()">🔍</div>
                 <div class="tool-icon" onclick="sP('activity', document.querySelectorAll('.nav-item')[1])">🔔</div>
@@ -272,7 +283,20 @@ app.get('/', (req, res) => {
                     });
                 }
 
-                function tglS(){let b=document.getElementById("search-box");b.style.display=b.style.display==="block"?"none":"block"}function fltr(){let q=document.getElementById("sq").value.toLowerCase();document.querySelectorAll(".status-row").forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?"flex":"none"})}function sP(id, el) {
+                function tglS(){let b=document.getElementById("search-box");b.style.display=b.style.display==="block"?"none":"block"}function fltr(){let q=document.getElementById("sq").value.toLowerCase();document.querySelectorAll(".status-row").forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?"flex":"none"})}
+    function tglS() { 
+        let b = document.getElementById('search-box'); 
+        b.style.display = b.style.display === 'block' ? 'none' : 'block'; 
+        if(b.style.display === 'block') document.getElementById('sq').focus();
+    }
+    function fltr() {
+        let q = document.getElementById('sq').value.toLowerCase();
+        document.querySelectorAll('.status-row').forEach(r => {
+            r.style.display = r.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+        });
+    }
+
+                function sP(id, el) {
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                     document.getElementById(id).classList.add('active');
