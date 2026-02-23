@@ -64,13 +64,23 @@ app.get('/', (req, res) => {
                 .status-row { border-bottom: 1px solid #f1f5f9; padding: 10px 0; font-size: 13px; text-align: left; }
                 .flex-row { display: flex; justify-content: space-between; align-items: center; }
                 .admin-box { width: 90%; max-width: 400px; margin: 30px auto; padding: 15px; background: #f1f5f9; border-radius: 15px; border: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
-            </style>
+            
+    .top-banner { position: fixed; top: 0; width: 100%; height: 120px; z-index: 1000; margin-bottom: 0; }
+    .page { display: none; padding-top: 140px; padding-bottom: 100px; min-height: 100vh; box-sizing: border-box; }
+    .page.active { display: block; }
+    .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; z-index: 1000; }
+    .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; }
+    .nav-item.active { color: #28a745; font-weight: bold; }
+    .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 15px; }
+    .calc-grid button { padding: 18px; border-radius: 12px; border: none; background: #334155; color: white; font-size: 18px; font-weight: bold; }
+    .calc-grid button.op { background: #28a745; }
+</style>
         </head>
         <body>
             <div class="top-banner">
                 <img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic">
             </div>
-            <div class="container" style="margin-top:60px;">
+            <div id="home" class="page active"><div class="container">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
                 <form action="/push" method="POST">
@@ -80,17 +90,11 @@ app.get('/', (req, res) => {
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
                 </form>
             </div>
-            <div class="history-card">
+            </div></div><div id="activity" class="page"><div class="history-card">
                 <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
                 <div id="history-list">No activity...</div>
             </div>
-            <div class="admin-box">
-                <p>⚙️ <b>System Settings</b></p>
-                <form action="/upload-logo" method="POST" enctype="multipart/form-data">
-                    <label>Change Logo Photo:</label><br>
-                    <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="margin-top:10px;">
-                </form>
-            </div>
+            
             <script>
                 async function updateStatus() {
                     try {
@@ -116,7 +120,51 @@ app.get('/', (req, res) => {
                 setInterval(updateStatus, 3000);
                 updateStatus();
             </script>
-        </body>
+        
+    </div></div>
+    <div id="calc" class="page"><div class="container" style="background:#1e293b; color:white;">
+        <h2 style="color:#10b981">Digital Ledger</h2>
+        <input type="text" id="cdis" readonly value="0" style="background:transparent; color:#10b981; border:none; text-align:right; font-size:32px; width:100%; font-family:monospace;">
+        <div class="calc-grid">
+            <button onclick="cCl()">C</button><button class="op" onclick="cIn('/')">÷</button><button class="op" onclick="cIn('*')">×</button><button class="op" onclick="cIn('-')">-</button>
+            <button onclick="cIn('7')">7</button><button onclick="cIn('8')">8</button><button onclick="cIn('9')">9</button><button class="op" onclick="cIn('+')">+</button>
+            <button onclick="cIn('4')">4</button><button onclick="cIn('5')">5</button><button onclick="cIn('6')">6</button><button class="op" style="grid-row:span 2" onclick="cRes()">=</button>
+            <button onclick="cIn('1')">1</button><button onclick="cIn('2')">2</button><button onclick="cIn('3')">3</button>
+            <button onclick="cIn('0')" style="grid-column:span 3">0</button>
+        </div>
+    </div></div>
+    <div id="more" class="page"><div class="container">
+        <div class="history-card" style="width:100%; margin-bottom:15px;">
+            <p style="color:#28a745; font-weight:bold;">🔔 Notification Sounds (12+)</p>
+            <select id="successSnd"><option>Classic Chime ✅</option><option>Cash Register 💰</option></select>
+            <select id="errorSnd"><option>Alert Tone ⚠️</option></select>
+        </div>
+        <div class="admin-box" style="width:100%; margin:0;">
+            <p>⚙️ <b>Branding Settings</b></p>
+            <form action="/upload-logo" method="POST" enctype="multipart/form-data">
+                <input type="file" name="logo" accept="image/*" onchange="this.form.submit()">
+            </form>
+        </div>
+    </div></div>
+
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="sP('home', this)">🏠<br>Home</div>
+        <div class="nav-item" onclick="sP('activity', this)">📊<br>Activity</div>
+        <div class="nav-item" onclick="sP('calc', this)">🧮<br>Calc</div>
+        <div class="nav-item" onclick="sP('more', this)">⚙️<br>More</div>
+    </nav>
+    <script>
+        function sP(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+        function cIn(v){ let d=document.getElementById('cdis'); if(d.value=='0') d.value=v; else d.value+=v; }
+        function cCl(){ document.getElementById('cdis').value='0'; }
+        function cRes(){ try{ let d=document.getElementById('cdis'); d.value=eval(d.value); }catch(e){ d.value='Error'; } }
+    </script>
+</body>
         </html>
     `);
 });
