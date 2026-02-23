@@ -18,6 +18,10 @@
     .nav-item { color: #94a3b8; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
     .nav-item.active { color: #28a745; font-weight: bold; }
     .nav-icon { font-size: 20px; margin-bottom: 4px; }
+
+    .toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; width: 90%; max-width: 350px; }
+    .toast { background: #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); font-size: 14px; display: flex; align-items: center; justify-content: space-between; animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -48,7 +52,27 @@
     <div class='history-card' style='margin-top:20px;'>
         <h3 onclick='document.getElementById("sound-settings-area").style.display = document.getElementById("sound-settings-area").style.display === "none" ? "block" : "none"' 
             style='cursor:pointer; color:#1e293b; display:flex; justify-content:space-between; align-items:center;'>
-            SOUNDS <span style='font-size:12px;'>▼</span>
+            NOTIFICATIONS</h3></div>
+    <div class='history-card' style='margin-top:10px;'>
+        <h3 onclick='document.getElementById("notify-settings-area").style.display = document.getElementById("notify-settings-area").style.display === "none" ? "block" : "none"' 
+            style='cursor:pointer; color:#1e293b; display:flex; justify-content:space-between; align-items:center;'>
+            NOTIFICATIONS <span style='font-size:12px;'>▼</span>
+        </h3>
+        
+        <div id='notify-settings-area' style='display:none; text-align:left; border-top:1px solid #eee; padding-top:15px;'>
+            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;'>
+                <span>Transaction Toasts</span>
+                <input type='checkbox' id='toastEnabled' checked>
+            </div>
+            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;'>
+                <span>Auto-Dismiss (5s)</span>
+                <input type='checkbox' id='autoDismiss' checked>
+            </div>
+            <button onclick='showToast("🔔 System: Notifications Active")' style='width:100%; background:#f1f5f9; border:1px solid #ddd; padding:10px; border-radius:10px;'>Test Notification</button>
+        </div>
+    </div>
+    <div id='toast-container' class='toast-container'></div>
+ <span style='font-size:12px;'>▼</span>
         </h3>
         
         <div id='sound-settings-area' style='display:none; text-align:left; border-top:1px solid #eee; padding-top:15px;'>
@@ -101,7 +125,7 @@
                 const d = await r.json();
                 document.getElementById("dailyTotal").innerText = "Today: KES " + d.todayTotal;
                 const active = d.transactions || [];
-                if(active.length > lastCount) { playEventSound(t.status); lastCount = active.length; }
+                if(active.length > lastCount) { playEventSound(t.status); if(t.status !== "Processing... 🔄") showToast("Transaction update: " + t.status);; lastCount = active.length; }
                 document.getElementById("list").innerHTML = active.map(t => `<div style="border-bottom:1px solid #eee;padding:10px;text-align:left;"><b>${t.phone}</b> <span style="float:right">KES ${t.amount}</span><br><small>${t.time} - ${t.status}</small></div>`).join("") || "No activity";
             } catch(e){ document.getElementById("list").innerText = "Syncing..."; }
         }
@@ -126,7 +150,18 @@
         s.play().then(() => s.pause()).catch(e => alert('Audio Activated!'));
     }
 
-    function playEventSound(status) {
+    
+    function showToast(msg) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = '<span>' + msg + '</span>';
+        container.appendChild(toast);
+        if (document.getElementById('autoDismiss').checked) {
+            setTimeout(() => toast.remove(), 5000);
+        }
+    }
+function playEventSound(status) {
         const s = document.getElementById('snd');
         const stat = status.toLowerCase();
         
