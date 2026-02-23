@@ -108,16 +108,30 @@ app.get('/', (req, res) => {
         </div>
     </div>
 
-    <div id="tab-vault" class="tab-content">
+        <div id="vault" class="tab-content">
+        <div class="card" style="background: #0f172a; color: white; border-radius: 20px;">
+            <h2 style="margin:0;">Vault Core</h2>
+            <p style="font-size:12px; opacity:0.8;">Global & Regional Management</p>
+        </div>
+
         <div class="card">
-            <h3>🏛️ Wealth Vault</h3>
-            <p style="font-size:14px; color:#64748b;">Lock assets and manage long-term savings.</p>
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-top:10px;">
-                <small>Vault Balance</small>
-                <div style="font-size:20px; font-weight:bold;">KES 1,250,000</div>
-            </div>
+            <h4 style="color:#28a745; margin:0 0 15px 0;">GLOBAL & REGIONAL SETTINGS</h4>
+            <div class="row"><span>🌍 Multi-Currency Accounts</span><b>Virtual Wallets</b></div>
+            <div class="row"><span>🗣️ Language Selector</span><b>AI Contextual</b></div>
+            <div class="row"><span>🕒 Time Zone Sync</span><b>UTC Mapping</b></div>
+            <div class="row"><span>🇰🇪 Regional Payments</span><b>Local Rails</b></div>
+            <div class="row"><span>🔒 FX Rate Lock Tool</span><b>AI Forecast</b></div>
+            <div class="row"><span>⚖️ Regulatory Compliance</span><b>Audit Logs</b></div>
+        </div>
+
+        <div class="card">
+            <h4 style="color:#3b82f6; margin:0 0 15px 0;">ADVANCED MODES</h4>
+            <div class="row"><span>🚀 Smart Migration Mode</span><b>Auto-Adapt</b></div>
+            <div class="row"><span>📉 Economic Impact</span><b>AI Scoring</b></div>
+            <div class="row"><span>📍 Geo-Optimized</span><b>Cost-Route</b></div>
         </div>
     </div>
+
 
     <div id="tab-insights" class="tab-content">
         <div class="card">
