@@ -11,46 +11,54 @@
         .btn-send{width:100%;padding:18px;background:#28a745;color:white;border:none;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer}
         .total-box{background:#e8f5e9;padding:12px;border-radius:12px;margin-bottom:15px;color:#2e7d32;font-weight:bold}
         .history-card{width:90%;max-width:400px;background:white;border-radius:20px;padding:20px;margin:10px auto;box-shadow:0 5px 15px rgba(0,0,0,0.05)}
-    </style>
+    
+    #main-content > div { display: none; }
+    #main-content > div.active { display: block; }
+    .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -2px 15px rgba(0,0,0,0.1); z-index: 100; border-top: 1px solid #eee; }
+    .nav-item { color: #94a3b8; font-size: 11px; text-decoration: none; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+    .nav-item.active { color: #28a745; font-weight: bold; }
+    .nav-icon { font-size: 20px; margin-bottom: 4px; }
+</style>
 </head>
 <body>
-    <div class="top-banner">
-        <img src="/uploads/logo.png" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic">
+    <div id='main-content' style='padding-bottom: 80px;'>
+        <div id='tab-home' class='active'>
+            <div class='container' style='margin-top:60px'>
+                <h2>Electronic Pay</h2>
+                <div id='dailyTotal' class='total-box'>Today: KES 0</div>
+                <form id='payForm' action='/push' method='POST'>
+                    <input type='password' name='password' id='passInput' placeholder='Manager PIN' required>
+                    <input type='number' name='phone' placeholder='2547...' required>
+                    <input type='number' name='amount' placeholder='Amount' required>
+                    <button type='submit' class='btn-send'>SEND STK PUSH</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id='tab-activity'>
+            <div class='history-card' style='margin-top:60px'>
+                <h3>Live Activity</h3>
+                <div id='list'>Checking system...</div>
+            </div>
+        </div>
+
+        <div id='tab-settings'>
+            <div id='audio-panel-placeholder'></div>
+            <div class='history-card'>
+                <p>⚙️ <b>System Branding</b></p>
+                <form action='/upload-logo' method='POST' enctype='multipart/form-data'>
+                    <input type='file' name='logo' accept='image/*' onchange='this.form.submit()'>
+                </form>
+            </div>
+        </div>
     </div>
-    <div class="container" style="margin-top:60px">
-        <h2>Electronic Pay</h2>
-        <div id="dailyTotal" class="total-box">Today: KES 0</div>
-        <form id="payForm" action="/push" method="POST">
-            <input type="password" name="password" id="passInput" placeholder="Manager PIN" required>
-            <input type="number" name="phone" placeholder="2547..." required>
-            <input type="number" name="amount" placeholder="Amount" required>
-            <button type="submit" class="btn-send">SEND STK PUSH</button>
-        </form>
-    </div>
-    
-    <div class='history-card' style='margin-top:10px;'>
-        <h4 style='margin:0 0 10px 0;'>🔔 Sound Settings (12+ Library)</h4>
-        <select id='soundSelect' style='width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;'>
-            <option value='https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'>1. Classic Chime (Success)</option>
-            <option value='https://nfc-pro.com/sounds/success.mp3'>2. Digital Beep</option>
-            <option value='https://nfc-pro.com/sounds/alert.mp3'>3. High-Tech Alert</option>
-            <option value='https://nfc-pro.com/sounds/notification.mp3'>4. Soft Ping</option>
-            <option value='https://nfc-pro.com/sounds/coins.mp3'>5. Cash Register</option>
-            <option value='https://nfc-pro.com/sounds/magic.mp3'>6. Fairy Dust</option>
-            <option value='https://nfc-pro.com/sounds/level-up.mp3'>7. Achievement</option>
-            <option value='https://nfc-pro.com/sounds/bubble.mp3'>8. Water Pop</option>
-            <option value='https://nfc-pro.com/sounds/confirm.mp3'>9. Order Confirmed</option>
-            <option value='https://nfc-pro.com/sounds/positive.mp3'>10. Positive Chime</option>
-            <option value='https://nfc-pro.com/sounds/complete.mp3'>11. Task Complete</option>
-            <option value='https://nfc-pro.com/sounds/arrival.mp3'>12. Funds Arrival</option>
-        </select>
-        <button onclick='testSound()' style='margin-top:10px; width:100%; background:#f1f5f9; border:none; padding:8px; border-radius:8px; font-size:12px; cursor:pointer;'>Tap to Enable/Test Audio</button>
-    </div>
-<div class="history-card">
-        <h3>Live Activity</h3>
-        <div id="list">Checking system...</div>
-    </div>
-    <audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <nav class='nav-bar'>
+        <div class='nav-item active' onclick='switchTab("home", this)'><span class='nav-icon'>🏠</span>Home</div>
+        <div class='nav-item' onclick='switchTab("activity", this)'><span class='nav-icon'>📊</span>Activity</div>
+        <div class='nav-item' onclick='switchTab("settings", this)'><span class='nav-icon'>⚙️</span>Settings</div>
+    </nav>
+<audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <script>
         let lastCount = 0;
         async function update(){
@@ -68,6 +76,13 @@
         const s = document.getElementById('snd');
         s.src = document.getElementById('soundSelect').value;
         s.play().catch(e => alert('Please tap the screen first to enable audio'));
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('#main-content > div').forEach(div => div.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        el.classList.add('active');
     }
 update();
         const p = localStorage.getItem("mpin");
