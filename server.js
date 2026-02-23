@@ -49,14 +49,17 @@ app.get('/', (req, res) => {
         .container, .history-card { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 0 auto 15px auto; box-sizing: border-box; }
         .header-caps { cursor: pointer; color: var(--text); display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; font-size: 14px; font-weight: 800; margin: 0; padding: 5px 0; }
         .collapsible { display: none; text-align: left; border-top: 1px solid #f1f5f9; margin-top: 15px; padding-top: 15px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; background: white; }
         .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
         .nav-item { color: var(--sub); font-size: 10px; font-weight: bold; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
+        .theme-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .theme-dot.active { border-color: #000; }
     </style>
 </head>
 <body>
     <div class="top-banner"><img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic"></div>
+    
     <div id="home" class="tab-content active-tab">
         <div class="container">
             <h2>Electronic Pay</h2>
@@ -69,7 +72,9 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
+
     <div id="activity" class="tab-content"><div class="history-card"><h3>Live Activity</h3><div id="history-list">No data...</div></div></div>
+
     <div id="settings" class="tab-content">
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('snd-box')">NOTIFICATIONS & SOUNDS <span>▼</span></h3>
@@ -78,27 +83,47 @@ app.get('/', (req, res) => {
                 <select id="snd_select" onchange="previewSnd()">
                     <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">1. Default Chime</option>
                     <option value="https://nfc-pro.com/sounds/success.mp3">2. Digital Beep</option>
-                    <option value="https://nfc-pro.com/sounds/coins.mp3">3. Cash Register</option>
                 </select>
-                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
-                <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
+                <div class="row"><span>Transaction Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px;">
-                    <span>SMS <input type="checkbox" checked></span><span>Email <input type="checkbox"></span><span>Push <input type="checkbox" checked></span>
-                </div>
             </div>
         </div>
+
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('reg-box')">REGIONAL & APP PREFERENCES <span>▼</span></h3>
             <div id="reg-box" class="collapsible">
-                <label style="font-size:10px; color:var(--sub);">LANGUAGE</label>
-                <select><option>English (UK)</option><option>Kiswahili</option></select>
-                <div class="row"><span>Dark Mode</span><input type="checkbox" onchange="setDark(this.checked)"></div>
-                <div class="row"><span>Accessibility (Large Text)</span><input type="checkbox"></div>
-                <label style="font-size:10px; color:var(--sub);">CURRENCY</label>
-                <select><option>KES (Shilling)</option><option>USD ($)</option></select>
+                
+                <label style="font-size:10px; color:var(--sub);">LANGUAGE SELECTION</label>
+                <select><option>English (UK)</option><option>Kiswahili</option><option>French</option></select>
+
+                <div class="row">
+                    <span>Dark Mode / Light Mode</span>
+                    <input type="checkbox" id="darkToggle" onchange="setDark(this.checked)">
+                </div>
+
+                <label style="font-size:10px; color:var(--sub);">CURRENCY DISPLAY FORMAT</label>
+                <select><option>KES (Kenya Shilling)</option><option>USD (US Dollar)</option><option>EUR (Euro)</option></select>
+
+                <label style="font-size:10px; color:var(--sub);">TIME ZONE</label>
+                <select><option>(GMT+03:00) Nairobi</option><option>(GMT+00:00) UTC</option></select>
+
+                <div class="row">
+                    <span>Accessibility (High Contrast)</span>
+                    <input type="checkbox">
+                </div>
+
+                <label style="font-size:10px; color:var(--sub);">APP THEME</label>
+                <div style="display:flex; gap:12px; margin-top:5px; margin-bottom:15px;">
+                    <div class="theme-dot active" style="background:#28a745;"></div>
+                    <div class="theme-dot" style="background:#007bff;"></div>
+                    <div class="theme-dot" style="background:#6f42c1;"></div>
+                    <div class="theme-dot" style="background:#dc3545;"></div>
+                </div>
+
+                <button style="width:100%; padding:12px; background:#f1f5f9; border:none; border-radius:10px; font-weight:bold; color:var(--text);">SAVE PREFERENCES</button>
             </div>
         </div>
+
         <div class="history-card">
             <form action="/upload-logo" method="POST" enctype="multipart/form-data">
                 <label style="font-size:12px;">Branding Photo:</label>
@@ -106,12 +131,15 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
+
     <nav class="nav-bar">
         <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
         <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
         <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
     </nav>
+
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
     <script>
         function tab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab'));
@@ -141,11 +169,11 @@ app.get('/', (req, res) => {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                document.getElementById('history-list').innerHTML = data.transactions.map(t => \`
+                document.getElementById('history-list').innerHTML = data.transactions.map(t => `
                     <div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px; text-align:left;">
                         <b>\${t.phone}</b> <span style="float:right; color:#28a745;">KES \${t.amount}</span><br>
                         <small style="color:#94a3b8;">\${t.time} - \${t.status}</small>
-                    </div>\`).join('') || 'No Transactions';
+                    </div>`).join('') || 'No Transactions';
             } catch(e) {}
         }
         setInterval(sync, 3000); sync();
