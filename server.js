@@ -64,13 +64,20 @@ app.get('/', (req, res) => {
                 .status-row { border-bottom: 1px solid #f1f5f9; padding: 10px 0; font-size: 13px; text-align: left; }
                 .flex-row { display: flex; justify-content: space-between; align-items: center; }
                 .admin-box { width: 90%; max-width: 400px; margin: 30px auto; padding: 15px; background: #f1f5f9; border-radius: 15px; border: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
-            </style>
+            
+    .page { display: none; }
+    .page.active { display: block; }
+    .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; padding: 12px 0; z-index: 1000; }
+    .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; transition: 0.3s; }
+    .nav-item.active { color: #28a745; font-weight: bold; }
+    .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+</style>
         </head>
         <body>
             <div class="top-banner">
                 <img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic">
             </div>
-            <div class="container" style="margin-top:60px;">
+            <div id="home" class="page active"><div class="container" style="margin-top:60px;">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
                 <form action="/push" method="POST">
@@ -78,12 +85,10 @@ app.get('/', (req, res) => {
                     <input type="number" name="phone" placeholder="2547..." required>
                     <input type="number" name="amount" placeholder="Amount" required>
                     <button type="submit" class="btn-send">SEND STK PUSH</button>
-                </form>
-            </div>
-            <div class="history-card">
+                </form></div></div>
+            <div id="activity" class="page"><div class="history-card">
                 <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
-                <div id="history-list">No activity...</div>
-            </div>
+                <div id="history-list">No activity...</div></div></div>
             <div class="admin-box">
                 <p>⚙️ <b>System Settings</b></p>
                 <form action="/upload-logo" method="POST" enctype="multipart/form-data">
@@ -116,7 +121,25 @@ app.get('/', (req, res) => {
                 setInterval(updateStatus, 3000);
                 updateStatus();
             </script>
-        </body>
+        
+            <div id="calc" class="page"><div class="container"><h2>Calculator</h2><p>Restoring numeric grid...</p></div></div>
+            <div id="more" class="page"><div class="container"><h2>Advanced Tools</h2><p>Restoring 12+ sounds...</p></div></div>
+
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="sP('home', this)"><span class="nav-icon">🏠</span>Home</div>
+        <div class="nav-item" onclick="sP('activity', this)"><span class="nav-icon">📊</span>Activity</div>
+        <div class="nav-item" onclick="sP('calc', this)"><span class="nav-icon">🧮</span>Calc</div>
+        <div class="nav-item" onclick="sP('more', this)"><span class="nav-icon">⚙️</span>More</div>
+    </nav>
+    <script>
+        function sP(id, el) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            el.classList.add('active');
+        }
+    </script>
+</body>
         </html>
     `);
 });
