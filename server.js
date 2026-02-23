@@ -138,12 +138,13 @@ app.get('/', (req, res) => {
             <div class="row"><b>Panic Mode</b> <button style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:5px;">ACTIVATE</button></div>
             <hr>
             <label>Master Sound Engine (12 World Class)</label>
-            <select id="snd_select" onchange="previewSnd()">
-                <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold</option>
-                <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime</option>
-                <option value="https://nfc-pro.com/sounds/success.mp3">3. Modern Beep</option>
-                <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bbdec3a6ce.mp3">4. Crystal Ping</option>
-            </select>
+                <select id="snd_select" onchange="previewSnd()">
+                    <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold (Success)</option>
+                    <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime (Notice)</option>
+                    <option value="https://nfc-pro.com/sounds/alert.mp3">3. Cyber Alert (Warning)</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0624ed05f2.mp3">4. Security Ping (Alert)</option>
+                    <option value="https://www.soundjay.com/buttons/beep-01a.mp3">5. Tech Click</option>
+                </select>
             <div class="row"><span>Biometric Auth</span> <input type="checkbox" checked style="width:auto;"></div>
         </div>
     </div>
