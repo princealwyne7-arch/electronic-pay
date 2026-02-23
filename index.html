@@ -49,29 +49,55 @@
         <div id='tab-settings'>
             
     
+    
     <div class='history-card' style='margin-top:20px;'>
-        <h3 onclick='document.getElementById("sound-settings-area").style.display = document.getElementById("sound-settings-area").style.display === "none" ? "block" : "none"' 
+        <h3 onclick='document.getElementById("dual-master-area").style.display = document.getElementById("dual-master-area").style.display === "none" ? "block" : "none"' 
             style='cursor:pointer; color:#1e293b; display:flex; justify-content:space-between; align-items:center;'>
-            NOTIFICATIONS</h3></div>
-    <div class='history-card' style='margin-top:10px;'>
-        <h3 onclick='document.getElementById("notify-settings-area").style.display = document.getElementById("notify-settings-area").style.display === "none" ? "block" : "none"' 
-            style='cursor:pointer; color:#1e293b; display:flex; justify-content:space-between; align-items:center;'>
-            NOTIFICATIONS <span style='font-size:12px;'>▼</span>
+            NOTIFICATIONS & SOUNDS <span style='font-size:12px;'>▼</span>
         </h3>
         
-        <div id='notify-settings-area' style='display:none; text-align:left; border-top:1px solid #eee; padding-top:15px;'>
-            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;'>
-                <span>Transaction Toasts</span>
-                <input type='checkbox' id='toastEnabled' checked>
+        <div id='dual-master-area' style='display:none; text-align:left; border-top:1px solid #eee; padding-top:15px;'>
+            
+            <div style='margin-bottom:20px;'>
+                <h4 style='color:#28a745; border-bottom:1px solid #e8f5e9; padding-bottom:5px;'>🔊 SOUND SETTINGS</h4>
+                <div style='margin-bottom:10px;'>
+                    <label style='font-size:11px; color:#64748b;'>SUCCESS TONE</label>
+                    <select id='snd_success' style='width:100%; padding:8px; border-radius:8px;'>
+                        <option value='https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'>Default Chime</option>
+                        <option value='https://nfc-pro.com/sounds/success.mp3'>Digital Beep</option>
+                        <option value='https://nfc-pro.com/sounds/coins.mp3'>Cash Register</option>
+                    </select>
+                </div>
+                <div style='margin-bottom:10px;'>
+                    <label style='font-size:11px; color:#64748b;'>FAILURE/TIMEOUT TONE</label>
+                    <select id='snd_fail' style='width:100%; padding:8px; border-radius:8px;'>
+                        <option value='https://nfc-pro.com/sounds/alert.mp3'>High-Tech Alert</option>
+                        <option value='https://nfc-pro.com/sounds/notification.mp3'>Soft Ping</option>
+                    </select>
+                </div>
             </div>
-            <div style='display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;'>
-                <span>Auto-Dismiss (5s)</span>
-                <input type='checkbox' id='autoDismiss' checked>
+
+            <div>
+                <h4 style='color:#28a745; border-bottom:1px solid #e8f5e9; padding-bottom:5px;'>📩 NOTIFICATION CONTROLS</h4>
+                <div style='font-size:13px; color:#334155;'>
+                    <label style='display:flex; justify-content:space-between; margin-bottom:10px;'>Transaction Alerts (Debit/Credit) <input type='checkbox' checked></label>
+                    <label style='display:flex; justify-content:space-between; margin-bottom:10px;'>Low Balance Alerts <input type='checkbox' checked></label>
+                    <label style='display:flex; justify-content:space-between; margin-bottom:10px;'>Login Alerts <input type='checkbox' checked></label>
+                    <label style='display:flex; justify-content:space-between; margin-bottom:10px;'>Bill Due Reminders <input type='checkbox'></label>
+                    <label style='display:flex; justify-content:space-between; margin-bottom:10px;'>Marketing Preferences <input type='checkbox'></label>
+                    <hr style='border:0; border-top:1px dashed #cbd5e1; margin:10px 0;'>
+                    <div style='display:flex; justify-content:space-around; background:#f1f5f9; padding:8px; border-radius:8px;'>
+                        <span style='font-size:10px;'>SMS <input type='checkbox' checked></span>
+                        <span style='font-size:10px;'>Email <input type='checkbox' checked></span>
+                        <span style='font-size:10px;'>Push <input type='checkbox' id='toastEnabled' checked></span>
+                    </div>
+                </div>
             </div>
-            <button onclick='showToast("🔔 System: Notifications Active")' style='width:100%; background:#f1f5f9; border:1px solid #ddd; padding:10px; border-radius:10px;'>Test Notification</button>
+            
+            <button onclick='testAllSounds()' style='width:100%; background:#e8f5e9; color:#2e7d32; border:none; padding:12px; border-radius:10px; margin-top:15px; font-weight:bold;'>SYNC SETTINGS</button>
         </div>
     </div>
-    <div id='toast-container' class='toast-container'></div>
+<div id="toast-container" class='toast-container'></div>
  <span style='font-size:12px;'>▼</span>
         </h3>
         
