@@ -44,36 +44,47 @@
 
         <div id='tab-settings'>
             
-    <div class='history-card' style='margin-top:20px; border: 1px solid #e2e8f0;'>
-        <h4 style='margin:0 0 15px 0; color:#1e293b;'>🔔 Notification Sounds</h4>
-        <div style='background:#f8fafc; padding:15px; border-radius:12px;'>
-            <label style='font-size:12px; color:#64748b; display:block; margin-bottom:8px;'>Choose Your Alert Tone:</label>
-            <select id='soundSelect' onchange='previewSound()' style='width:100%; padding:12px; border-radius:10px; border:1px solid #cbd5e1; background:white; font-size:14px;'>
-                <option value='https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'>1. Default Chime (Success)</option>
-                <option value='https://nfc-pro.com/sounds/success.mp3'>2. High-Tech Beep</option>
-                <option value='https://nfc-pro.com/sounds/alert.mp3'>3. Modern Alert</option>
-                <option value='https://nfc-pro.com/sounds/notification.mp3'>4. Soft Ping</option>
-                <option value='https://nfc-pro.com/sounds/coins.mp3'>5. Cash Register</option>
-                <option value='https://nfc-pro.com/sounds/magic.mp3'>6. Fairy Dust</option>
-                <option value='https://nfc-pro.com/sounds/level-up.mp3'>7. Achievement</option>
-                <option value='https://nfc-pro.com/sounds/bubble.mp3'>8. Water Pop</option>
-                <option value='https://nfc-pro.com/sounds/confirm.mp3'>9. Order Confirmed</option>
-                <option value='https://nfc-pro.com/sounds/positive.mp3'>10. Professional Chime</option>
-                <option value='https://nfc-pro.com/sounds/complete.mp3'>11. Task Complete</option>
-                <option value='https://nfc-pro.com/sounds/arrival.mp3'>12. Funds Received</option>
-            </select>
-            <button onclick='previewSound()' style='margin-top:12px; width:100%; background:#e8f5e9; color:#2e7d32; border:none; padding:10px; border-radius:10px; font-weight:bold; cursor:pointer;'>Test Selected Sound</button>
+    
+    <div class='history-card' style='margin-top:20px;'>
+        <h3 onclick='document.getElementById("sound-settings-area").style.display = document.getElementById("sound-settings-area").style.display === "none" ? "block" : "none"' 
+            style='cursor:pointer; color:#1e293b; display:flex; justify-content:space-between; align-items:center;'>
+            SOUNDS <span style='font-size:12px;'>▼</span>
+        </h3>
+        
+        <div id='sound-settings-area' style='display:none; text-align:left; border-top:1px solid #eee; padding-top:15px;'>
+            <label style='display:flex; align-items:center; margin-bottom:15px; font-weight:bold;'>
+                <input type='checkbox' id='audioEnabled' checked style='width:20px; margin-right:10px;'> Enable System Audio
+            </label>
+
+            <div style='margin-bottom:10px;'>
+                <label style='font-size:12px; color:#64748b;'>SUCCESSFUL TRANSACTION</label>
+                <select id='snd_success' class='sound-sel' style='width:100%; padding:8px; border-radius:8px;'>
+                    <option value='https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'>Default Chime</option>
+                    <option value='https://nfc-pro.com/sounds/success.mp3'>Digital Beep</option>
+                    <option value='https://nfc-pro.com/sounds/coins.mp3'>Cash Register</option>
+                </select>
+            </div>
+
+            <div style='margin-bottom:10px;'>
+                <label style='font-size:12px; color:#64748b;'>FAILED / CANCELLED / TIMEOUT</label>
+                <select id='snd_fail' class='sound-sel' style='width:100%; padding:8px; border-radius:8px;'>
+                    <option value='https://nfc-pro.com/sounds/alert.mp3'>High-Tech Alert</option>
+                    <option value='https://nfc-pro.com/sounds/notification.mp3'>Soft Ping</option>
+                </select>
+            </div>
+
+            <div style='margin-bottom:10px;'>
+                <label style='font-size:12px; color:#64748b;'>WRONG PIN / LOW BALANCE</label>
+                <select id='snd_error' class='sound-sel' style='width:100%; padding:8px; border-radius:8px;'>
+                    <option value='https://nfc-pro.com/sounds/bubble.mp3'>Water Pop</option>
+                    <option value='https://nfc-pro.com/sounds/magic.mp3'>Fairy Dust</option>
+                </select>
+            </div>
+
+            <button onclick='testAllSounds()' style='width:100%; background:#f1f5f9; border:1px solid #ddd; padding:10px; border-radius:10px; margin-top:10px;'>Tap to Activate Audio Engine</button>
         </div>
-        <p style='font-size:10px; color:#94a3b8; margin-top:10px;'>Note: Tap 'Test' to enable audio permissions on this device.</p>
     </div>
 
-            <div class='history-card'>
-                <p>⚙️ <b>System Branding</b></p>
-                <form action='/upload-logo' method='POST' enctype='multipart/form-data'>
-                    <input type='file' name='logo' accept='image/*' onchange='this.form.submit()'>
-                </form>
-            </div>
-        </div>
     </div>
 
     <nav class='nav-bar'>
@@ -90,7 +101,7 @@
                 const d = await r.json();
                 document.getElementById("dailyTotal").innerText = "Today: KES " + d.todayTotal;
                 const active = d.transactions || [];
-                if(active.length > lastCount) { previewSound(); lastCount = active.length; }
+                if(active.length > lastCount) { playEventSound(t.status); lastCount = active.length; }
                 document.getElementById("list").innerHTML = active.map(t => `<div style="border-bottom:1px solid #eee;padding:10px;text-align:left;"><b>${t.phone}</b> <span style="float:right">KES ${t.amount}</span><br><small>${t.time} - ${t.status}</small></div>`).join("") || "No activity";
             } catch(e){ document.getElementById("list").innerText = "Syncing..."; }
         }
@@ -108,7 +119,27 @@
         el.classList.add('active');
     }
 
-    function previewSound() {
+    
+    function testAllSounds() {
+        const s = document.getElementById('snd');
+        s.src = document.getElementById('snd_success').value;
+        s.play().then(() => s.pause()).catch(e => alert('Audio Activated!'));
+    }
+
+    function playEventSound(status) {
+        const s = document.getElementById('snd');
+        const stat = status.toLowerCase();
+        
+        if (stat.includes('successful')) {
+            s.src = document.getElementById('snd_success').value;
+        } else if (stat.includes('cancelled') || stat.includes('timeout')) {
+            s.src = document.getElementById('snd_fail').value;
+        } else if (stat.includes('pin') || stat.includes('low') || stat.includes('failed')) {
+            s.src = document.getElementById('snd_error').value;
+        }
+        s.play();
+    }
+function previewSound() {
         const s = document.getElementById('snd');
         s.src = document.getElementById('soundSelect').value;
         s.play().catch(e => console.log('Audio requires user tap'));
