@@ -110,14 +110,21 @@ app.get('/', (req, res) => {
 
     <div id="tab-vault" class="tab-content">
         <div class="card">
-            <h3>🏛️ Wealth Vault</h3>
-            <p style="font-size:14px; color:#64748b;">Lock assets and manage long-term savings.</p>
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-top:10px;">
-                <small>Vault Balance</small>
-                <div style="font-size:20px; font-weight:bold;">KES 1,250,000</div>
-            </div>
+            <h4 style="color:#28a745; margin-top:0;">GLOBAL & REGIONAL SETTINGS</h4>
+            <div class="row"><span>🌍 Multi-Currency Accounts</span><b>FX Active</b></div>
+            <div class="row"><span>🗣️ Language Selector</span><b>AI Trans</b></div>
+            <div class="row"><span>🕒 Time Zone Sync</span><b>UTC/Local</b></div>
+            <div class="row"><span>🇰🇪 Regional Rails</span><b>Smart Route</b></div>
+            <div class="row"><span>🔒 FX Rate Lock</span><b>AI Alert</b></div>
+            <div class="row"><span>⚖️ Compliance Audit</span><b>AML Logs</b></div>
         </div>
-    </div>
+        <div class="card">
+            <h4 style="color:#3b82f6; margin-top:0;">ADVANCED MODES</h4>
+            <div class="row"><span>🚀 Smart Migration</span><b>Enabled</b></div>
+            <div class="row"><span>📉 Economic Alerts</span><b>AI Score</b></div>
+            <div class="row"><span>📍 Geo-Optimization</span><b>Fallback</b></div>
+        </div>
+
 
     <div id="tab-insights" class="tab-content">
         <div class="card">
