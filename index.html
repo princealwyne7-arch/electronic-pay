@@ -37,7 +37,22 @@
                 const r = await fetch("/api/status");
                 const d = await r.json();
                 document.getElementById("dailyTotal").innerText = "Today: KES " + d.todayTotal;
-                document.getElementById("history-list").innerHTML = d.transactions.map(t => `<div>${t.phone} - KES ${t.amount} [${t.status}]</div>`).join("");
+                
+                const list = document.getElementById('history-list');
+                    list.innerHTML = '<div style="color:#64748b; padding:20px;">No recent activity</div>';
+                } else {
+                    list.innerHTML = d.transactions.map(t => {
+                        const isSuccess = t.status.includes('Successful');
+                        const statusColor = isSuccess ? '#28a745' : (t.status.includes('Processing') ? '#17a2b8' : '#dc3545');
+                        return '<div style="border-bottom:1px solid #f1f5f9; padding:12px 0; text-align:left;">' +
+                               '<div style="display:flex; justify-content:space-between;"><b>' + t.phone + '</b>' +
+                               '<b style="color:' + statusColor + '">KES ' + t.amount + '</b></div>' +
+                               '<div style="display:flex; justify-content:space-between; margin-top:4px;">' +
+                               '<small style="color:#94a3b8;">' + (t.time || 'Just now') + '</small>' +
+                               '<span style="color:' + statusColor + '; font-size:12px;">' + t.status + '</span></div></div>';
+                    }).join('');
+                }
+
             } catch(e){}
         }
         setInterval(update, 3000);
