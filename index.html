@@ -141,7 +141,64 @@
         <div class='nav-item active' onclick='switchTab("home", this)'><span class='nav-icon'>🏠</span>Home</div>
         <div class='nav-item' onclick='switchTab("activity", this)'><span class='nav-icon'>📊</span>Activity</div>
         <div class='nav-item' onclick='switchTab("settings", this)'><span class='nav-icon'>⚙️</span>Settings</div>
-    </nav>
+    
+    <div class='history-card' style='margin-top:10px;'>
+        <h3 onclick='document.getElementById("pref-settings-area").style.display = document.getElementById("pref-settings-area").style.display === "none" ? "block" : "none"' 
+            style='cursor:pointer; color:#1e293b; display:flex; justify-content:space-between; align-items:center;'>
+            REGIONAL & APP PREFERENCES <span style='font-size:12px;'>▼</span>
+        </h3>
+        
+        <div id='pref-settings-area' style='display:none; text-align:left; border-top:1px solid #eee; padding-top:15px;'>
+            
+            <div style='margin-bottom:12px;'>
+                <label style='font-size:11px; color:#64748b;'>LANGUAGE SELECTION</label>
+                <select style='width:100%; padding:8px; border-radius:8px;'>
+                    <option>English (UK)</option>
+                    <option>Kiswahili</option>
+                    <option>French</option>
+                </select>
+            </div>
+
+            <div style='margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;'>
+                <span style='font-size:13px;'>Dark Mode</span>
+                <input type='checkbox' id='darkModeToggle' onchange='toggleTheme()'>
+            </div>
+
+            <div style='margin-bottom:12px;'>
+                <label style='font-size:11px; color:#64748b;'>CURRENCY DISPLAY FORMAT</label>
+                <select style='width:100%; padding:8px; border-radius:8px;'>
+                    <option>KES (Shilling)</option>
+                    <option>USD (Dollar)</option>
+                    <option>EUR (Euro)</option>
+                </select>
+            </div>
+
+            <div style='margin-bottom:12px;'>
+                <label style='font-size:11px; color:#64748b;'>TIME ZONE</label>
+                <select style='width:100%; padding:8px; border-radius:8px;'>
+                    <option>(GMT+03:00) Nairobi</option>
+                    <option>(GMT+00:00) London</option>
+                </select>
+            </div>
+
+            <div style='margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;'>
+                <span style='font-size:13px;'>Accessibility Settings (High Contrast)</span>
+                <input type='checkbox'>
+            </div>
+
+            <div style='margin-bottom:12px;'>
+                <label style='font-size:11px; color:#64748b;'>APP THEME</label>
+                <div style='display:flex; gap:10px; margin-top:5px;'>
+                    <div style='width:25px; height:25px; background:#28a745; border-radius:50%; border:2px solid #fff; box-shadow:0 0 2px #000;'></div>
+                    <div style='width:25px; height:25px; background:#007bff; border-radius:50%;'></div>
+                    <div style='width:25px; height:25px; background:#6f42c1; border-radius:50%;'></div>
+                </div>
+            </div>
+
+            <button style='width:100%; background:#f1f5f9; border:none; padding:12px; border-radius:10px; font-weight:bold; color:#475569;'>SAVE PREFERENCES</button>
+        </div>
+    </div>
+</nav>
 <audio id="snd" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <script>
         let lastCount = 0;
@@ -204,6 +261,16 @@ function previewSound() {
         const s = document.getElementById('snd');
         s.src = document.getElementById('soundSelect').value;
         s.play().catch(e => console.log('Audio requires user tap'));
+    }
+
+    function toggleTheme() {
+        const isDark = document.getElementById('darkModeToggle').checked;
+        document.body.style.background = isDark ? '#0f172a' : '#f8fafc';
+        const cards = document.querySelectorAll('.history-card, .container');
+        cards.forEach(c => {
+            c.style.background = isDark ? '#1e293b' : '#white';
+            c.style.color = isDark ? '#f8fafc' : '#1e293b';
+        });
     }
 update();
         const p = localStorage.getItem("mpin");
