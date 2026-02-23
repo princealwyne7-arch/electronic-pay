@@ -33,7 +33,7 @@ app.post('/upload-logo', upload.single('logo'), (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send(\`
+    res.send(`
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,34 +41,25 @@ app.get('/', (req, res) => {
     <style>
         :root { --primary: #28a745; --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --sub: #64748b; }
         body { font-family: sans-serif; background: var(--bg); margin: 0; color: var(--text); overflow-x: hidden; }
-        
-        /* FIXED ELEMENTS */
         .top-banner { position: fixed; top: 0; width: 100%; height: 130px; background: linear-gradient(135deg, #28a745, #1e7e34); border-radius: 0 0 30px 30px; display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .profile-pic { width: 85px; height: 85px; border-radius: 50%; border: 4px solid white; object-fit: cover; background: #fff; }
         .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #eee; z-index: 1000; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
-        
-        /* CONTENT PADDING - Critical for fixed banner clearance */
         .tab-content { display: none; padding: 150px 15px 100px 15px; min-height: 100vh; box-sizing: border-box; }
         .active-tab { display: block; }
-        
-        /* UI COMPONENTS */
         .container, .history-card { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 0 auto 15px auto; box-sizing: border-box; }
-        .header-caps { cursor: pointer; color: var(--text); display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; font-size: 14px; font-weight: 800; letter-spacing: 0.5px; margin: 0; padding: 5px 0; }
+        .header-caps { cursor: pointer; color: var(--text); display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; font-size: 14px; font-weight: 800; margin: 0; padding: 5px 0; }
         .collapsible { display: none; text-align: left; border-top: 1px solid #f1f5f9; margin-top: 15px; padding-top: 15px; }
         input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; }
         .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
-        .nav-item { color: var(--sub); font-size: 10px; font-weight: bold; text-align: center; }
+        .nav-item { color: var(--sub); font-size: 10px; font-weight: bold; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
-    <div class="top-banner">
-        <img src="/uploads/logo.png?v=\${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic">
-    </div>
-
+    <div class="top-banner"><img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic"></div>
     <div id="home" class="tab-content active-tab">
         <div class="container">
-            <h2 style="margin:0 0 5px 0;">Electronic Pay</h2>
+            <h2>Electronic Pay</h2>
             <div id="dailyTotal" style="background:#e8f5e9; padding:8px; border-radius:8px; color:#2e7d32; font-weight:bold; margin-bottom:15px;">Today: KES 0</div>
             <form action="/push" method="POST">
                 <input type="password" name="password" placeholder="Manager PIN" required>
@@ -78,19 +69,12 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
-
-    <div id="activity" class="tab-content">
-        <div class="history-card">
-            <h3 style="margin:0 0 15px 0;">Live Activity</h3>
-            <div id="history-list">No data...</div>
-        </div>
-    </div>
-
+    <div id="activity" class="tab-content"><div class="history-card"><h3>Live Activity</h3><div id="history-list">No data...</div></div></div>
     <div id="settings" class="tab-content">
         <div class="history-card">
-            <h3 class="header-caps" onclick="toggle('snd-box')">Notifications & Sounds <span>▼</span></h3>
+            <h3 class="header-caps" onclick="toggle('snd-box')">NOTIFICATIONS & SOUNDS <span>▼</span></h3>
             <div id="snd-box" class="collapsible">
-                <label style="font-size:10px; color:var(--sub);">SUCCESS SOUND (12+ Options)</label>
+                <label style="font-size:10px; color:var(--sub);">SUCCESS SOUND</label>
                 <select id="snd_select" onchange="previewSnd()">
                     <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">1. Default Chime</option>
                     <option value="https://nfc-pro.com/sounds/success.mp3">2. Digital Beep</option>
@@ -99,49 +83,35 @@ app.get('/', (req, res) => {
                 <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
                 <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
-                <div class="row"><span>Bill Due Reminders</span><input type="checkbox"></div>
-                <div class="row"><span>Marketing Preferences</span><input type="checkbox"></div>
-                <hr style="border:0; border-top:1px dashed #eee;">
-                <div style="display:flex; justify-content:space-between; font-size:11px;">
-                    <span>SMS <input type="checkbox" checked></span>
-                    <span>Email <input type="checkbox"></span>
-                    <span>Push <input type="checkbox" id="push_on" checked></span>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px;">
+                    <span>SMS <input type="checkbox" checked></span><span>Email <input type="checkbox"></span><span>Push <input type="checkbox" checked></span>
                 </div>
             </div>
         </div>
-
         <div class="history-card">
-            <h3 class="header-caps" onclick="toggle('reg-box')">Regional & App Preferences <span>▼</span></h3>
+            <h3 class="header-caps" onclick="toggle('reg-box')">REGIONAL & APP PREFERENCES <span>▼</span></h3>
             <div id="reg-box" class="collapsible">
                 <label style="font-size:10px; color:var(--sub);">LANGUAGE</label>
                 <select><option>English (UK)</option><option>Kiswahili</option></select>
                 <div class="row"><span>Dark Mode</span><input type="checkbox" onchange="setDark(this.checked)"></div>
+                <div class="row"><span>Accessibility (Large Text)</span><input type="checkbox"></div>
                 <label style="font-size:10px; color:var(--sub);">CURRENCY</label>
                 <select><option>KES (Shilling)</option><option>USD ($)</option></select>
-                <label style="font-size:10px; color:var(--sub);">TIME ZONE</label>
-                <select><option>(GMT+03:00) Nairobi</option></select>
-                <div class="row"><span>Accessibility (Large Text)</span><input type="checkbox"></div>
-                <label style="font-size:10px; color:var(--sub);">APP THEME</label>
-                <div style="display:flex; gap:10px;"><div style="width:20px; height:20px; background:#28a745; border-radius:50%;"></div><div style="width:20px; height:20px; background:#007bff; border-radius:50%;"></div></div>
             </div>
         </div>
-
         <div class="history-card">
             <form action="/upload-logo" method="POST" enctype="multipart/form-data">
-                <label style="font-size:12px;">Update Branding Photo:</label>
-                <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="border:none;">
+                <label style="font-size:12px;">Branding Photo:</label>
+                <input type="file" name="logo" accept="image/*" onchange="this.form.submit()">
             </form>
         </div>
     </div>
-
     <nav class="nav-bar">
         <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
         <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
         <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
     </nav>
-
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
-
     <script>
         function tab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab'));
@@ -166,14 +136,13 @@ app.get('/', (req, res) => {
                 c.style.color = on ? '#f8fafc' : '#1e293b';
             });
         }
-
         async function sync() {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
                 document.getElementById('history-list').innerHTML = data.transactions.map(t => \`
-                    <div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px;">
+                    <div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px; text-align:left;">
                         <b>\${t.phone}</b> <span style="float:right; color:#28a745;">KES \${t.amount}</span><br>
                         <small style="color:#94a3b8;">\${t.time} - \${t.status}</small>
                     </div>\`).join('') || 'No Transactions';
@@ -183,7 +152,7 @@ app.get('/', (req, res) => {
     </script>
 </body>
 </html>
-    \`);
+    `);
 });
 
 app.post('/push', async (req, res) => {
