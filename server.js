@@ -216,8 +216,3 @@ document.getElementById("economicFeed").innerText=
 });
 
 app.listen(process.env.PORT || 3000);
-EOF
-
-git add server.js
-git commit -m "Upgrade: Added Global & Regional Banking Infrastructure to Vault"
-git push origin main
