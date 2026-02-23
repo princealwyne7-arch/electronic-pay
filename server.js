@@ -62,7 +62,7 @@ app.get('/', (req, res) => {
                 .history-card { width: 90%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; margin: 0 auto; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .total-box { background: #e8f5e9; padding: 12px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
                 .status-row { border-bottom: 1px solid #f1f5f9; padding: 10px 0; font-size: 13px; text-align: left; }
-                .flex-row { display: flex; justify-content: space-between; align-items: center; }
+                .flex-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;  display: flex; justify-content: space-between; align-items: center; }
                 .admin-box { width: 90%; max-width: 400px; margin: 30px auto; padding: 15px; background: #f1f5f9; border-radius: 15px; border: 1px dashed #cbd5e1; font-size: 12px; color: #64748b; }
             
     .page { display: none; }
@@ -86,6 +86,15 @@ app.get('/', (req, res) => {
         border: 1px solid #edf2f7; 
     }
     .top-banner { position: fixed; top: 0; width: 100%; z-index: 100; height: 120px; }
+
+    .page { 
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
+    .container { 
+        width: 90%; 
+        max-width: 400px;
+    }
 </style>
         </head>
         <body>
