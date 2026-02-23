@@ -148,12 +148,15 @@ app.get('/', (req, res) => {
     <div id="tab-vault" class="tab-content">
         <div class="smart-hub">
             <h3>Advanced Wealth Management</h3>
-            <div class="stat-card" style="background:#fff7ed; color:#9a3412;">
-                <b>Emergency Fund Builder</b><br>45% Progress
+            <div class="stat-card" style="background:#fff7ed; color:#9a3412; border:1px solid #ffedd5;">
+                <b>Emergency Fund Builder</b><br>
+                <progress value="45" max="100" style="width:100%;"></progress>
+                <div style="font-size:10px;">45% to Goal (KES 50,000)</div>
             </div>
             <div class="sidebar-item">🔒 Locked Savings (Time Capsule)</div>
             <div class="sidebar-item">🪙 Digital Gold Storage</div>
         </div>
+    </div>
     </div>
 
     <div id="tab-security" class="tab-content">
