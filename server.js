@@ -38,7 +38,8 @@ app.post('/push', async (req, res) => {
             email: 'princealwyne7@gmail.com', callback_url: 'https://electronic-pay.onrender.com/callback'
         }, { headers: { 'X-API-Key': P_KEY } });
         
-        transactions.unshift({ id: Date.now(), phone, amount, status: 'Processing... 🔄' });
+        const tid = response.data.merchant_request_id || response.data.transaction_id || phone;
+        transactions.unshift({ id: tid, phone, amount, status: 'Processing... 🔄', time: new Date().toLocaleTimeString() });
         res.redirect('/');
     } catch (e) { res.status(500).send('Error'); }
 });
