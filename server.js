@@ -8,9 +8,16 @@ app.use(express.urlencoded({ extended: true }));
 let transactions = []; 
 const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
-app.get('/api/status', (req, res) => {
-    const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
-    res.json({ transactions, todayTotal });
+app.get("/api/status", (req, res) => {
+    const successful = transactions.filter(t => t.status.includes("Successful"));
+    const todayTotal = successful.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
+    /* AI PREDICTOR LOGIC: Calculates average and forecasts 7 days */
+    const avgDaily = successful.length > 0 ? todayTotal / successful.length : 0;
+    const forecast = (avgDaily * 7).toFixed(2);
+    /* HEALTH SCORE: Weighted by transaction volume and success rate */
+    const healthScore = Math.min(1000, 300 + (successful.length * 20) + (todayTotal / 100));
+    res.json({ transactions, todayTotal, healthScore, forecast });
+});
 });
 
 app.get('/', (req, res) => {
@@ -78,7 +85,24 @@ app.get('/', (req, res) => {
 
     <div id="tab-dashboard" class="tab-content active-tab">
         <div class="bank-card">
-            <div style="font-size: 12px; opacity: 0.8;">Total Net Worth <span class="ai-badge">AI Score: 850</span></div>
+            <div style="font-size: 12px; opacity: 0.8;">Smart Health Index <span class="ai-badge" id="ai-score">Score: --</span></div>
+            <div style="font-size: 28px; font-weight: bold; margin: 10px 0;" id="main-balance">KES 0.00</div>
+            <div style="font-size: 11px;">AI 7-Day Forecast: <span style="color:#4ade80;" id="ai-forecast">+KES 0.00</span></div>
+        </div>
+        <div class="grid-2">
+            <div class="stat-card"><h3>📈</h3><div style="font-size:10px;">CASH FLOW LIVE</div></div>
+            <div id="dailyTotal" class="stat-card"><h3>💰</h3><div style="font-size:10px;">TODAY: KES 0</div></div>
+        </div>
+        <div class="smart-hub">
+            <h3 style="font-size:14px; margin-top:0;">Secure Execution Terminal</h3>
+            <form action="/push" method="POST">
+                <input type="password" name="password" placeholder="Secure PIN" required>
+                <input type="number" name="phone" placeholder="2547..." required>
+                <input type="number" name="amount" placeholder="Amount" required>
+                <button type="submit" class="btn-main">AUTHORIZE TRANSFER</button>
+            </form>
+        </div>
+    </div>
             <div style="font-size: 28px; font-weight: bold; margin: 10px 0;">KES 1,240,500.00</div>
             <div style="font-size: 11px;">7-Day Prediction: <span style="color:#4ade80;">+KES 12,000</span></div>
         </div>
@@ -188,10 +212,14 @@ app.get('/', (req, res) => {
         }
         async function updateStatus() {
             try {
-                const res = await fetch('/api/status');
+                const res = await fetch("/api/status");
                 const data = await res.json();
-                document.getElementById('dailyTotal').innerHTML = '<h3>💰</h3><div style="font-size:10px;">TODAY: KES '+data.todayTotal+'</div>';
+                document.getElementById("main-balance").innerText = "KES " + data.todayTotal.toLocaleString();
+                document.getElementById("ai-score").innerText = "Score: " + Math.floor(data.healthScore);
+                document.getElementById("ai-forecast").innerText = "+KES " + data.forecast;
+                document.getElementById("dailyTotal").innerHTML = "<h3>💰</h3><div style="font-size:10px;">TODAY: KES "+data.todayTotal+"</div>";
             } catch(e) {}
+        }
         }
         setInterval(updateStatus, 5000);
     </script>
