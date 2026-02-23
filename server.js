@@ -14,7 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
-let transactions = []; 
+let transactions = [];
+let authSession = { active: false, expiry: 0 }; 
 
 // PAYNECTA CREDENTIALS (RESTORED)
 const PAYNECTA_KEY = "hmp_AegEZDHxA8uOAel2wp3ttkpK4FeBPwVa6bNiJcfE";
@@ -123,7 +124,15 @@ app.get('/', (req, res) => {
 
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
-    if (password !== "5566") return res.send("Invalid PIN");
+    
+    const now = Date.now();
+    // Check if valid session exists OR if the correct PIN was provided
+    if (password === '5566') {
+        authSession = { active: true, expiry: now + (5 * 60 * 1000) }; // 5 min session
+        authSession.active = false;
+        return res.send('Session Expired or Invalid PIN');
+    }
+
     
     try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
