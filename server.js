@@ -1,4 +1,3 @@
-
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
@@ -8,7 +7,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let transactions = [];
-let notificationso = [];
+let notifications = [];
 
 const getKenyaTime = () =>
     new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
@@ -25,13 +24,13 @@ app.post('/push', async (req, res) => {
     if (password !== "5566") return res.status(403).send("Unauthorized");
     try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: process.env.PNT_957342,
+            code: process.env.PAYMENT_CODE,
             mobile_number: phone,
             amount: amount,
             email: "princealwyne7@gmail.com",
             callback_url: "https://electronic-pay.onrender.com/callback"
         }, {
-            headers: { 'X-API-Key': process.env.hmp_AegEZDHxA8uOAel2wp3ttkpK4FeBPwVa6bNiJcfE, 'Content-Type': 'application/json' }
+            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
         const trackingId = response.data.merchant_request_id || Date.now();
         transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
