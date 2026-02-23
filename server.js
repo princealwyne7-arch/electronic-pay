@@ -2,20 +2,15 @@ cat << 'EOF' > server.js
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
-
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let transactions = [];
-
-const getKenyaTime = () => 
-    new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
+const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
 app.get('/api/status', (req, res) => {
-    const todayTotal = transactions
-        .filter(t => t.status.includes('Successful'))
-        .reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
+    const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
     res.json({ transactions, todayTotal, aiScore: 820 });
 });
 
@@ -29,20 +24,10 @@ app.post('/push', async (req, res) => {
             amount: amount,
             email: "princealwyne7@gmail.com",
             callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
-        const trackingId = response.data.merchant_request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' } });
+        transactions.unshift({ id: Date.now(), phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
-});
-
-app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
-    let tx = transactions.find(t => bodyText.includes(String(t.phone)));
-    if (tx) { tx.status = "Successful ✅"; }
-    res.sendStatus(200);
 });
 
 app.get('/', (req, res) => {
@@ -57,9 +42,8 @@ app.get('/', (req, res) => {
         body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; }
         .topbar { position:fixed; top:0; width:100%; height:65px; background: white; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-sizing:border-box; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.03); }
         .logo-area { display:flex; align-items:center; gap:12px; font-weight:800; font-size:18px; }
-        .tab-content { display: none; padding: 85px 15px 20px 15px; animation: fadeIn 0.3s ease; }
+        .tab-content { display: none; padding: 85px 15px 20px 15px; }
         .active-tab { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
         .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #f1f5f9; }
         .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; }
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
@@ -86,7 +70,7 @@ app.get('/', (req, res) => {
         <div class="card">
             <form action="/push" method="POST">
                 <input type="password" name="password" placeholder="Manager PIN" required>
-                <input type="number" name="phone" placeholder="Recipient (254...)" required>
+                <input type="number" name="phone" placeholder="Recipient" required>
                 <input type="number" name="amount" placeholder="Amount" required>
                 <button type="submit" class="btn-exec">AUTHORIZE STK PUSH</button>
             </form>
@@ -101,17 +85,10 @@ app.get('/', (req, res) => {
         </div>
         <div class="card">
             <h4 style="color:var(--accent); margin-top:0;">GLOBAL CONFIGURATION</h4>
-            <div class="setting-row"><div><div class="setting-title">Multi-Currency Accounts</div><div class="setting-desc">Real-time FX & Virtual Wallets</div></div></div>
+            <div class="setting-row"><div><div class="setting-title">Multi-Currency Accounts</div><div class="setting-desc">FX & Virtual Wallets</div></div></div>
             <div class="setting-row"><div><div class="setting-title">Language Selector</div><div class="setting-desc">AI Contextual Translation</div></div></div>
-            <div class="setting-row"><div><div class="setting-title">Time Zone Sync</div><div class="setting-desc">UTC/Local Mapping</div></div></div>
-            <div class="setting-row"><div><div class="setting-title">Regional Payment Rails</div><div class="setting-desc">Smart Routing for Kenya & Beyond</div></div></div>
-            <div class="setting-row"><div><div class="setting-title">FX Rate Lock Tool</div><div class="setting-desc">AI Forecasting & Alerts</div></div></div>
+            <div class="setting-row"><div><div class="setting-title">Regional Payment Rails</div><div class="setting-desc">Smart Routing Kenya</div></div></div>
             <div class="setting-row" style="border:none;"><div><div class="setting-title">Compliance Audit</div><div class="setting-desc">AML/KYC Regulatory Logs</div></div></div>
-        </div>
-        <div class="card">
-            <h4 style="color:#3b82f6; margin-top:0;">ADVANCED MODES</h4>
-            <div class="setting-row"><div><div class="setting-title">Smart Migration</div><div class="setting-desc">Auto-Country Adaptation</div></div></div>
-            <div class="setting-row" style="border:none;"><div><div class="setting-title">Economic Impact Score</div><div class="setting-desc">AI Event Monitoring</div></div></div>
         </div>
     </div>
 
@@ -131,7 +108,6 @@ app.get('/', (req, res) => {
             document.getElementById('tab-' + id).classList.add('active-tab');
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             el.classList.add('active');
-            window.scrollTo(0,0);
         }
         async function update() {
             try {
@@ -139,25 +115,21 @@ app.get('/', (req, res) => {
                 const data = await res.json();
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 const feed = document.getElementById('activityFeed');
-                feed.innerHTML = data.transactions.length ? data.transactions.map(t => \`
-                    <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;">
-                        <span><b>\${t.phone}</b><br><small style="color:#94a3b8">\${t.time}</small></span>
-                        <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br><small>\${t.status}</small></span>
-                    </div>
-                \`).join('') : 'No activity';
+                if (data.transactions.length) {
+                    feed.innerHTML = data.transactions.map(t => '<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f1f5f9;"><span><b>' + t.phone + '</b><br><small>' + t.time + '</small></span><span style="text-align:right;"><b style="color:var(--accent)">KES ' + t.amount + '</b><br><small>' + t.status + '</small></span></div>').join('');
+                }
             } catch(e) {}
         }
-        setInterval(update, 3000); update();
+        setInterval(update, 4000); update();
     </script>
 </body>
 </html>
     `);
 });
-
 app.listen(process.env.PORT || 3000);
 EOF
 
 git add server.js
-git commit -m "Vault Update: Global & Regional Architecture"
+git commit -m "Deployment: Fixed SyntaxError and Vault UI"
 git push origin main
 
