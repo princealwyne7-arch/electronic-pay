@@ -89,13 +89,7 @@ app.get('/', (req, res) => {
             <div id="activity" class="page"><div class="history-card">
                 <h3 style="margin:0 0 10px 0; text-align:left;">Live Activity</h3>
                 <div id="history-list">No activity...</div></div></div>
-            <div class="admin-box">
-                <p>⚙️ <b>System Settings</b></p>
-                <form action="/upload-logo" method="POST" enctype="multipart/form-data">
-                    <label>Change Logo Photo:</label><br>
-                    <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="margin-top:10px;">
-                </form>
-            </div>
+            
             <script>
                 async function updateStatus() {
                     try {
@@ -131,50 +125,68 @@ app.get('/', (req, res) => {
                 <div class="container" style="background:#1e293b; color:white;">
                     <h2 style="color:#10b981;">Digital Ledger</h2>
                     <input type="text" id="cdis" readonly value="0" style="background:transparent; color:#10b981; border:none; text-align:right; font-size:32px; font-family:monospace; margin-bottom:20px;">
+                    
                     <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
-                        <button onclick="cCl()" style="padding:20px; background:#64748b; border:none; border-radius:12px; color:white;">C</button>
-                        <button onclick="cIn('/')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">÷</button>
-                        <button onclick="cIn('*')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">×</button>
-                        <button onclick="cIn('-')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">-</button>
-                        <button onclick="cIn('7')" style="padding:20px; background:#334155; border:none; border-radius:12px; color:white;">7</button>
-                        <button onclick="cIn('8')" style="padding:20px; background:#334155; border:none; border-radius:12px; color:white;">8</button>
-                        <button onclick="cIn('9')" style="padding:20px; background:#334155; border:none; border-radius:12px; color:white;">9</button>
-                        <button onclick="cIn('+')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">+</button>
-                        <button onclick="cIn('0')" style="grid-column: span 2; padding:20px; background:#334155; border:none; border-radius:12px; color:white;">0</button>
-                        <button onclick="cRes()" style="grid-column: span 2; padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">=</button>
+                        <button onclick="cCl()" style="padding:15px; background:#64748b; border:none; border-radius:12px; color:white;">C</button>
+                        <button onclick="cIn('/')" style="padding:15px; background:#28a745; border:none; border-radius:12px; color:white;">÷</button>
+                        <button onclick="cIn('*')" style="padding:15px; background:#28a745; border:none; border-radius:12px; color:white;">×</button>
+                        <button onclick="cIn('-')" style="padding:15px; background:#28a745; border:none; border-radius:12px; color:white;">-</button>
+                        <button onclick="cIn('7')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">7</button>
+                        <button onclick="cIn('8')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">8</button>
+                        <button onclick="cIn('9')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">9</button>
+                        <button onclick="cIn('+')" style="padding:15px; background:#28a745; border:none; border-radius:12px; color:white;">+</button>
+                        <button onclick="cIn('4')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">4</button>
+                        <button onclick="cIn('5')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">5</button>
+                        <button onclick="cIn('6')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">6</button>
+                        <button onclick="cRes()" style="grid-row: span 2; padding:15px; background:#28a745; border:none; border-radius:12px; color:white;">=</button>
+                        <button onclick="cIn('1')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">1</button>
+                        <button onclick="cIn('2')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">2</button>
+                        <button onclick="cIn('3')" style="padding:15px; background:#334155; border:none; border-radius:12px; color:white;">3</button>
+                        <button onclick="cIn('0')" style="grid-column: span 3; padding:15px; background:#334155; border:none; border-radius:12px; color:white;">0</button>
                     </div>
+
                 </div>
             </div>
 
             
+            
             <div id="more" class="page">
                 <div class="container">
-                    <h2 style="color:#28a745;">System Settings</h2>
+                    <h2 style="color:#28a745;">System Command</h2>
+                    
                     <div class="history-card" style="width:100%; margin-bottom:15px;">
-                        <p style="font-weight:bold; color:#28a745;">🔔 Audio Alerts (12+ Selection)</p>
-                        <label>Success Tone:</label>
-                        <select id="successSnd">
-                            <option value="1">Classic Chime ✅</option>
-                            <option value="2">Cash Register 💰</option>
-                            <option value="3">High Tech Ping ⚡</option>
-                            <option value="4">Banking Alert 🏦</option>
-                        </select>
-                        <label>Error Tone:</label>
-                        <select id="errorSnd">
-                            <option value="1">Titititi Alert ⚠️</option>
-                            <option value="2">Security Breach 🚨</option>
-                        </select>
+                        <p style="font-weight:bold; color:#28a745;">🔔 Audio Alerts (12+ Library)</p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:left;">
+                            <div>
+                                <label style="font-size:11px;">Success Tone</label>
+                                <select id="successSnd"><option>Chime ✅</option><option>Cash 💰</option><option>Ping ⚡</option></select>
+                            </div>
+                            <div>
+                                <label style="font-size:11px;">Error Tone</label>
+                                <select id="errorSnd"><option>Alert ⚠️</option><option>Siren 🚨</option><option>Buzz ❌</option></select>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="history-card" style="width:100%; margin-bottom:15px;">
+                        <p style="font-weight:bold; color:#64748b;">⚙️ Identity Settings</p>
+                        <form action="/upload-logo" method="POST" enctype="multipart/form-data">
+                            <label style="font-size:12px;">Update Merchant Logo:</label><br>
+                            <input type="file" name="logo" accept="image/*" onchange="this.form.submit()" style="margin-top:5px; font-size:12px;">
+                        </form>
+                    </div>
+
                     <div class="history-card" style="width:100%; border-left: 4px solid #3b82f6;">
                         <p style="color:#3b82f6; font-weight:bold;">🚀 High-Tech Monitor</p>
-                        <div style="background:#0f172a; color:#10b981; padding:10px; border-radius:8px; font-family:monospace; font-size:12px; text-align:left;">
-                            <div>API Status: ONLINE ●</div>
-                            <div>Encryption: AES-256</div>
-                            <div>Uptime: <span id="uptime">00:00:00</span></div>
+                        <div style="background:#0f172a; color:#10b981; padding:10px; border-radius:8px; font-family:monospace; font-size:11px; text-align:left;">
+                            <div>STATUS: ONLINE ●</div>
+                            <div>CORE: AES-256 ENCRYPTED</div>
+                            <div>UPTIME: <span id="uptime">00:00:00</span></div>
                         </div>
                     </div>
                 </div>
             </div>
+
 
 
     <nav class="nav-bar">
