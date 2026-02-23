@@ -125,8 +125,11 @@ app.get('/', (req, res) => {
         </div>
     </div>
     <nav class="nav-bar">
+        <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
+        <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
+        <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
+    </nav>
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
-
     <script>
         function tab(id, el) {
             document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active-tab'); });
@@ -147,13 +150,6 @@ app.get('/', (req, res) => {
                 a.play().catch(function(e) {});
             }
         }
-        function setDark(on) {
-            document.body.style.background = on ? '#0f172a' : '#f8fafc';
-            document.querySelectorAll('.container, .history-card, .nav-bar').forEach(function(c) {
-                c.style.background = on ? '#1e293b' : '#fff';
-                c.style.color = on ? '#f8fafc' : '#1e293b';
-            });
-        }
         async function sync() {
             try {
                 const res = await fetch('/api/status');
@@ -171,32 +167,3 @@ app.get('/', (req, res) => {
     </script>
 </body>
 </html>
-    `);
-});
-
-app.post('/push', async (req, res) => {
-    const { phone, amount, password } = req.body;
-    if (password !== "5566") return res.send("Invalid PIN");
-    try {
-        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: PAYMENT_CODE, mobile_number: phone, amount: amount,
-            email: "princealwyne7@gmail.com", callback_url: "https://electronic-pay.onrender.com/callback"
-        }, { headers: { 'X-API-Key': PAYNECTA_KEY } });
-        const tid = response.data.merchant_request_id || Date.now();
-        transactions.unshift({ id: tid, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
-        res.redirect('/');
-    } catch (err) { res.redirect('/'); }
-});
-
-app.post('/callback', (req, res) => {
-    const data = JSON.stringify(req.body).toLowerCase();
-    let tx = transactions.find(t => data.includes(String(t.id)) || data.includes(String(t.phone)));
-    if (tx) {
-        if (data.includes('success') || data.includes('"0"')) tx.status = 'Successful ✅';
-        else if (data.includes('cancel') || data.includes('1032')) tx.status = 'Cancelled ❌';
-        else tx.status = 'Failed ⚠️';
-    }
-    res.sendStatus(200);
-});
-
-app.listen(process.env.PORT || 3000);
