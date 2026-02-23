@@ -78,13 +78,13 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="settings" class="tab-content">
+        
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('snd-box')">NOTIFICATIONS & SOUNDS <span>▼</span></h3>
             <div id="snd-box" class="collapsible">
-                <div class="row"><b>Master Sound Switch</b> <input type="checkbox" id="master_snd" checked></div>
-                <label style="font-size:10px; color:var(--sub);">SUCCESS SOUND (12 WORLD CLASS)</label>
+                <div class="row"><b>Master Sound</b> <input type="checkbox" id="master_snd" checked></div>
                 <select id="snd_select" onchange="previewSnd()">
-                    <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold (Default)</option>
+                    <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold</option>
                     <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime</option>
                     <option value="https://nfc-pro.com/sounds/success.mp3">3. Modern Beep</option>
                     <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bbdec3a6ce.mp3">4. Crystal Ping</option>
@@ -97,53 +97,34 @@ app.get('/', (req, res) => {
                     <option value="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3">11. Minimal Pop</option>
                     <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b8265a6e.mp3">12. Galactic Ping</option>
                 </select>
-                <div class="row"><b>Master Notification Switch</b> <input type="checkbox" id="master_notif" checked></div>
-                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
-                <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
-                <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
-                <div class="row"><span>Bill Due Reminders</span><input type="checkbox"></div>
-                <div class="row"><span>Marketing Preferences</span><input type="checkbox"></div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
-                    <span>SMS <input type="checkbox" checked></span>
-                    <span>Email <input type="checkbox"></span>
-                    <span>Push <input type="checkbox" checked></span>
-                </div>
+                <div class="row"><span>Transaction Alerts</span><input type="checkbox" checked></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px;"><span>SMS <input type="checkbox" checked></span><span>Email <input type="checkbox"></span><span>Push <input type="checkbox" checked></span></div>
             </div>
         </div>
-
+        
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('reg-box')">REGIONAL & APP PREFERENCES <span>▼</span></h3>
             <div id="reg-box" class="collapsible">
-                <label style="font-size:10px; color:var(--sub);">LANGUAGE SELECTION</label>
-                <select><option>English (UK)</option><option>Kiswahili</option></select>
-                <div class="row"><span>Dark Mode / Light Mode</span><input type="checkbox" onchange="setDark(this.checked)"></div>
-                <label style="font-size:10px; color:var(--sub);">CURRENCY DISPLAY FORMAT</label>
-                <select><option>KES (Shilling)</option><option>USD ($)</option></select>
-                <label style="font-size:10px; color:var(--sub);">TIME ZONE</label>
-                <select><option>(GMT+03:00) Nairobi</option></select>
-                <div class="row"><span>Accessibility Settings</span><input type="checkbox"></div>
-                <label style="font-size:10px; color:var(--sub);">APP THEME</label>
-                <div style="display:flex; gap:10px; margin-top:5px;">
-                    <div class="theme-dot" style="background:#28a745;"></div>
-                    <div class="theme-dot" style="background:#007bff;"></div>
-                    <div class="theme-dot" style="background:#6f42c1;"></div>
-                </div>
+                <label style="font-size:10px;">LANGUAGE</label><select><option>English (UK)</option><option>Kiswahili</option></select>
+                <div class="row"><span>Dark Mode</span><input type="checkbox" onchange="setDark(this.checked)"></div>
+                <label style="font-size:10px;">CURRENCY</label><select><option>KES (Shilling)</option><option>USD ($)</option></select>
             </div>
         </div>
-
+        
         <div class="history-card">
-            <form action="/upload-logo" method="POST" enctype="multipart/form-data">
-                <label style="font-size:12px;">Branding Photo:</label>
-                <input type="file" name="logo" accept="image/*" onchange="this.form.submit()">
-            </form>
+            <h3 class="header-caps" onclick="toggle('pay-box')">PAYMENT & TRANSACTION <span>▼</span></h3>
+            <div id="pay-box" class="collapsible">
+                <div class="row"><span>Auto-Debit</span><input type="checkbox"></div>
+                <div class="row"><span>Recurring Payments</span><input type="checkbox"></div>
+                <label style="font-size:10px;">EXPORT DATA</label>
+                <div style="display:flex; gap:5px;"><button style="flex:1; padding:8px; font-size:10px; border-radius:5px; border:none; background:#eee;">PDF</button><button style="flex:1; padding:8px; font-size:10px; border-radius:5px; border:none; background:#eee;">CSV</button></div>
+            </div>
+        </div>
+        <div class="history-card">
+            <form action="/upload-logo" method="POST" enctype="multipart/form-data"><label style="font-size:12px;">Logo:</label><input type="file" name="logo" onchange="this.form.submit()"></form>
         </div>
     </div>
-
     <nav class="nav-bar">
-        <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
-        <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
-        <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
-    </nav>
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
     <script>
