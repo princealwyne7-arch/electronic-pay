@@ -14,10 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));
 
-let transactions = [];
-let authSession = { active: false, expiry: 0 }; 
+// HIGH-TECH DATA LAYER
+let transactions = []; 
+let authSession = { active: false, expiry: 0 }; // Session Intelligence
 
-// PAYNECTA CREDENTIALS (RESTORED)
 const PAYNECTA_KEY = "hmp_AegEZDHxA8uOAel2wp3ttkpK4FeBPwVa6bNiJcfE";
 const PAYMENT_CODE = "PNT_957342";
 
@@ -25,11 +25,11 @@ const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'A
 
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
-    if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
-    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
-    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
-    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
+    if (data.includes('"0"') || data.includes('success')) return 'Successful ✅';
+    if (data.includes('1032')) return 'Cancelled ❌';
+    if (data.includes('1037')) return 'Timeout ⏳';
+    if (data.includes('2001')) return 'Wrong PIN 🔑';
+    if (data.includes('1')) return 'Low Balance 💸';
     return 'Pending/Other ⚠️';
 };
 
@@ -48,7 +48,7 @@ app.post('/upload-logo', upload.single('logo'), (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send(`
+    res.send(\`
         <!DOCTYPE html>
         <html>
         <head>
@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
         </head>
         <body>
             <div class="top-banner">
-                <img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic">
+                <img src="/uploads/logo.png?v=\${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic">
             </div>
             <div class="container" style="margin-top:60px;">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
@@ -119,29 +119,24 @@ app.get('/', (req, res) => {
             </script>
         </body>
         </html>
-    `);
+    \`);
 });
 
+// UPGRADED ORCHESTRATION LAYER (Step 1: Session Auth)
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
-    
-    
     const now = Date.now();
     let isAuthorized = false;
 
-    if (password === '5566') {
-        // Correct PIN entered: Refresh session
+    // Check PIN vs Session Expiry
+    if (password === "5566") {
         authSession = { active: true, expiry: now + (5 * 60 * 1000) };
         isAuthorized = true;
     } else if (authSession.active && now < authSession.expiry) {
-        // No PIN but valid session exists
         isAuthorized = true;
     }
 
-        return res.send('Session Expired or Invalid PIN. Please use 5566.');
-    }
-
-
+    if (!isAuthorized) return res.status(401).send("Session Expired or Invalid PIN. Use 5566.");
     
     try {
         const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
