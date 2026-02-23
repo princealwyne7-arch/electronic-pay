@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Electronic Pay | Elite</title>
     <style>
+/* STYLE_ZONE */
         :root { --cobalt: #0047AB; --emerald: #28a745; --slate: #1e293b; --glass: rgba(255,255,255,0.9); }
         body { font-family: 'Inter', sans-serif; background: #f4f7fe; margin: 0; color: var(--slate); overflow-x: hidden; padding-bottom: 100px; }
         
@@ -168,6 +169,7 @@ app.get('/', (req, res) => {
     <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
+// SCRIPT_ZONE
         function toggleMenu(open) {
             document.getElementById('sidebar').classList.toggle('active', open);
         }
