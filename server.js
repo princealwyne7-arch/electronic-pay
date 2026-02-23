@@ -120,10 +120,62 @@ app.get('/', (req, res) => {
                 }
                 setInterval(updateStatus, 3000);
                 updateStatus();
-            </script>
+            
+    function cIn(v){ let d=document.getElementById('cdis'); if(d.value=='0') d.value=v; else d.value+=v; }
+    function cCl(){ document.getElementById('cdis').value='0'; }
+    function cRes(){ try{ let d=document.getElementById('cdis'); d.value=eval(d.value); }catch(e){ d.value='Error'; } }
+</script>
         
-            <div id="calc" class="page"><div class="container"><h2>Calculator</h2><p>Restoring numeric grid...</p></div></div>
-            <div id="more" class="page"><div class="container"><h2>Advanced Tools</h2><p>Restoring 12+ sounds...</p></div></div>
+            
+            <div id="calc" class="page">
+                <div class="container" style="background:#1e293b; color:white;">
+                    <h2 style="color:#10b981;">Digital Ledger</h2>
+                    <input type="text" id="cdis" readonly value="0" style="background:transparent; color:#10b981; border:none; text-align:right; font-size:32px; font-family:monospace; margin-bottom:20px;">
+                    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+                        <button onclick="cCl()" style="padding:20px; background:#64748b; border:none; border-radius:12px; color:white;">C</button>
+                        <button onclick="cIn('/')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">÷</button>
+                        <button onclick="cIn('*')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">×</button>
+                        <button onclick="cIn('-')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">-</button>
+                        <button onclick="cIn('7')" style="padding:20px; background:#334155; border:none; border-radius:12px; color:white;">7</button>
+                        <button onclick="cIn('8')" style="padding:20px; background:#334155; border:none; border-radius:12px; color:white;">8</button>
+                        <button onclick="cIn('9')" style="padding:20px; background:#334155; border:none; border-radius:12px; color:white;">9</button>
+                        <button onclick="cIn('+')" style="padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">+</button>
+                        <button onclick="cIn('0')" style="grid-column: span 2; padding:20px; background:#334155; border:none; border-radius:12px; color:white;">0</button>
+                        <button onclick="cRes()" style="grid-column: span 2; padding:20px; background:#28a745; border:none; border-radius:12px; color:white;">=</button>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="more" class="page">
+                <div class="container">
+                    <h2 style="color:#28a745;">System Settings</h2>
+                    <div class="history-card" style="width:100%; margin-bottom:15px;">
+                        <p style="font-weight:bold; color:#28a745;">🔔 Audio Alerts (12+ Selection)</p>
+                        <label>Success Tone:</label>
+                        <select id="successSnd">
+                            <option value="1">Classic Chime ✅</option>
+                            <option value="2">Cash Register 💰</option>
+                            <option value="3">High Tech Ping ⚡</option>
+                            <option value="4">Banking Alert 🏦</option>
+                        </select>
+                        <label>Error Tone:</label>
+                        <select id="errorSnd">
+                            <option value="1">Titititi Alert ⚠️</option>
+                            <option value="2">Security Breach 🚨</option>
+                        </select>
+                    </div>
+                    <div class="history-card" style="width:100%; border-left: 4px solid #3b82f6;">
+                        <p style="color:#3b82f6; font-weight:bold;">🚀 High-Tech Monitor</p>
+                        <div style="background:#0f172a; color:#10b981; padding:10px; border-radius:8px; font-family:monospace; font-size:12px; text-align:left;">
+                            <div>API Status: ONLINE ●</div>
+                            <div>Encryption: AES-256</div>
+                            <div>Uptime: <span id="uptime">00:00:00</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
     <nav class="nav-bar">
         <div class="nav-item active" onclick="sP('home', this)"><span class="nav-icon">🏠</span>Home</div>
