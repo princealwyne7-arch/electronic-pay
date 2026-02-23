@@ -27,7 +27,26 @@
             <button type="submit" class="btn-send">SEND STK PUSH</button>
         </form>
     </div>
-    <div class="history-card">
+    
+    <div class='history-card' style='margin-top:10px;'>
+        <h4 style='margin:0 0 10px 0;'>🔔 Sound Settings (12+ Library)</h4>
+        <select id='soundSelect' style='width:100%; padding:10px; border-radius:10px; border:1px solid #ddd;'>
+            <option value='https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'>1. Classic Chime (Success)</option>
+            <option value='https://nfc-pro.com/sounds/success.mp3'>2. Digital Beep</option>
+            <option value='https://nfc-pro.com/sounds/alert.mp3'>3. High-Tech Alert</option>
+            <option value='https://nfc-pro.com/sounds/notification.mp3'>4. Soft Ping</option>
+            <option value='https://nfc-pro.com/sounds/coins.mp3'>5. Cash Register</option>
+            <option value='https://nfc-pro.com/sounds/magic.mp3'>6. Fairy Dust</option>
+            <option value='https://nfc-pro.com/sounds/level-up.mp3'>7. Achievement</option>
+            <option value='https://nfc-pro.com/sounds/bubble.mp3'>8. Water Pop</option>
+            <option value='https://nfc-pro.com/sounds/confirm.mp3'>9. Order Confirmed</option>
+            <option value='https://nfc-pro.com/sounds/positive.mp3'>10. Positive Chime</option>
+            <option value='https://nfc-pro.com/sounds/complete.mp3'>11. Task Complete</option>
+            <option value='https://nfc-pro.com/sounds/arrival.mp3'>12. Funds Arrival</option>
+        </select>
+        <button onclick='testSound()' style='margin-top:10px; width:100%; background:#f1f5f9; border:none; padding:8px; border-radius:8px; font-size:12px; cursor:pointer;'>Tap to Enable/Test Audio</button>
+    </div>
+<div class="history-card">
         <h3>Live Activity</h3>
         <div id="list">Checking system...</div>
     </div>
@@ -40,11 +59,17 @@
                 const d = await r.json();
                 document.getElementById("dailyTotal").innerText = "Today: KES " + d.todayTotal;
                 const active = d.transactions || [];
-                if(active.length > lastCount) { document.getElementById("snd").play(); lastCount = active.length; }
+                if(active.length > lastCount) { const s=document.getElementById("snd"); s.src=document.getElementById("soundSelect").value; s.play(); lastCount = active.length; }
                 document.getElementById("list").innerHTML = active.map(t => `<div style="border-bottom:1px solid #eee;padding:10px;text-align:left;"><b>${t.phone}</b> <span style="float:right">KES ${t.amount}</span><br><small>${t.time} - ${t.status}</small></div>`).join("") || "No activity";
             } catch(e){ document.getElementById("list").innerText = "Syncing..."; }
         }
-        setInterval(update, 3000); update();
+        setInterval(update, 3000); 
+    function testSound() { 
+        const s = document.getElementById('snd');
+        s.src = document.getElementById('soundSelect').value;
+        s.play().catch(e => alert('Please tap the screen first to enable audio'));
+    }
+update();
         const p = localStorage.getItem("mpin");
         const e = localStorage.getItem("mexp");
         if(p && Date.now() < e) document.getElementById("passInput").value = p;
