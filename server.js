@@ -71,6 +71,21 @@ app.get('/', (req, res) => {
     .nav-item { flex: 1; text-align: center; color: #94a3b8; font-size: 11px; cursor: pointer; transition: 0.3s; }
     .nav-item.active { color: #28a745; font-weight: bold; }
     .nav-icon { font-size: 20px; display: block; margin-bottom: 2px; }
+
+    .page { padding-top: 80px; padding-bottom: 100px; }
+    .container, .history-card { 
+        border-radius: 16px; 
+        border: 1px solid #e2e8f0; 
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); 
+    }
+    .status-row { 
+        padding: 15px; 
+        background: #f8fafc; 
+        margin-bottom: 8px; 
+        border-radius: 12px; 
+        border: 1px solid #edf2f7; 
+    }
+    .top-banner { position: fixed; top: 0; width: 100%; z-index: 100; height: 120px; }
 </style>
         </head>
         <body>
@@ -100,7 +115,7 @@ app.get('/', (req, res) => {
                             let statusColor = t.status.includes('Successful') ? '#28a745' : (t.status.includes('Processing') ? '#17a2b8' : '#dc3545');
                             return \`
                                 <div class="status-row">
-                                    <div class="flex-row">
+                                    <div class="flex-row" style="margin-bottom:5px;">
                                         <b>\${t.phone}</b>
                                         <b style="color:\${statusColor};">KES \${t.amount}</b>
                                     </div>
@@ -121,7 +136,7 @@ app.get('/', (req, res) => {
 </script>
         
             
-            <div id="calc" class="page">
+            <div id="calc" class="page" style="display:flex; flex-direction:column; align-items:center;">
                 <div class="container" style="background:#1e293b; color:white;">
                     <h2 style="color:#10b981;">Digital Ledger</h2>
                     <input type="text" id="cdis" readonly value="0" style="background:transparent; color:#10b981; border:none; text-align:right; font-size:32px; font-family:monospace; margin-bottom:20px;">
@@ -150,7 +165,7 @@ app.get('/', (req, res) => {
 
             
             
-            <div id="more" class="page">
+            <div id="more" class="page" style="display:flex; flex-direction:column; align-items:center;">
                 <div class="container">
                     <h2 style="color:#28a745;">System Command</h2>
                     
