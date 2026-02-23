@@ -98,17 +98,7 @@ app.get('/', (req, res) => {
                     <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b8265a6e.mp3">12. Galactic Ping</option>
                 </select>
                 <div class="row"><b>Master Notification Switch</b> <input type="checkbox" id="master_notif" checked></div>
-                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" class="notif-item" checked></div>
-                <div class="row"><span>Low Balance Alerts</span><input type="checkbox" class="notif-item" checked></div>
-                <div class="row"><span>Login Alerts</span><input type="checkbox" class="notif-item" checked></div>
-                <div class="row"><span>Bill Due Reminders</span><input type="checkbox" class="notif-item"></div>
-                <div class="row"><span>Marketing Preferences</span><input type="checkbox" class="notif-item"></div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
-                    <span>SMS <input type="checkbox" checked></span>
-                    <span>Email <input type="checkbox"></span>
-                    <span>Push <input type="checkbox" checked></span>
-                </div>
-            </div>
+                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
                 <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Bill Due Reminders</span><input type="checkbox"></div>
@@ -170,8 +160,11 @@ app.get('/', (req, res) => {
         }
         function previewSnd() {
             var a = document.getElementById('player');
-            a.src = document.getElementById('snd_select').value;
-            a.play().catch(function(e) {});
+            var master = document.getElementById('master_snd');
+            if(master && master.checked) {
+                a.src = document.getElementById('snd_select').value;
+                a.play().catch(function(e) {});
+            }
         }
         function setDark(on) {
             document.body.style.background = on ? '#0f172a' : '#f8fafc';
