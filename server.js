@@ -106,10 +106,19 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
-    <nav class="nav-bar">
-        <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
-        <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
-        <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
+    <nav class="nav-bar" style="height: 75px; border-top: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(10px); background: rgba(255,255,255,0.9); display: flex; align-items: center; padding: 0;">
+        <div class="nav-item active" onclick="tab('home', this)" style="flex: 1; transition: 0.3s; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+            <div style="font-size: 22px;">🏛️</div>
+            <div style="letter-spacing: 0.5px; font-size: 9px; text-transform: uppercase;">Vault</div>
+        </div>
+        <div class="nav-item" onclick="tab('activity', this)" style="flex: 1; transition: 0.3s; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+            <div style="font-size: 22px;">📈</div>
+            <div style="letter-spacing: 0.5px; font-size: 9px; text-transform: uppercase;">Insights</div>
+        </div>
+        <div class="nav-item" onclick="tab('settings', this)" style="flex: 1; transition: 0.3s; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+            <div style="font-size: 22px;">🛡️</div>
+            <div style="letter-spacing: 0.5px; font-size: 9px; text-transform: uppercase;">Security</div>
+        </div>
     </nav>
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <script>
