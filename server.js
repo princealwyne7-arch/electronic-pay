@@ -33,6 +33,7 @@ app.post('/upload-logo', upload.single('logo'), (req, res) => {
 });
 
 app.get('/', (req, res) => {
+    const logoUrl = "/uploads/logo.png?v=" + Date.now();
     res.send(`
 <!DOCTYPE html>
 <html>
@@ -57,7 +58,8 @@ app.get('/', (req, res) => {
     </style>
 </head>
 <body>
-    <div class="top-banner"><img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic"></div>
+    <div class="top-banner"><img src="${logoUrl}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic"></div>
+    
     <div id="home" class="tab-content active-tab">
         <div class="container">
             <h2>Electronic Pay</h2>
@@ -70,7 +72,11 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
-    <div id="activity" class="tab-content"><div class="history-card"><h3>Live Activity</h3><div id="history-list">No data...</div></div></div>
+
+    <div id="activity" class="tab-content">
+        <div class="history-card"><h3>Live Activity</h3><div id="history-list">No data...</div></div>
+    </div>
+
     <div id="settings" class="tab-content">
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('snd-box')">NOTIFICATIONS & SOUNDS <span>▼</span></h3>
@@ -84,8 +90,12 @@ app.get('/', (req, res) => {
                 <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
                 <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
-                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px;">
-                    <span>SMS <input type="checkbox" checked></span><span>Email <input type="checkbox"></span><span>Push <input type="checkbox" checked></span>
+                <div class="row"><span>Bill Due Reminders</span><input type="checkbox"></div>
+                <div class="row"><span>Marketing Preferences</span><input type="checkbox"></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                    <span>SMS <input type="checkbox" checked></span>
+                    <span>Email <input type="checkbox"></span>
+                    <span>Push <input type="checkbox" checked></span>
                 </div>
             </div>
         </div>
@@ -95,17 +105,12 @@ app.get('/', (req, res) => {
             <div id="reg-box" class="collapsible">
                 <label style="font-size:10px; color:var(--sub);">LANGUAGE SELECTION</label>
                 <select><option>English (UK)</option><option>Kiswahili</option></select>
-                
                 <div class="row"><span>Dark Mode / Light Mode</span><input type="checkbox" onchange="setDark(this.checked)"></div>
-                
                 <label style="font-size:10px; color:var(--sub);">CURRENCY DISPLAY FORMAT</label>
                 <select><option>KES (Shilling)</option><option>USD ($)</option></select>
-                
                 <label style="font-size:10px; color:var(--sub);">TIME ZONE</label>
                 <select><option>(GMT+03:00) Nairobi</option></select>
-                
                 <div class="row"><span>Accessibility Settings</span><input type="checkbox"></div>
-                
                 <label style="font-size:10px; color:var(--sub);">APP THEME</label>
                 <div style="display:flex; gap:10px; margin-top:5px;">
                     <div class="theme-dot" style="background:#28a745;"></div>
@@ -122,32 +127,34 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
+
     <nav class="nav-bar">
         <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
         <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
         <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
     </nav>
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
     <script>
         function tab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab'));
+            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active-tab'); });
             document.getElementById(id).classList.add('active-tab');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
             el.classList.add('active');
             window.scrollTo(0,0);
         }
         function toggle(id) {
-            const d = document.getElementById(id);
+            var d = document.getElementById(id);
             d.style.display = (d.style.display === 'block') ? 'none' : 'block';
         }
         function previewSnd() {
-            const a = document.getElementById('player');
+            var a = document.getElementById('player');
             a.src = document.getElementById('snd_select').value;
-            a.play().catch(e => {});
+            a.play().catch(function(e) {});
         }
         function setDark(on) {
             document.body.style.background = on ? '#0f172a' : '#f8fafc';
-            document.querySelectorAll('.container, .history-card, .nav-bar').forEach(c => {
+            document.querySelectorAll('.container, .history-card, .nav-bar').forEach(function(c) {
                 c.style.background = on ? '#1e293b' : '#fff';
                 c.style.color = on ? '#f8fafc' : '#1e293b';
             });
@@ -157,11 +164,12 @@ app.get('/', (req, res) => {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                document.getElementById('history-list').innerHTML = data.transactions.map(t => `
-                    <div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px; text-align:left;">
-                        <b>\${t.phone}</b> <span style="float:right; color:#28a745;">KES \${t.amount}</span><br>
-                        <small style="color:#94a3b8;">\${t.time} - \${t.status}</small>
-                    </div>`).join('') || 'No Transactions';
+                var list = data.transactions.map(function(t) {
+                    return '<div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px; text-align:left;">' +
+                           '<b>' + t.phone + '</b> <span style="float:right; color:#28a745;">KES ' + t.amount + '</span><br>' +
+                           '<small style="color:#94a3b8;">' + t.time + ' - ' + t.status + '</small></div>';
+                }).join('') || 'No Transactions';
+                document.getElementById('history-list').innerHTML = list;
             } catch(e) {}
         }
         setInterval(sync, 3000); sync();
