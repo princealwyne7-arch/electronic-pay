@@ -6,135 +6,95 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let transactions = []; 
-const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
-// BRAIN: AI PREDICTOR & STATUS TRANSLATION
+const getKenyaTime = () => {
+    return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
+};
+
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    if (data.includes("success") || data.includes('"0"')) return { s: "Successful ✅", snd: "https://nfc-pro.com/sounds/coins.mp3" };
-    if (data.includes("cancel") || data.includes("1032")) return { s: "Cancelled ❌", snd: "https://nfc-pro.com/sounds/alert.mp3" };
-    if (data.includes("insufficient")) return { s: "Low Balance 💸", snd: "https://cdn.pixabay.com/download/audio/2021/08/04/audio_0624ed05f2.mp3" };
-    return { s: "Processing... 🔄", snd: "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" };
+    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
+    if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
+    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
+    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
+    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
+    return 'Pending/Other ⚠️';
 };
 
 app.get('/api/status', (req, res) => {
-    const successful = transactions.filter(t => t.status.includes('Successful'));
-    const todayTotal = successful.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
-    const avgDaily = successful.length > 0 ? todayTotal / successful.length : 0;
-    const forecast = (avgDaily * 7).toFixed(2);
-    const healthScore = Math.min(1000, 300 + (successful.length * 20) + (todayTotal / 100));
-    res.json({ transactions, todayTotal, healthScore, forecast });
+    const todayTotal = transactions
+        .filter(t => t.status.includes('Successful'))
+        .reduce((sum, t) => sum + parseInt(t.amount), 0);
+    res.json({ transactions, todayTotal });
 });
 
 app.get('/', (req, res) => {
     res.send(`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Electronic Pay | Elite</title>
-    <style>
-        :root { --cobalt: #0047AB; --emerald: #28a745; --slate: #1e293b; --glass: rgba(255,255,255,0.9); }
-        body { font-family: sans-serif; background: #f4f7fe; margin: 0; color: var(--slate); padding-bottom: 100px; }
-        .top-nav { position: fixed; top: 0; width: 100%; height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 2000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .tab-content { display: none; padding: 80px 15px 20px 15px; }
-        .active-tab { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .bank-card { background: linear-gradient(135deg, #0047AB, #002f75); color: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; }
-        .smart-hub { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--glass); backdrop-filter: blur(15px); height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 2000; }
-        .nav-item { text-align: center; color: #94a3b8; cursor: pointer; font-size: 10px; font-weight: 800; }
-        .nav-item.active { color: var(--cobalt); }
-        .ai-badge { background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 5px; font-size: 9px; }
-        input { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; box-sizing: border-box; }
-        .btn-main { width: 100%; padding: 16px; background: var(--emerald); color: white; border: none; border-radius: 12px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="top-nav">
-        <div onclick="toggleMenu(true)">☰</div>
-        <div style="font-weight: 900;">ELECTRONIC <span style="color:var(--emerald)">PAY</span></div>
-        <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:35px; border-radius:50%;">
-    </div>
-
-    <div id="tab-dashboard" class="tab-content active-tab">
-        <div class="bank-card">
-            <div style="font-size: 11px;">AI Health Index <span class="ai-badge" id="ai-score">Score: --</span></div>
-            <div style="font-size: 28px; font-weight: bold; margin: 10px 0;" id="main-balance">KES 0.00</div>
-            <div style="font-size: 11px;">7-Day Forecast: <span id="ai-forecast" style="color:#4ade80;">+KES 0.00</span></div>
-        </div>
-        <div class="smart-hub">
-            <h3 style="font-size:14px; margin:0 0 10px 0;">Secure Transfer</h3>
-            <form action="/push" method="POST">
-                <input type="password" name="password" placeholder="PIN" required>
-                <input type="number" name="phone" placeholder="2547..." required>
-                <input type="number" name="amount" placeholder="Amount" required>
-                <button type="submit" class="btn-main">SEND STK PUSH</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="tab-vault" class="tab-content">
-        <div class="smart-hub">
-            <h3>Wealth Management</h3>
-            <div style="background:#fff7ed; padding:15px; border-radius:15px; margin-bottom:10px;">
-                <b style="color:#9a3412;">Emergency Fund Builder</b>
-                <progress id="fund-progress" value="45" max="100" style="width:100%;"></progress>
-                <small>45% to Goal (KES 50,000)</small>
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+                .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
+                .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
+                input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
+                .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
+                .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
+                .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
+            </style>
+        </head>
+        <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
+            <div class="container">
+                <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
+                <h2 style="margin:5px 0;">Electronic Pay</h2>
+                <div id="dailyTotal" class="total-box">Today: KES 0</div>
+                <form action="/push" method="POST">
+                    <input type="password" name="password" placeholder="Manager PIN" required>
+                    <input type="number" name="phone" placeholder="2547..." required>
+                    <input type="number" name="amount" placeholder="Amount" required>
+                    <button type="submit" class="btn-send">SEND STK PUSH</button>
+                </form>
             </div>
-            <div style="padding:15px; border-bottom:1px solid #eee;">🔒 Time Capsule (Locked Savings)</div>
-            <div style="padding:15px;">🪙 Digital Gold Storage</div>
-        </div>
-    </div>
-
-    <div id="tab-security" class="tab-content">
-        <div class="smart-hub">
-            <h3>Security & Sounds</h3>
-            <select id="snd_select" onchange="previewSnd()" style="width:100%; padding:10px; border-radius:10px;">
-                <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold (Success)</option>
-                <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime</option>
-                <option value="https://nfc-pro.com/sounds/alert.mp3">3. Cyber Alert</option>
-            </select>
-            <div style="margin-top:20px; display:flex; justify-content:space-between;">
-                <span>Panic Mode</span>
-                <button onclick="alert('Panic Mode Armed')" style="background:#ef4444; color:white; border:none; border-radius:5px; padding:5px 10px;">ARM</button>
+            <div class="history-card">
+                <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
+                <div id="history-list">Loading...</div>
             </div>
-        </div>
-    </div>
 
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="tab('dashboard', this)">🏛️<br>VAULT</div>
-        <div class="nav-item" onclick="tab('vault', this)">💎<br>WEALTH</div>
-        <div class="nav-item" onclick="tab('security', this)">🛡️<br>SECURE</div>
-    </nav>
+            <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+            <script>
+                async function updateStatus() {
+                    try {
+                        const res = await fetch('/api/status');
+                        const data = await res.json();
+                        document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
+                        const list = document.getElementById('history-list');
+                        let html = '';
+                        data.transactions.forEach((t, index) => {
+                            const isSuccess = t.status.includes('Successful');
+                            if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
+                                document.getElementById('successSound').play().catch(() => {});
+                                localStorage.setItem('ding_' + t.id, 'true');
+                            }
+                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
+                        });
+                        list.innerHTML = html || 'No activity';
+                    } catch(e) {}
+                }
 
-    <script>
-        function tab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab'));
-            document.getElementById('tab-' + id).classList.add('active-tab');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-        }
-        function previewSnd() {
-            const a = document.getElementById('successSound');
-            a.src = document.getElementById('snd_select').value;
-            a.play();
-        }
-        async function updateStatus() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-                document.getElementById('main-balance').innerText = 'KES ' + data.todayTotal.toLocaleString();
-                document.getElementById('ai-score').innerText = 'Score: ' + Math.floor(data.healthScore);
-                document.getElementById('ai-forecast').innerText = '+KES ' + data.forecast;
-            } catch(e) {}
-        }
-        setInterval(updateStatus, 5000); updateStatus();
-    </script>
-</body>
-</html>
+                function shareReceipt(phone, amt, time) {
+                    const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
+                    window.open("https://wa.me/?text=" + encodeURIComponent(text));
+                }
+
+                setInterval(updateStatus, 3000);
+                updateStatus();
+            </script>
+        </body>
+        </html>
     `);
 });
 
@@ -149,18 +109,19 @@ app.post('/push', async (req, res) => {
             email: "princealwyne7@gmail.com",
             callback_url: "https://electronic-pay.onrender.com/callback"
         }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY }
+            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
-        transactions.unshift({ id: Date.now(), phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
+        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        if (transactions.length > 20) transactions.pop();
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
 app.post('/callback', (req, res) => {
-    const body = req.body;
-    const info = translateStatus(body);
-    let tx = transactions.find(t => JSON.stringify(body).includes(String(t.phone)));
-    if (tx) { tx.status = info.s; }
+    const bodyText = JSON.stringify(req.body);
+    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
+    if (tx) { tx.status = translateStatus(req.body); }
     res.sendStatus(200);
 });
 
