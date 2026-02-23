@@ -125,13 +125,22 @@ app.get('/', (req, res) => {
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     
+    
     const now = Date.now();
-    // Check if valid session exists OR if the correct PIN was provided
+    let isAuthorized = false;
+
     if (password === '5566') {
-        authSession = { active: true, expiry: now + (5 * 60 * 1000) }; // 5 min session
-        authSession.active = false;
-        return res.send('Session Expired or Invalid PIN');
+        // Correct PIN entered: Refresh session
+        authSession = { active: true, expiry: now + (5 * 60 * 1000) };
+        isAuthorized = true;
+    } else if (authSession.active && now < authSession.expiry) {
+        // No PIN but valid session exists
+        isAuthorized = true;
     }
+
+        return res.send('Session Expired or Invalid PIN. Please use 5566.');
+    }
+
 
     
     try {
