@@ -81,13 +81,34 @@ app.get('/', (req, res) => {
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('snd-box')">NOTIFICATIONS & SOUNDS <span>▼</span></h3>
             <div id="snd-box" class="collapsible">
-                <label style="font-size:10px; color:var(--sub);">SUCCESS SOUND</label>
+                <div class="row"><b>Master Sound Switch</b> <input type="checkbox" id="master_snd" checked></div>
+                <label style="font-size:10px; color:var(--sub);">SUCCESS SOUND (12 WORLD CLASS)</label>
                 <select id="snd_select" onchange="previewSnd()">
-                    <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">1. Default Chime</option>
-                    <option value="https://nfc-pro.com/sounds/success.mp3">2. Digital Beep</option>
-                    <option value="https://nfc-pro.com/sounds/coins.mp3">3. Cash Register</option>
+                    <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold (Default)</option>
+                    <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime</option>
+                    <option value="https://nfc-pro.com/sounds/success.mp3">3. Modern Beep</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bbdec3a6ce.mp3">4. Crystal Ping</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2022/03/15/audio_731478144b.mp3">5. Tech Sweep</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0624ed05f2.mp3">6. Notification Bell</option>
+                    <option value="https://nfc-pro.com/sounds/cash.mp3">7. ATM Dispense</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c36394548d.mp3">8. Zen Harmony</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2021/08/09/audio_884068305c.mp3">9. Success Pulse</option>
+                    <option value="https://nfc-pro.com/sounds/alert.mp3">10. Cyber Alert</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3">11. Minimal Pop</option>
+                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b8265a6e.mp3">12. Galactic Ping</option>
                 </select>
-                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
+                <div class="row"><b>Master Notification Switch</b> <input type="checkbox" id="master_notif" checked></div>
+                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" class="notif-item" checked></div>
+                <div class="row"><span>Low Balance Alerts</span><input type="checkbox" class="notif-item" checked></div>
+                <div class="row"><span>Login Alerts</span><input type="checkbox" class="notif-item" checked></div>
+                <div class="row"><span>Bill Due Reminders</span><input type="checkbox" class="notif-item"></div>
+                <div class="row"><span>Marketing Preferences</span><input type="checkbox" class="notif-item"></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                    <span>SMS <input type="checkbox" checked></span>
+                    <span>Email <input type="checkbox"></span>
+                    <span>Push <input type="checkbox" checked></span>
+                </div>
+            </div>
                 <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
                 <div class="row"><span>Bill Due Reminders</span><input type="checkbox"></div>
