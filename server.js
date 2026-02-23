@@ -8,9 +8,21 @@ app.use(express.urlencoded({ extended: true }));
 let transactions = []; 
 const getKenyaTime = () => new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
+// BRAIN: TRANSLATION & SOUND ENGINE
+const translateStatus = (rawBody) => {
+    const data = JSON.stringify(rawBody).toLowerCase();
+    if (data.includes("success") || data.includes('"0"')) return { status: "Successful ✅", sound: "https://nfc-pro.com/sounds/coins.mp3" };
+    if (data.includes("cancel") || data.includes("1032")) return { status: "Cancelled ❌", sound: "https://nfc-pro.com/sounds/alert.mp3" };
+    if (data.includes("insufficient")) return { status: "Low Balance 💸", sound: "https://cdn.pixabay.com/download/audio/2021/08/04/audio_0624ed05f2.mp3" };
+    return { status: "Processing... 🔄", sound: "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" };
+};
+
 app.get('/api/status', (req, res) => {
-    const todayTotal = transactions.filter(t => t.status.includes('Successful')).reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
-    res.json({ transactions, todayTotal });
+    const successful = transactions.filter(t => t.status.includes('Successful'));
+    const todayTotal = successful.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
+    // AI HEALTH SCORE LOGIC (0-1000)
+    const healthScore = Math.min(1000, 400 + (successful.length * 15) + (todayTotal / 500));
+    res.json({ transactions, todayTotal, healthScore });
 });
 
 app.get('/', (req, res) => {
@@ -19,178 +31,103 @@ app.get('/', (req, res) => {
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Electronic Pay | Elite</title>
     <style>
-        :root { --cobalt: #0047AB; --emerald: #28a745; --slate: #1e293b; --glass: rgba(255,255,255,0.9); }
-        body { font-family: 'Inter', sans-serif; background: #f4f7fe; margin: 0; color: var(--slate); overflow-x: hidden; padding-bottom: 100px; }
-        
-        /* Top Navigation & Hamburger */
-        .top-nav { position: fixed; top: 0; width: 100%; height: 60px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 2000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .menu-btn { font-size: 24px; cursor: pointer; }
-        .profile-small { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--emerald); }
-
-        /* Sidebar Menu */
-        .sidebar { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: white; z-index: 3000; transition: 0.4s; box-shadow: 10px 0 30px rgba(0,0,0,0.1); padding: 20px; box-sizing: border-box; }
-        .sidebar.active { left: 0; }
-        .sidebar-item { padding: 15px; border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; }
-
-        /* Dashboard & Cards */
-        .tab-content { display: none; padding: 80px 15px 20px 15px; animation: fadeIn 0.3s; }
-        .active-tab { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .bank-card { background: linear-gradient(135deg, #0047AB, #002f75); color: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
-        .smart-hub { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        
-        /* Bottom Navigation */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--glass); backdrop-filter: blur(15px); height: 70px; border-radius: 25px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 2000; border: 1px solid rgba(255,255,255,0.3); }
-        .nav-item { text-align: center; color: #94a3b8; transition: 0.3s; cursor: pointer; }
-        .nav-item.active { color: var(--cobalt); transform: translateY(-5px); }
-        .nav-icon { font-size: 22px; }
-        .nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-top: 4px; }
-
-        /* Features */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stat-card { background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; }
-        .ai-badge { background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 5px; font-size: 9px; font-weight: bold; }
-        
-        input, select { width: 100%; padding: 14px; margin: 8px 0; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
-        .btn-main { width: 100%; padding: 16px; background: var(--emerald); color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        :root { --cobalt: #0047AB; --emerald: #28a745; --slate: #0f172a; --glass: rgba(255,255,255,0.95); }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #f8fafc; margin: 0; color: #1e293b; padding-bottom: 100px; }
+        .top-nav { position: fixed; top: 0; width: 100%; height: 65px; background: white; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 2000; box-shadow: 0 2px 15px rgba(0,0,0,0.04); }
+        .tab-content { display: none; padding: 85px 15px 20px 15px; }
+        .active-tab { display: block; animation: slideUp 0.3s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .bank-card { background: linear-gradient(135deg, var(--cobalt), #002d6b); color: white; padding: 25px; border-radius: 24px; box-shadow: 0 12px 30px rgba(0,71,171,0.2); margin-bottom: 20px; }
+        .feature-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-bottom: 15px; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 450px; background: var(--glass); backdrop-filter: blur(20px); height: 75px; border-radius: 28px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 15px 35px rgba(0,0,0,0.12); z-index: 2000; border: 1px solid rgba(255,255,255,0.4); }
+        .nav-item { text-align: center; color: #94a3b8; font-size: 10px; font-weight: 700; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
+        .nav-item.active { color: var(--cobalt); transform: translateY(-3px); }
+        .btn-send { width: 100%; padding: 18px; background: var(--emerald); color: white; border: none; border-radius: 14px; font-weight: bold; font-size: 16px; box-shadow: 0 8px 20px rgba(40,167,69,0.2); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
     </style>
 </head>
 <body>
-
     <div class="top-nav">
-        <div class="menu-btn" onclick="toggleMenu(true)">☰</div>
-        <div style="font-weight: 900; letter-spacing: -1px;">ELECTRONIC <span style="color:var(--emerald)">PAY</span></div>
-        <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-small">
+        <div style="font-size:22px;">☰</div>
+        <div style="font-weight:900; letter-spacing:-1px; font-size:18px;">ELECTRONIC <span style="color:var(--emerald)">PAY</span></div>
+        <div style="width:35px; height:35px; background:#ddd; border-radius:50%; overflow:hidden;"><img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:100%;"></div>
     </div>
 
-    <div id="sidebar" class="sidebar">
-        <div style="text-align: right; font-size: 24px;" onclick="toggleMenu(false)">✕</div>
-        <div class="sidebar-item">👤 Profile</div>
-        <div class="sidebar-item">⚙️ Account Settings</div>
-        <div class="sidebar-item">💼 Business Hub</div>
-        <div class="sidebar-item">💎 Global Settings</div>
-        <div class="sidebar-item" style="color: #ef4444;">🚪 Logout</div>
-    </div>
-
-    <div id="tab-dashboard" class="tab-content active-tab">
+    <div id="tab-vault" class="tab-content active-tab">
         <div class="bank-card">
-            <div style="font-size: 12px; opacity: 0.8;">Total Net Worth <span class="ai-badge">AI Score: 850</span></div>
-            <div style="font-size: 28px; font-weight: bold; margin: 10px 0;">KES 1,240,500.00</div>
-            <div style="font-size: 11px;">7-Day Prediction: <span style="color:#4ade80;">+KES 12,000</span></div>
+            <div style="display:flex; justify-content:space-between; font-size:11px; opacity:0.8;"><span>SMART BALANCE</span> <span id="health-badge" style="background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px;">AI Score: --</span></div>
+            <div id="total-val" style="font-size:32px; font-weight:800; margin:10px 0;">KES 0.00</div>
+            <div style="font-size:11px; color:#4ade80;">Forecast: +KES 12,400 (7 Days)</div>
         </div>
-        <div class="grid-2">
-            <div class="stat-card"><h3>📈</h3><div style="font-size:10px;">CASH FLOW</div></div>
-            <div id="dailyTotal" class="stat-card"><h3>💰</h3><div style="font-size:10px;">TODAY: KES 0</div></div>
-        </div>
-        <div class="smart-hub">
-            <h3 style="font-size:14px; margin-top:0;">Smart Command Center</h3>
+        <div class="feature-card">
+            <h3 style="margin-top:0; font-size:15px;">Secure Transfer Center</h3>
             <form action="/push" method="POST">
-                <input type="password" name="password" placeholder="Secure PIN" required>
-                <input type="number" name="phone" placeholder="2547..." required>
-                <input type="number" name="amount" placeholder="Amount" required>
-                <button type="submit" class="btn-main">EXECUTE INSTANT TRANSFER</button>
+                <input type="password" name="password" placeholder="Merchant PIN" required>
+                <input type="number" name="phone" placeholder="Recipient Phone (254...)" required>
+                <input type="number" name="amount" placeholder="Amount (KES)" required>
+                <button type="submit" class="btn-send">EXECUTE TRANSACTION</button>
             </form>
         </div>
     </div>
 
-    <div id="tab-payments" class="tab-content">
-        <div class="smart-hub">
-            <h3>Payments & Transfers</h3>
-            <div class="grid-2">
-                <button style="padding:15px; border-radius:10px; border:1px solid #ddd;">QR Pay</button>
-                <button style="padding:15px; border-radius:10px; border:1px solid #ddd;">NFC Tap</button>
-            </div>
-            <hr style="margin:20px 0; opacity:0.1;">
-            <div class="row"><span>Stealth Mode</span> <input type="checkbox" style="width:auto;"></div>
-            <div class="row"><span>Escrow Protection</span> <input type="checkbox" style="width:auto;"></div>
-        </div>
-    </div>
-
     <div id="tab-insights" class="tab-content">
-        <div class="smart-hub">
-            <h3>AI Financial Intelligence</h3>
-            <div style="height:150px; background:#f1f5f9; border-radius:15px; display:flex; align-items:center; justify-content:center;">
-                [AI Spending Graph Visualization]
-            </div>
-            <div class="sidebar-item">🔍 Subscription Leak Detector</div>
-            <div class="sidebar-item">📊 Lifestyle Impact Score</div>
-        </div>
-    </div>
-
-    <div id="tab-vault" class="tab-content">
-        <div class="smart-hub">
-            <h3>Advanced Wealth Management</h3>
-            <div class="stat-card" style="background:#fff7ed; color:#9a3412;">
-                <b>Emergency Fund Builder</b><br>45% Progress
-            </div>
-            <div class="sidebar-item">🔒 Locked Savings (Time Capsule)</div>
-            <div class="sidebar-item">🪙 Digital Gold Storage</div>
+        <div class="feature-card">
+            <h3>AI Spending Analysis</h3>
+            <div id="history-list">Analyzing data...</div>
         </div>
     </div>
 
     <div id="tab-security" class="tab-content">
-        <div class="smart-hub">
-            <h3>Advanced Protection</h3>
-            <div class="row"><b>Panic Mode</b> <button style="background:#ef4444; color:white; border:none; padding:5px 10px; border-radius:5px;">ACTIVATE</button></div>
+        <div class="feature-card">
+            <h3>Protection Center</h3>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;"><span>Stealth Mode</span> <input type="checkbox" style="width:auto;"></div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:15px;"><span>Panic Lockdown</span> <button style="background:#ef4444; color:white; border:none; border-radius:5px; padding:5px 10px;">ARM</button></div>
             <hr>
-            <label>Master Sound Engine (12 World Class)</label>
+            <label style="font-size:11px;">SUCCESS SOUND ENGINE</label>
             <select id="snd_select" onchange="previewSnd()">
                 <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold</option>
                 <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime</option>
                 <option value="https://nfc-pro.com/sounds/success.mp3">3. Modern Beep</option>
-                <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bbdec3a6ce.mp3">4. Crystal Ping</option>
             </select>
-            <div class="row"><span>Biometric Auth</span> <input type="checkbox" checked style="width:auto;"></div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="tab('dashboard', this)">
-            <div class="nav-icon">🏛️</div><div class="nav-label">Vault</div>
-        </div>
-        <div class="nav-item" onclick="tab('payments', this)">
-            <div class="nav-icon">💸</div><div class="nav-label">Pay</div>
-        </div>
-        <div class="nav-item" onclick="tab('insights', this)">
-            <div class="nav-icon">📈</div><div class="nav-label">Insights</div>
-        </div>
-        <div class="nav-item" onclick="tab('vault', this)">
-            <div class="nav-icon">💎</div><div class="nav-label">Wealth</div>
-        </div>
-        <div class="nav-item" onclick="tab('security', this)">
-            <div class="nav-icon">🛡️</div><div class="nav-label">Secure</div>
-        </div>
+        <div class="nav-item active" onclick="tab('vault', this)"><div>🏛️</div>VAULT</div>
+        <div class="nav-item" onclick="tab('insights', this)"><div>📈</div>INSIGHTS</div>
+        <div class="nav-item" onclick="tab('security', this)"><div>🛡️</div>SECURE</div>
     </nav>
 
-    <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+    <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
     <script>
-        function toggleMenu(open) {
-            document.getElementById('sidebar').classList.toggle('active', open);
-        }
         function tab(id, el) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab'));
             document.getElementById('tab-' + id).classList.add('active-tab');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
-            window.scrollTo(0,0);
         }
         function previewSnd() {
-            const a = document.getElementById('successSound');
-            a.src = document.getElementById('snd_select').value;
-            a.play().catch(e => {});
+            const p = document.getElementById('player');
+            p.src = document.getElementById('snd_select').value;
+            p.play();
         }
-        async function updateStatus() {
+        async function sync() {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
-                document.getElementById('dailyTotal').innerHTML = '<h3>💰</h3><div style="font-size:10px;">TODAY: KES '+data.todayTotal+'</div>';
+                document.getElementById('total-val').innerText = 'KES ' + data.todayTotal.toLocaleString();
+                document.getElementById('health-badge').innerText = 'AI Score: ' + Math.floor(data.healthScore);
+                document.getElementById('history-list').innerHTML = data.transactions.map(t => \`
+                    <div style="border-bottom:1px solid #f1f5f9; padding:12px 0;">
+                        <span style="font-weight:700;">\${t.phone}</span>
+                        <span style="float:right; color:var(--emerald); font-weight:800;">KES \${t.amount}</span><br>
+                        <small style="color:#64748b;">\${t.time} • \${t.status}</small>
+                    </div>\`).join('') || 'No Live Activity';
             } catch(e) {}
         }
-        setInterval(updateStatus, 5000);
+        setInterval(sync, 4000); sync();
     </script>
 </body>
 </html>
@@ -199,27 +136,21 @@ app.get('/', (req, res) => {
 
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
-    if (password !== "5566") return res.send("Invalid PIN");
+    if (password !== "5566") return res.send("Unauthorized");
     try {
-        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: process.env.PAYMENT_CODE,
-            mobile_number: phone,
-            amount: amount,
-            email: "princealwyne7@gmail.com",
-            callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
-        const trackingId = response.data.merchant_request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
+            code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
+            email: "princealwyne7@gmail.com", callback_url: "https://electronic-pay.onrender.com/callback"
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY } });
+        transactions.unshift({ id: Date.now(), phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
         res.redirect('/');
-    } catch (err) { res.status(500).send(err.message); }
+    } catch (err) { res.redirect('/'); }
 });
 
 app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
-    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
-    if (tx) { tx.status = "Successful ✅"; }
+    const txInfo = translateStatus(req.body);
+    let tx = transactions.find(t => JSON.stringify(req.body).includes(String(t.phone)));
+    if (tx) { tx.status = txInfo.status; }
     res.sendStatus(200);
 });
 
