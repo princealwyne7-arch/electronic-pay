@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
         <html>
         <head>
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-            <style>
+            <style>.header-tools{position:absolute;top:25px;right:20px;display:flex;gap:15px;z-index:1001}.tool-icon{color:white;font-size:22px;cursor:pointer}#search-box{position:absolute;top:80px;left:50%;transform:translateX(-50%);width:90%;display:none;z-index:1000}.s-input{width:100%;padding:12px;border-radius:20px;border:none;box-shadow:0 4px:10px rgba(0,0,0,0.1)}
                 .header-tools { position: absolute; top: 25px; right: 20px; display: flex; gap: 15px; z-index: 1001; }
                 .tool-icon { color: white; font-size: 22px; cursor: pointer; }
                 #search-box { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); width: 90%; display: none; z-index: 1000; }
@@ -97,7 +97,7 @@ app.get('/', (req, res) => {
                 .nav-item.active { color: var(--primary); }
             </style>
         </head>
-        <body>
+        <body><div class="header-tools"><div class="tool-icon" onclick="tglS()">🔍</div><div class="tool-icon" onclick="sP("activity", document.querySelectorAll(".nav-item")[1])">🔔</div></div><div id="search-box"><input type="text" class="s-input" id="sq" placeholder="Search..." onkeyup="fltr()"></div>
             <div class="header-tools">
                 <div class="tool-icon" onclick="toggleSearch()">🔍</div>
                 <div class="tool-icon" onclick="sP('activity', document.querySelectorAll('.nav-item')[1])">🔔</div>
@@ -272,7 +272,7 @@ app.get('/', (req, res) => {
                     });
                 }
 
-                function sP(id, el) {
+                function tglS(){let b=document.getElementById("search-box");b.style.display=b.style.display==="block"?"none":"block"}function fltr(){let q=document.getElementById("sq").value.toLowerCase();document.querySelectorAll(".status-row").forEach(r=>{r.style.display=r.innerText.toLowerCase().includes(q)?"flex":"none"})}function sP(id, el) {
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
                     document.getElementById(id).classList.add('active');
