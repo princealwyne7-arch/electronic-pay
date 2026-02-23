@@ -33,7 +33,6 @@ app.post('/upload-logo', upload.single('logo'), (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    const logoUrl = "/uploads/logo.png?v=" + Date.now();
     res.send(`
 <!DOCTYPE html>
 <html>
@@ -50,16 +49,14 @@ app.get('/', (req, res) => {
         .container, .history-card { background: var(--card); padding: 20px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 0 auto 15px auto; box-sizing: border-box; }
         .header-caps { cursor: pointer; color: var(--text); display: flex; justify-content: space-between; align-items: center; text-transform: uppercase; font-size: 14px; font-weight: 800; margin: 0; padding: 5px 0; }
         .collapsible { display: none; text-align: left; border-top: 1px solid #f1f5f9; margin-top: 15px; padding-top: 15px; }
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; background: white; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 15px; }
         .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 13px; }
         .nav-item { color: var(--sub); font-size: 10px; font-weight: bold; text-align: center; cursor: pointer; }
         .nav-item.active { color: var(--primary); }
-        .theme-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
     </style>
 </head>
 <body>
-    <div class="top-banner"><img src="${logoUrl}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic"></div>
-    
+    <div class="top-banner"><img src="/uploads/logo.png?v=${Date.now()}" onerror="this.src='https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png'" class="profile-pic"></div>
     <div id="home" class="tab-content active-tab">
         <div class="container">
             <h2>Electronic Pay</h2>
@@ -72,107 +69,115 @@ app.get('/', (req, res) => {
             </form>
         </div>
     </div>
-
-    <div id="activity" class="tab-content">
-        <div class="history-card"><h3>Live Activity</h3><div id="history-list">No data...</div></div>
-    </div>
-
+    <div id="activity" class="tab-content"><div class="history-card"><h3>Live Activity</h3><div id="history-list">No data...</div></div></div>
     <div id="settings" class="tab-content">
-        
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('snd-box')">NOTIFICATIONS & SOUNDS <span>▼</span></h3>
             <div id="snd-box" class="collapsible">
-                <div class="row"><b>Master Sound</b> <input type="checkbox" id="master_snd" checked></div>
+                <label style="font-size:10px; color:var(--sub);">SUCCESS SOUND</label>
                 <select id="snd_select" onchange="previewSnd()">
-                    <option value="https://nfc-pro.com/sounds/coins.mp3">1. Royal Gold</option>
-                    <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">2. Digital Chime</option>
-                    <option value="https://nfc-pro.com/sounds/success.mp3">3. Modern Beep</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bbdec3a6ce.mp3">4. Crystal Ping</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2022/03/15/audio_731478144b.mp3">5. Tech Sweep</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0624ed05f2.mp3">6. Notification Bell</option>
-                    <option value="https://nfc-pro.com/sounds/cash.mp3">7. ATM Dispense</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2022/03/10/audio_c36394548d.mp3">8. Zen Harmony</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2021/08/09/audio_884068305c.mp3">9. Success Pulse</option>
-                    <option value="https://nfc-pro.com/sounds/alert.mp3">10. Cyber Alert</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3">11. Minimal Pop</option>
-                    <option value="https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b8265a6e.mp3">12. Galactic Ping</option>
+                    <option value="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3">1. Default Chime</option>
+                    <option value="https://nfc-pro.com/sounds/success.mp3">2. Digital Beep</option>
+                    <option value="https://nfc-pro.com/sounds/coins.mp3">3. Cash Register</option>
                 </select>
-                <div class="row"><span>Transaction Alerts</span><input type="checkbox" checked></div>
-                <div style="display:flex; justify-content:space-between; font-size:11px;"><span>SMS <input type="checkbox" checked></span><span>Email <input type="checkbox"></span><span>Push <input type="checkbox" checked></span></div>
+                <div class="row"><span>Transaction Alerts (Dr/Cr)</span><input type="checkbox" checked></div>
+                <div class="row"><span>Low Balance Alerts</span><input type="checkbox" checked></div>
+                <div class="row"><span>Login Alerts</span><input type="checkbox" checked></div>
+                <div style="display:flex; justify-content:space-between; font-size:11px; margin-top:10px;">
+                    <span>SMS <input type="checkbox" checked></span><span>Email <input type="checkbox"></span><span>Push <input type="checkbox" checked></span>
+                </div>
             </div>
         </div>
-        
         <div class="history-card">
             <h3 class="header-caps" onclick="toggle('reg-box')">REGIONAL & APP PREFERENCES <span>▼</span></h3>
             <div id="reg-box" class="collapsible">
-                <label style="font-size:10px;">LANGUAGE</label><select><option>English (UK)</option><option>Kiswahili</option></select>
+                <label style="font-size:10px; color:var(--sub);">LANGUAGE</label>
+                <select><option>English (UK)</option><option>Kiswahili</option></select>
                 <div class="row"><span>Dark Mode</span><input type="checkbox" onchange="setDark(this.checked)"></div>
-                <label style="font-size:10px;">CURRENCY</label><select><option>KES (Shilling)</option><option>USD ($)</option></select>
-            </div>
-        </div>
-        
-        <div class="history-card">
-            <h3 class="header-caps" onclick="toggle('pay-box')">PAYMENT & TRANSACTION <span>▼</span></h3>
-            <div id="pay-box" class="collapsible">
-                <div class="row"><span>Auto-Debit</span><input type="checkbox"></div>
-                <div class="row"><span>Recurring Payments</span><input type="checkbox"></div>
-                <label style="font-size:10px;">EXPORT DATA</label>
-                <div style="display:flex; gap:5px;"><button style="flex:1; padding:8px; font-size:10px; border-radius:5px; border:none; background:#eee;">PDF</button><button style="flex:1; padding:8px; font-size:10px; border-radius:5px; border:none; background:#eee;">CSV</button></div>
+                <div class="row"><span>Accessibility (Large Text)</span><input type="checkbox"></div>
+                <label style="font-size:10px; color:var(--sub);">CURRENCY</label>
+                <select><option>KES (Shilling)</option><option>USD ($)</option></select>
             </div>
         </div>
         <div class="history-card">
-            <form action="/upload-logo" method="POST" enctype="multipart/form-data"><label style="font-size:12px;">Logo:</label><input type="file" name="logo" onchange="this.form.submit()"></form>
+            <form action="/upload-logo" method="POST" enctype="multipart/form-data">
+                <label style="font-size:12px;">Branding Photo:</label>
+                <input type="file" name="logo" accept="image/*" onchange="this.form.submit()">
+            </form>
         </div>
     </div>
-    <nav class="nav-bar" style="height: 75px; border-top: 1px solid rgba(0,0,0,0.05); backdrop-filter: blur(10px); background: rgba(255,255,255,0.9); display: flex; align-items: center; padding: 0;">
-        <div class="nav-item active" onclick="tab('home', this)" style="flex: 1; transition: 0.3s; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
-            <div style="font-size: 22px;">🏛️</div>
-            <div style="letter-spacing: 0.5px; font-size: 9px; text-transform: uppercase;">Vault</div>
-        </div>
-        <div class="nav-item" onclick="tab('activity', this)" style="flex: 1; transition: 0.3s; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
-            <div style="font-size: 22px;">📈</div>
-            <div style="letter-spacing: 0.5px; font-size: 9px; text-transform: uppercase;">Insights</div>
-        </div>
-        <div class="nav-item" onclick="tab('settings', this)" style="flex: 1; transition: 0.3s; height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
-            <div style="font-size: 22px;">🛡️</div>
-            <div style="letter-spacing: 0.5px; font-size: 9px; text-transform: uppercase;">Security</div>
-        </div>
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="tab('home', this)">🏠<br>Home</div>
+        <div class="nav-item" onclick="tab('activity', this)">📊<br>Activity</div>
+        <div class="nav-item" onclick="tab('settings', this)">⚙️<br>Settings</div>
     </nav>
     <audio id="player" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
     <script>
         function tab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active-tab'); });
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active-tab'));
             document.getElementById(id).classList.add('active-tab');
-            document.querySelectorAll('.nav-item').forEach(function(n) { n.classList.remove('active'); });
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             el.classList.add('active');
             window.scrollTo(0,0);
         }
         function toggle(id) {
-            var d = document.getElementById(id);
+            const d = document.getElementById(id);
             d.style.display = (d.style.display === 'block') ? 'none' : 'block';
         }
         function previewSnd() {
-            var a = document.getElementById('player');
-            var master = document.getElementById('master_snd');
-            if(master && master.checked) {
-                a.src = document.getElementById('snd_select').value;
-                a.play().catch(function(e) {});
-            }
+            const a = document.getElementById('player');
+            a.src = document.getElementById('snd_select').value;
+            a.play().catch(e => {});
+        }
+        function setDark(on) {
+            document.body.style.background = on ? '#0f172a' : '#f8fafc';
+            document.querySelectorAll('.container, .history-card, .nav-bar').forEach(c => {
+                c.style.background = on ? '#1e293b' : '#fff';
+                c.style.color = on ? '#f8fafc' : '#1e293b';
+            });
         }
         async function sync() {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                var list = data.transactions.map(function(t) {
-                    return '<div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px; text-align:left;">' +
-                           '<b>' + t.phone + '</b> <span style="float:right; color:#28a745;">KES ' + t.amount + '</span><br>' +
-                           '<small style="color:#94a3b8;">' + t.time + ' - ' + t.status + '</small></div>';
-                }).join('') || 'No Transactions';
-                document.getElementById('history-list').innerHTML = list;
+                document.getElementById('history-list').innerHTML = data.transactions.map(t => \`
+                    <div style="border-bottom:1px solid #eee; padding:10px 0; font-size:12px; text-align:left;">
+                        <b>\${t.phone}</b> <span style="float:right; color:#28a745;">KES \${t.amount}</span><br>
+                        <small style="color:#94a3b8;">\${t.time} - \${t.status}</small>
+                    </div>\`).join('') || 'No Transactions';
             } catch(e) {}
         }
         setInterval(sync, 3000); sync();
     </script>
 </body>
 </html>
+    `);
+});
+
+app.post('/push', async (req, res) => {
+    const { phone, amount, password } = req.body;
+    if (password !== "5566") return res.send("Invalid PIN");
+    try {
+        const response = await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
+            code: PAYMENT_CODE, mobile_number: phone, amount: amount,
+            email: "princealwyne7@gmail.com", callback_url: "https://electronic-pay.onrender.com/callback"
+        }, { headers: { 'X-API-Key': PAYNECTA_KEY } });
+        const tid = response.data.merchant_request_id || Date.now();
+        transactions.unshift({ id: tid, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        res.redirect('/');
+    } catch (err) { res.redirect('/'); }
+});
+
+app.post('/callback', (req, res) => {
+    const data = JSON.stringify(req.body).toLowerCase();
+    let tx = transactions.find(t => data.includes(String(t.id)) || data.includes(String(t.phone)));
+    if (tx) {
+        if (data.includes('success') || data.includes('"0"')) tx.status = 'Successful ✅';
+        else if (data.includes('cancel') || data.includes('1032')) tx.status = 'Cancelled ❌';
+        else tx.status = 'Failed ⚠️';
+    }
+    res.sendStatus(200);
+});
+
+app.listen(process.env.PORT || 3000);
