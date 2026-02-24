@@ -291,8 +291,7 @@ app.get('/', (req, res) => {
     `);
 });
 
-<button id="hamburger-btn">☰</button>
-<div id="hamburger-menu" style="display:none;"></div>
+
 //////////////////////////
 // HAMBURGER MENU BACKEND
 //////////////////////////
