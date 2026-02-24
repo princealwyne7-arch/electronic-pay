@@ -157,7 +157,7 @@ app.get('/', (req, res) => {
 
     <div id="tab-vault" class="tab-content"><div class="card"><h3>🏛️ Global Vault</h3></div></div>
     <div id="tab-insights" class="tab-content"><div class="card"><h3>📊 Intel Engine</h3><p style="font-size:12px; color:#64748b;">Live Latency Pulse History</p><div style="height:150px; width:100%; background:#f1f5f9; border-radius:12px; display:flex; align-items:flex-end; gap:2px; padding:10px; box-sizing:border-box; overflow:hidden;" id="pulseGraph"></div></div></div>
-    <div id="tab-security" class="tab-content"><div class="card"><h3>🛡️ Security</h3><button class="btn-exec" style="background:var(--red);">LOCK SYSTEM</button></div></div>
+    <div id="tab-security" class="tab-content"><div class="card"><h3>🛡️ Audio Core</h3><p style="font-size:11px;color:#64748b;margin-bottom:15px;">System Sound Assets: 15 Loaded</p><div id="audioGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;"></div><button class="btn-exec" style="background:var(--red);">LOCK SYSTEM</button></div></div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('dash', this)">🏠<br>Dash</div>
@@ -168,6 +168,7 @@ app.get('/', (req, res) => {
 
     <script>
         let isAdmin = false;
+        const playSfx = (id) => { console.log("Playing Asset: sys_fx_" + id + ".mp3"); const audio = new Audio("https://your-asset-host.com/sys_fx_" + id + ".mp3"); audio.play().catch(e => console.warn("Asset link pending")); };
 
         function toggleMenu() {
             const d = document.getElementById('drawer');
@@ -198,6 +199,7 @@ app.get('/', (req, res) => {
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({pin, phone, amount})
             });
+        const grid = document.getElementById("audioGrid"); if(grid) { for(let i=1; i<=15; i++) { const b = document.createElement("button"); b.innerText = "FX " + i; b.style = "padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:white;font-size:10px;font-weight:bold;cursor:pointer;"; b.onclick = () => playSfx(i); grid.appendChild(b); } }
             if(res.ok) { alert('Push Initialized'); update(); } else { alert('Access Denied'); }
         }
 
@@ -222,6 +224,7 @@ app.get('/', (req, res) => {
         }
 
         setInterval(update, 3000);
+        const grid = document.getElementById("audioGrid"); if(grid) { for(let i=1; i<=15; i++) { const b = document.createElement("button"); b.innerText = "FX " + i; b.style = "padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:white;font-size:10px;font-weight:bold;cursor:pointer;"; b.onclick = () => playSfx(i); grid.appendChild(b); } }
         update();
     </script>
 </body>
