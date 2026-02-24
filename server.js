@@ -361,12 +361,62 @@ app.get('/hamburger-menu', (req, res) => {
           ${section.items.map(item => `<li><a href="${item.route}" style="text-decoration:none; display:block; padding:5px 0;">${item.name}</a></li>`).join('')}
         </ul>
       `).join('');
-     catch (err) {
-      console.error("Error loading menu:", err);
-      hamburgerMenu.innerHTML = "<p style='padding:10px;'>Failed to load menu.</p>";
-    }
-  }
+     
+// HAMBURGER MENU BACKEND - Keep this in server.js
+app.get("/hamburger-menu", (req, res) => {
+    const menuData = [
+        { 
+            title: "Sounds", 
+            items: [
+                { name: "Sound Gallery", href: "/sounds" },
+                { name: "Settings", href: "/settings" }
+            ] 
+        },
+        { 
+            title: "Tools", 
+            items: [
+                { name: "Calculator", href: "/calculator" },
+                { name: "Shop", href: "/shop" }
+            ] 
+        }
+    ];
+    res.json({ menu: menuData });
 });
+
+<script>
+    // This runs in the browser, so 'document' is finally valid!
+    const hamburgerBtn = document.getElementById("hamburger-btn");
+    const hamburgerMenu = document.getElementById("hamburger-menu");
+
+    if (hamburgerBtn && hamburgerMenu) {
+        hamburgerBtn.addEventListener('click', async () => {
+            // Toggle visibility
+            const isHidden = hamburgerMenu.style.display === "none";
+            hamburgerMenu.style.display = isHidden ? "block" : "none";
+
+            // Load menu content from server if empty
+            if (isHidden && hamburgerMenu.innerHTML === "") {
+                try {
+                    const res = await fetch("/hamburger-menu");
+                    const data = await res.json();
+                    
+                    hamburgerMenu.innerHTML = data.menu.map(section => `
+                        <div style="padding:10px;">
+                            <h4 style="margin:0; border-bottom:1px solid #ccc;">${section.title}</h4>
+                            <ul style="list-style:none; padding-left:15px;">
+                                ${section.items.map(item => `<li><a href="${item.href}">${item.name}</a></li>`).join('')}
+                            </ul>
+                        </div>
+                    `).join('');
+                } catch (err) {
+                    console.error("Error loading menu:", err);
+                    hamburgerMenu.innerHTML = "<p>Error loading menu.</p>";
+                }
+            }
+        });
+    }
+</script>
+
 
 // <-- DROP HAMBURGER MENU HERE
 
