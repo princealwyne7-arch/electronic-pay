@@ -52,26 +52,28 @@ app.get('/', (req, res) => {
     <title>Electronic Pay | Elite Banking</title>
     <style>
         :root { --primary: #0f172a; --accent: #28a745; --bg: #f8fafc; --card: #ffffff; --red: #ef4444; }
-        body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; overflow-x: hidden; transition: background 0.5s ease; }
-        
+        body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; overflow-x: hidden; transition: background 0.4s ease; }
         .topbar { position:fixed; top:0; width:100%; height:65px; background: white; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-sizing:border-box; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.03); }
         .pulse-indicator { font-size: 9px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 800; }
         .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        
-        /* Side Drawer & Overlay */
         .side-drawer { position:fixed; left:-280px; top:0; width:280px; height:100%; background:var(--primary); z-index:4000; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); padding:20px; box-sizing:border-box; color:white; }
         .side-drawer.open { left:0; }
-        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); display:none; z-index:2999; backdrop-filter: blur(4px); }
-        
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:2999; backdrop-filter: blur(2px); }
+        .drawer-item { padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); color:white; text-decoration:none; display:block; font-size:14px; }
         .tab-content { display: none; padding: 85px 15px 20px 15px; animation: fadeIn 0.3s ease; }
         .active-tab { display: block; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; } }
-        
         .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #f1f5f9; }
-        .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; border: none; }
-        
-        /* VAULT GRID */
+        .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
+        .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
+        input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
+        .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
+        .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
+        .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
+        .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
+        .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
+        .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
         .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
         .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; }
         .v-item:active { transform: scale(0.95); background: #f8fafc; }
@@ -79,62 +81,46 @@ app.get('/', (req, res) => {
         .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
         .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
 
-        /* DIGITAL ASSETS ENGINE PANEL */
-        #assetEngine { position:fixed; bottom:-100%; left:0; width:100%; height:92%; background:white; border-radius:35px 35px 0 0; z-index:3500; transition: 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.1); padding:25px; box-sizing:border-box; overflow-y: auto; }
-        #assetEngine.active { bottom:0; }
-        .asset-feature-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
-        .af-box { background: #f8fafc; padding: 15px; border-radius: 20px; border: 1px solid #f1f5f9; position: relative; }
-        .af-title { font-size: 11px; font-weight: 800; display: block; margin-top: 8px; }
-        .af-status { font-size: 9px; color: var(--accent); font-weight: bold; }
-
-        .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
-        .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
-        .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
-        
-        .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
-        .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
+        /* DIGITAL ASSETS OVERLAY (SLIDE OUT LOGIC) */
+        #assetOverlay { position:fixed; bottom:-100%; left:0; width:100%; height:90%; background:white; border-radius:30px 30px 0 0; z-index:3500; transition:0.4s ease; padding:25px; box-sizing:border-box; overflow-y:auto; box-shadow:0 -10px 30px rgba(0,0,0,0.15); }
+        #assetOverlay.active { bottom:0; }
+        .a-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:20px; }
+        .a-feat { background:#f8fafc; padding:15px; border-radius:18px; border:1px solid #f1f5f9; }
+        .a-feat b { font-size:11px; display:block; margin-top:5px; }
+        .a-feat small { font-size:9px; color:var(--accent); font-weight:800; }
     </style>
 </head>
 <body>
-    <div class="overlay" id="overlay" onclick="closeAllPanels()"></div>
-    
-    <div id="assetEngine">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div>
-                <h2 style="margin:0; font-size:22px;">Digital Assets <span style="color:var(--accent)">●</span></h2>
-                <small style="color:#64748b; font-weight:800;">MULTICURRENCY HUB v6.0</small>
-            </div>
-            <button onclick="closeAllPanels()" style="background:#f1f5f9; border:none; width:40px; height:40px; border-radius:50%; font-weight:bold;">✕</button>
-        </div>
+    <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
-        <div class="card balance-card" style="background: linear-gradient(135deg, #28a745, #1e293b);">
-            <small style="opacity:0.8; font-weight:800;">AGGREGATED PORTFOLIO</small>
-            <h1 id="assetValueDisplay" style="margin:10px 0;">0.0000 BTC</h1>
-            <div style="display:flex; gap:15px; font-size:10px; font-weight:bold;">
-                <span>STAKED: 0.24%</span>
-                <span>RISK: LOW</span>
-            </div>
+    <div id="assetOverlay">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">Digital Assets</h2>
+            <button onclick="closeAll()" style="background:#f1f5f9; border:none; border-radius:50%; width:35px; height:35px; font-weight:bold;">✕</button>
         </div>
-
-        <div class="asset-feature-grid">
-            <div class="af-box" onclick="playSfx(1)"><span style="font-size:20px;">💳</span><span class="af-title">Wallets</span><span class="af-status">Active</span></div>
-            <div class="af-box" onclick="playSfx(2)"><span style="font-size:20px;">📈</span><span class="af-title">Portfolio</span><span class="af-status">Live</span></div>
-            <div class="af-box" onclick="playSfx(3)"><span style="font-size:20px;">🔄</span><span class="af-title">Buy / Sell</span><span class="af-status">Ready</span></div>
-            <div class="af-box" onclick="playSfx(4)"><span style="font-size:20px;">🔀</span><span class="af-title">Swap</span><span class="af-status">Instant</span></div>
-            <div class="af-box" onclick="playSfx(5)"><span style="font-size:20px;">📤</span><span class="af-title">Send/Recv</span><span class="af-status">Global</span></div>
-            <div class="af-box" onclick="playSfx(6)"><span style="font-size:20px;">📜</span><span class="af-title">Ledger</span><span class="af-status">Synced</span></div>
-            <div class="af-box" onclick="playSfx(7)"><span style="font-size:20px;">📊</span><span class="af-title">Market Data</span><span class="af-status">Realtime</span></div>
-            <div class="af-box" onclick="playSfx(8)"><span style="font-size:20px;">🔔</span><span class="af-title">Alerts</span><span class="af-status">On</span></div>
-            <div class="af-box" onclick="playSfx(9)"><span style="font-size:20px;">🛡️</span><span class="af-title">Security</span><span class="af-status">2FA Encrypted</span></div>
-            <div class="af-box" onclick="playSfx(10)"><span style="font-size:20px;">🖼️</span><span class="af-title">NFTs</span><span class="af-status">0 Assets</span></div>
-            <div class="af-box" onclick="playSfx(11)"><span style="font-size:20px;">🥩</span><span class="af-title">Staking</span><span class="af-status">12% APY</span></div>
-            <div class="af-box" onclick="playSfx(12)"><span style="font-size:20px;">💡</span><span class="af-title">Analytics</span><span class="af-status">Elite AI</span></div>
-            <div class="af-box" onclick="playSfx(13)"><span style="font-size:20px;">⚖️</span><span class="af-title">KYC/Reg</span><span class="af-status">Verified</span></div>
-            <div class="af-box" onclick="playSfx(14)"><span style="font-size:20px;">🌍</span><span class="af-title">Multi-Support</span><span class="af-status">30+ Coins</span></div>
-            <div class="af-box" onclick="playSfx(15)"><span style="font-size:20px;">📥</span><span class="af-title">Export</span><span class="af-status">PDF/CSV</span></div>
-            <div class="af-box" onclick="playSfx(1)"><span style="font-size:20px;">🔍</span><span class="af-title">Search</span><span class="af-status">Fast Index</span></div>
+        <div class="card" style="background:var(--primary); color:white; margin-top:20px;">
+            <small style="opacity:0.7">ESTIMATED BALANCE</small>
+            <h2 id="assetBTC" style="margin:5px 0;">0.000000 BTC</h2>
+            <div style="font-size:10px; color:var(--accent)">● Market Live</div>
         </div>
-        <div style="height:40px;"></div>
+        <div class="a-grid">
+            <div class="a-feat">🏦<b>Wallets</b><small>Secure Storage</small></div>
+            <div class="a-feat">📈<b>Portfolio</b><small>Real-time Overview</small></div>
+            <div class="a-feat">💰<b>Buy / Sell</b><small>Fiat Gateway</small></div>
+            <div class="a-feat">🔄<b>Swap</b><small>Instant Exchange</small></div>
+            <div class="a-feat">📤<b>Send/Recv</b><small>Asset Transfer</small></div>
+            <div class="a-feat">📜<b>Ledger</b><small>History Sync</small></div>
+            <div class="a-feat">📊<b>Market Data</b><small>Performance</small></div>
+            <div class="a-feat">🔔<b>Alerts</b><small>Price Triggers</small></div>
+            <div class="a-feat">🛡️<b>Security</b><small>2FA/Biometric</small></div>
+            <div class="a-feat">🖼️<b>NFTs</b><small>Token Manager</small></div>
+            <div class="a-feat">🥩<b>Staking</b><small>Yield Farming</small></div>
+            <div class="a-feat">💡<b>Analytics</b><small>AI Insights</small></div>
+            <div class="a-feat">⚖️<b>Compliance</b><small>Regulatory/KYC</small></div>
+            <div class="a-feat">🌍<b>Multi-Support</b><small>Fiat/Crypto</small></div>
+            <div class="a-feat">📥<b>Export</b><small>Reports/Tax</small></div>
+            <div class="a-feat">🔍<b>Search</b><small>Quick Filter</small></div>
+        </div>
     </div>
 
     <div class="side-drawer" id="drawer">
@@ -192,17 +178,16 @@ app.get('/', (req, res) => {
                 <button onclick="emergencyLockdown()" style="background:var(--red); color:white; border:none; padding:10px; border-radius:12px; font-size:10px; font-weight:bold;">LOCKDOWN</button>
             </div>
         </div>
-
         <div class="vault-grid">
             <div class="v-item" onclick="playSfx(4)"><span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span></div>
-            <div class="v-item" onclick="openAssetEngine()"><span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Digital Hub</span></div>
+            <div class="v-item" onclick="openAssetHub()"><span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Digital Hub</span></div>
             <div class="v-item" onclick="playSfx(6)"><span class="v-icon">📁</span><span class="v-label">Documents</span><span class="v-sub">IDs & Bank</span></div>
             <div class="v-item" onclick="playSfx(7)"><span class="v-icon">🔑</span><span class="v-label">Backups</span><span class="v-sub">Recovery Keys</span></div>
             <div class="v-item" onclick="playSfx(8)"><span class="v-icon">📝</span><span class="v-label">Private Notes</span><span class="v-sub">Encrypted</span></div>
             <div class="v-item" onclick="playSfx(9)"><span class="v-icon">🔒</span><span class="v-label">Secret Files</span><span class="v-sub">U-Secure</span></div>
             <div class="v-item" onclick="playSfx(10)"><span class="v-icon">🆔</span><span class="v-label">Access</span><span class="v-sub">PIN/Biometrics</span></div>
             <div class="v-item" onclick="playSfx(11)"><span class="v-icon">📡</span><span class="v-label">Monitor</span><span class="v-sub">Risk: Low</span></div>
-            <div class="v-item" onclick="playSfx(12)"><span class="v-icon">⏲️</span><span class="v-label">Auto-Lock</span><span class="v-sub">14:59</span></div>
+            <div class="v-item" onclick="playSfx(12)"><span class="v-icon">⏲️</span><span class="v-label">Auto-Lock</span><span id="lockTimer" class="v-sub">14:59</span></div>
             <div class="v-item" onclick="playSfx(13)"><span class="v-icon">📜</span><span class="v-label">Activity Log</span><span class="v-sub">Full History</span></div>
             <div class="v-item" onclick="playSfx(14)"><span class="v-icon">🛡️</span><span class="v-label">Settings</span><span class="v-sub">Vault Config</span></div>
             <div class="v-item" onclick="playSfx(15)"><span class="v-icon">❄️</span><span class="v-label">Freeze</span><span class="v-sub">Node Shutdown</span></div>
@@ -222,6 +207,7 @@ app.get('/', (req, res) => {
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                 ${Array.from({length: 15}, (_, i) => `<button onclick="playSfx(${i+1})" style="padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px;">FX ${i+1}</button>`).join('')}
             </div>
+            <button class="btn-exec" onclick="emergencyLockdown()" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
         </div>
     </div>
 
@@ -234,31 +220,42 @@ app.get('/', (req, res) => {
 
     <script>
         let isAdmin = false;
+        window.LAST_STATUS = {};
         const playSfx = (idx) => {
-            new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3").play().catch(()=>{});
+            const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
+            audio.play().catch(() => {});
         };
 
-        function openAssetEngine() {
+        function openAssetHub() {
             playSfx(5);
-            document.getElementById('assetEngine').classList.add('active');
+            document.getElementById('assetOverlay').classList.add('active');
             document.getElementById('overlay').style.display = 'block';
         }
 
-        function closeAllPanels() {
-            document.getElementById('assetEngine').classList.remove('active');
+        function closeAll() {
+            document.getElementById('assetOverlay').classList.remove('active');
             document.getElementById('drawer').classList.remove('open');
             document.getElementById('overlay').style.display = 'none';
         }
 
+        function emergencyLockdown() {
+            playSfx(10);
+            document.getElementById('vLockStatus').innerText = "LOCKED";
+            document.body.style.filter = "grayscale(100%) brightness(70%)";
+            alert("EMERGENCY PROTOCOL ACTIVATED");
+        }
+
         function toggleMenu() {
-            document.getElementById('drawer').classList.toggle('open');
-            document.getElementById('overlay').style.display = 'block';
+            const d = document.getElementById('drawer');
+            d.classList.toggle('open');
+            document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none';
         }
 
         function toggleAdminMode() {
             isAdmin = !isAdmin;
             document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none';
             document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT';
+            document.getElementById('modeLabel').style.background = isAdmin ? 'var(--red)' : 'var(--accent)';
         }
 
         function switchTab(id, el) {
@@ -274,17 +271,25 @@ app.get('/', (req, res) => {
                 const data = await res.json();
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
-                document.getElementById('assetValueDisplay').innerText = (data.todayTotal / 12500000).toFixed(6) + ' BTC';
+                document.getElementById('assetBTC').innerText = (data.todayTotal / 12450000).toFixed(6) + ' BTC';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
                 
-                // Color Logic: Breathes with latency
-                const hue = Math.min(140, 100 + (data.latency));
-                document.documentElement.style.setProperty('--accent', \`hsl(\${hue}, 60%, 40%)\`);
-                
+                // AIR & COLOR LOGIC
+                const pulseHue = 140 - data.latency;
+                document.documentElement.style.setProperty('--accent', \`hsl(\${pulseHue}, 60%, 40%)\`);
+
+                const chart = document.getElementById('pulseChart');
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = (data.latency * 2) + 'px';
+                if(chart.children.length > 20) chart.removeChild(chart.firstChild);
+                chart.appendChild(bar);
+
                 document.getElementById('activityFeed').innerHTML = data.transactions.map(t => \`
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                         <span><b>\${t.phone}</b><br><small>\${t.time}</small></span>
-                        <span style="text-align:right;"><b>KES \${t.amount}</b><br><small style="color:var(--accent)">\${t.status}</small></span>
+                        <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
+                        <small style="font-weight:bold;">\${t.status}</small></span>
                     </div>\`).join('') || 'No Activity';
             } catch(e) {}
         }
