@@ -377,10 +377,9 @@ hamburgerBtn.addEventListener('click', async () => {
     }
   }
 });
-app.get('/some-existing-route', (req, res) => { ... });
 
 // <-- DROP HAMBURGER MENU HERE
-app.get('/hamburger-menu', ... );
+
 
 // app.listen stays here
 app.listen(3000, () => console.log('Server running...'));
