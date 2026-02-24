@@ -383,7 +383,7 @@ app.get("/hamburger-menu", (req, res) => {
     res.json({ menu: menuData });
 });
 
-</script>
+
     // This runs in the browser, so 'document' is finally valid!
     const hamburgerBtn = document.getElementById("hamburger-btn");
     const hamburgerMenu = document.getElementById("hamburger-menu");
