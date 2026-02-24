@@ -374,7 +374,7 @@ app.get("/hamburger-menu", (req, res) => {
 
 
     // This runs in the browser, so 'document' is finally valid!
-    const hamburgerBtn = document.getElementById("hamburger-btn");
+    
     const hamburgerMenu = document.getElementById("hamburger-menu");
 
     if (hamburgerBtn && hamburgerMenu) {
