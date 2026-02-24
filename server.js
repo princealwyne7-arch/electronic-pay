@@ -156,7 +156,7 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-vault" class="tab-content"><div class="card"><h3>🏛️ Global Vault</h3></div></div>
-    <div id="tab-insights" class="tab-content"><div class="card"><h3>📊 Intel Engine</h3></div></div>
+    <div id="tab-insights" class="tab-content"><div class="card"><h3>📊 Intel Engine</h3><p style="font-size:12px; color:#64748b;">Live Latency Pulse History</p><div style="height:150px; width:100%; background:#f1f5f9; border-radius:12px; display:flex; align-items:flex-end; gap:2px; padding:10px; box-sizing:border-box; overflow:hidden;" id="pulseGraph"></div></div></div>
     <div id="tab-security" class="tab-content"><div class="card"><h3>🛡️ Security</h3><button class="btn-exec" style="background:var(--red);">LOCK SYSTEM</button></div></div>
 
     <nav class="bottom-nav">
