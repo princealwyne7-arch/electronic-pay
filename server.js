@@ -1,3 +1,4 @@
+cat << 'EOF' > server.js
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
@@ -7,6 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let transactions = [];
+let digitalAssets = [];
 
 const getKenyaTime = () => 
     new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
@@ -15,7 +17,13 @@ app.get('/api/status', (req, res) => {
     const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
     const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
     const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
-    res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
+    res.json({ transactions, todayTotal, aiScore, digitalAssets, latency: Math.floor(Math.random() * 35) + 10 });
+});
+
+app.post('/vault/add-asset', (req, res) => {
+    const { name, value, type } = req.body;
+    digitalAssets.unshift({ id: Date.now(), name, value, type, time: getKenyaTime() });
+    res.json({ success: true });
 });
 
 app.post('/admin/push', async (req, res) => {
@@ -67,21 +75,14 @@ app.get('/', (req, res) => {
         .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #f1f5f9; }
         .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
         .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
-        input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
+        input, select { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; background:white; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
         .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
         .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
         .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
-        .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
-        .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
-        
-        /* VAULT GRID STYLING */
         .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.2s; }
-        .v-item:active { transform: scale(0.95); background: #f8fafc; }
-        .v-icon { font-size: 22px; margin-bottom: 5px; display: block; }
-        .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
-        .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
+        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; }
+        .asset-row { padding: 12px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -131,82 +132,49 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-vault" class="tab-content">
-        <div class="card balance-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent);">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <small style="color:var(--accent); font-weight:800;">VAULT STATUS: <span id="vLockStatus">ENCRYPTED</span></small>
-                    <h2 id="vaultTotalDisplay" style="margin:5px 0; font-size:28px;">KES 0</h2>
-                    <div style="font-size:10px; opacity:0.7;">Active Session: #882-ELITE</div>
-                </div>
-                <button onclick="emergencyLockdown()" style="background:var(--red); color:white; border:none; padding:10px; border-radius:12px; font-size:10px; font-weight:bold;">LOCKDOWN</button>
+        <div id="vault-main">
+            <div class="card balance-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent);">
+                <small style="color:var(--accent); font-weight:800;">VAULT STATUS: <span id="vLockStatus">ENCRYPTED</span></small>
+                <h2 id="vaultTotalDisplay" style="margin:5px 0; font-size:28px;">KES 0</h2>
+            </div>
+            <div class="vault-grid">
+                <div class="v-item" onclick="playSfx(4)">📊<br><b>Dash</b></div>
+                <div class="v-item" onclick="toggleAssetModule()" style="border: 1px solid var(--accent);">💎<br><b>Assets</b></div>
+                <div class="v-item" onclick="playSfx(6)">📁<br><b>Docs</b></div>
+                <div class="v-item" onclick="playSfx(7)">🔑<br><b>Codes</b></div>
+                <div class="v-item" onclick="playSfx(8)">📝<br><b>Notes</b></div>
+                <div class="v-item" onclick="playSfx(9)">🔒<br><b>Files</b></div>
+                <div class="v-item" onclick="playSfx(10)">🆔<br><b>Access</b></div>
+                <div class="v-item" onclick="playSfx(11)">📡<br><b>Monitor</b></div>
+                <div class="v-item" onclick="playSfx(12)">⏲️<br><b>Timer</b></div>
+                <div class="v-item" onclick="playSfx(13)">📜<br><b>Logs</b></div>
+                <div class="v-item" onclick="playSfx(14)">🛡️<br><b>Settings</b></div>
+                <div class="v-item" onclick="emergencyLockdown()">❄️<br><b>Freeze</b></div>
             </div>
         </div>
-
-        <div class="vault-grid">
-            <div class="v-item" onclick="playSfx(4)">
-                <span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span>
+        <div id="vault-assets" style="display:none;">
+            <button onclick="toggleAssetModule()" style="background:none; border:none; color:var(--accent); font-weight:bold; margin-bottom:15px;">← Back</button>
+            <div class="card">
+                <h3>💎 Asset Manager</h3>
+                <input type="text" id="assetName" placeholder="Wallet Name">
+                <input type="text" id="assetVal" placeholder="Address/Key">
+                <select id="assetType"><option value="Wallet">Wallet</option><option value="Seed">Seed</option></select>
+                <button onclick="saveAsset()" class="btn-exec">SECURE</button>
             </div>
-            <div class="v-item" onclick="playSfx(5)">
-                <span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Crypto Keys</span>
-            </div>
-            <div class="v-item" onclick="playSfx(6)">
-                <span class="v-icon">📁</span><span class="v-label">Documents</span><span class="v-sub">IDs & Bank</span>
-            </div>
-            <div class="v-item" onclick="playSfx(7)">
-                <span class="v-icon">🔑</span><span class="v-label">Backups</span><span class="v-sub">Recovery Keys</span>
-            </div>
-            <div class="v-item" onclick="playSfx(8)">
-                <span class="v-icon">📝</span><span class="v-label">Private Notes</span><span class="v-sub">Encrypted</span>
-            </div>
-            <div class="v-item" onclick="playSfx(9)">
-                <span class="v-icon">🔒</span><span class="v-label">Secret Files</span><span class="v-sub">U-Secure</span>
-            </div>
-            <div class="v-item" onclick="playSfx(10)">
-                <span class="v-icon">🆔</span><span class="v-label">Access</span><span class="v-sub">PIN/Biometrics</span>
-            </div>
-            <div class="v-item" onclick="playSfx(11)">
-                <span class="v-icon">📡</span><span class="v-label">Monitor</span><span class="v-sub">Risk: Low</span>
-            </div>
-            <div class="v-item" onclick="playSfx(12)">
-                <span class="v-icon">⏲️</span><span class="v-label">Auto-Lock</span><span id="lockTimer" class="v-sub">14:59</span>
-            </div>
-            <div class="v-item" onclick="playSfx(13)">
-                <span class="v-icon">📜</span><span class="v-label">Activity Log</span><span class="v-sub">Full History</span>
-            </div>
-            <div class="v-item" onclick="playSfx(14)">
-                <span class="v-icon">🛡️</span><span class="v-label">Settings</span><span class="v-sub">Vault Config</span>
-            </div>
-            <div class="v-item" onclick="playSfx(15)">
-                <span class="v-icon">❄️</span><span class="v-label">Freeze</span><span class="v-sub">Node Shutdown</span>
-            </div>
+            <div id="assetList" class="card" style="font-size:12px;"></div>
         </div>
     </div>
 
     <div id="tab-insights" class="tab-content">
-        <div class="card">
-            <h3>📊 Intel Engine</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
-                <div style="background:#f1f5f9; padding:15px; border-radius:15px;">
-                    <small style="color:#64748b">Success Rate</small><br>
-                    <b id="successRate" style="font-size:18px; color:var(--accent)">0%</b>
-                </div>
-                <div style="background:#f1f5f9; padding:15px; border-radius:15px;">
-                    <small style="color:#64748b">System Load</small><br>
-                    <b id="sysLoad" style="font-size:18px; color:var(--primary)">Optimal</b>
-                </div>
-            </div>
-            <div class="chart-container" id="pulseChart"></div>
-            <p style="font-size:11px; color:#94a3b8; text-align:center; margin-top:10px;">Live Latency Pulse History</p>
-        </div>
+        <div class="card"><h3>📊 Intel</h3><div id="pulseChart" style="height:120px; display:flex; align-items:flex-end; gap:4px;"></div></div>
     </div>
 
     <div id="tab-security" class="tab-content">
         <div class="card">
             <h3>🛡️ Audio Core</h3>
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                ${Array.from({length: 15}, (_, i) => `<button onclick="playSfx(${i+1})" style="padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px;">FX ${i+1}</button>`).join('')}
+                ${Array.from({length: 15}, (_, i) => `<button onclick="playSfx(\${i+1})" style="padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px;">FX \${i+1}</button>`).join('')}
             </div>
-            <button class="btn-exec" onclick="emergencyLockdown()" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
         </div>
     </div>
 
@@ -218,94 +186,35 @@ app.get('/', (req, res) => {
     </nav>
 
     <script>
-        let isAdmin = false;
-        window.LAST_STATUS = {};
-        
-        const playSfx = (idx) => {
-            const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
-            audio.play().catch(() => console.log("Sound Triggered: FX " + idx));
-        };
-
-        function emergencyLockdown() {
-            playSfx(10);
-            document.getElementById('vLockStatus').innerText = "LOCKED";
-            document.body.style.filter = "grayscale(100%) brightness(70%)";
-            alert("EMERGENCY PROTOCOL ACTIVATED: SYSTEM FROZEN");
+        let isAdmin = false; window.LAST_STATUS = {};
+        const playSfx = (idx) => { new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3").play().catch(e=>e); };
+        function toggleMenu() { document.getElementById('drawer').classList.toggle('open'); document.getElementById('overlay').style.display = document.getElementById('drawer').classList.contains('open') ? 'block' : 'none'; }
+        function toggleAdminMode() { isAdmin = !isAdmin; document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; document.getElementById('modeLabel').style.background = isAdmin ? 'var(--red)' : 'var(--accent)'; }
+        function switchTab(id, el) { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab')); document.getElementById('tab-' + id).classList.add('active-tab'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+        function toggleAssetModule() { const m = document.getElementById('vault-main'), a = document.getElementById('vault-assets'); if(m.style.display==='none'){m.style.display='block'; a.style.display='none';}else{m.style.display='none'; a.style.display='block'; playSfx(5);} }
+        async function saveAsset() {
+            const n = document.getElementById('assetName').value, v = document.getElementById('assetVal').value, t = document.getElementById('assetType').value;
+            if(!n || !v) return;
+            await fetch('/vault/add-asset', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name:n, value:v, type:t}) });
+            document.getElementById('assetName').value=''; document.getElementById('assetVal').value=''; update();
         }
-
-        function toggleMenu() {
-            const d = document.getElementById('drawer');
-            d.classList.toggle('open');
-            document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none';
-        }
-
-        function toggleAdminMode() {
-            isAdmin = !isAdmin;
-            document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none';
-            document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT';
-            document.getElementById('modeLabel').style.background = isAdmin ? 'var(--red)' : 'var(--accent)';
-        }
-
-        function switchTab(id, el) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
-            document.getElementById('tab-' + id).classList.add('active-tab');
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-        }
-
         async function update() {
             try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
-                
+                const res = await fetch('/api/status'); const data = await res.json();
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
-                
-                const h = document.getElementById('aiHealth');
-                h.innerText = 'AI Health: ' + data.aiScore;
-                h.style.color = data.aiScore > 800 ? '#4ade80' : 'white';
-                
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
-
-                const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
-                const rate = data.transactions.length ? Math.round((successfulCount / data.transactions.length) * 100) : 0;
-                document.getElementById('successRate').innerText = rate + '%';
-                document.getElementById('sysLoad').innerText = data.latency > 30 ? 'Moderate' : 'Optimal';
-
-                const chart = document.getElementById('pulseChart');
-                const bar = document.createElement('div');
-                bar.className = 'chart-bar';
-                bar.style.height = (data.latency * 2) + 'px';
-                if(chart.children.length > 20) chart.removeChild(chart.firstChild);
-                chart.appendChild(bar);
-
-                if (data.transactions.length > 0) {
-                    const top = data.transactions[0];
-                    if (window.LAST_STATUS[top.id] !== top.status) {
-                        if (top.status.includes('Successful')) playSfx(1);
-                        window.LAST_STATUS[top.id] = top.status;
-                    }
-                }
-
-                document.getElementById('activityFeed').innerHTML = data.transactions.length ? data.transactions.map(t => \`
-                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
-                        <span><b>\${t.phone}</b><br><small style="color:#94a3b8">\${t.time}</small></span>
-                        <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
-                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : '#f59e0b'}">\${t.status}</small></span>
-                    </div>\`).join('') : 'No Recent Activity';
+                document.getElementById('assetList').innerHTML = data.digitalAssets.length ? data.digitalAssets.map(a => \`<div class="asset-row"><span><b>\${a.name}</b><br>\${a.type}</span><code>\${a.value.substring(0,8)}...</code></div>\`).join('') : 'No assets stored';
+                document.getElementById('activityFeed').innerHTML = data.transactions.length ? data.transactions.map(t => \`<div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;"><span><b>\${t.phone}</b><br><small>\${t.time}</small></span><span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br><small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : '#f59e0b'}">\${t.status}</small></span></div>\`).join('') : 'No Activity';
             } catch(e) {}
         }
         setInterval(update, 3000); update();
-        async function runPush() {
-            const pin = document.getElementById('adminPin').value;
-            const phone = document.getElementById('pPhone').value;
-            const amount = document.getElementById('pAmount').value;
-            await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) });
-            update();
-        }
+        async function runPush() { const pin = document.getElementById('adminPin').value, phone = document.getElementById('pPhone').value, amount = document.getElementById('pAmount').value; await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) }); update(); }
     </script>
 </body>
 </html>
-    `);
+`);
 });
 app.listen(process.env.PORT || 3000);
+
+
