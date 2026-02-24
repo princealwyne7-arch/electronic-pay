@@ -207,6 +207,8 @@ app.get('/', (req, res) => {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
+                if(data.transactions.length > 0 && data.transactions[0].status.includes('Successful') && window.lastStatus !== 'Successful') { if(typeof playSfx === 'function') playSfx(1); }
+                window.lastStatus = data.transactions.length > 0 ? data.transactions[0].status : '';
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 const healthEl = document.getElementById('aiHealth'); healthEl.innerText = 'AI Health: ' + data.aiScore; healthEl.style.color = data.aiScore > 900 ? 'var(--accent)' : '#f59e0b';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
