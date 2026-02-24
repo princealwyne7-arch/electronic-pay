@@ -115,7 +115,124 @@ app.get('/', (req, res) => {
             <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-top:10px;">
                 <small>Vault Balance</small>
                 <div style="font-size:20px; font-weight:bold;">KES 1,250,000</div>
-            </div>
+           
+<!-- ================= GLOBAL & REGIONAL SETTINGS ================= -->
+
+<section class="vault-enterprise">
+
+  <h2 class="vault-main-title">🌍 GLOBAL & REGIONAL SETTINGS</h2>
+  <p class="vault-purpose">
+    Delivering an intelligent international banking experience that adapts to user location, currency behavior, legal frameworks, and financial activity patterns.
+  </p>
+
+  <!-- Multi Currency -->
+  <div class="vault-feature-block">
+    <h3>💱 Multi-Currency Accounts</h3>
+    <ul>
+      <li>Hold balances in USD, EUR, GBP, KES, NGN, JPY</li>
+      <li>Real-time FX rate feeds with smart spread optimization</li>
+      <li>Currency conversion tools with historical performance charts</li>
+      <li>Auto-conversion triggers based on user-defined thresholds</li>
+      <li>Virtual wallet grouping by currency</li>
+    </ul>
+  </div>
+
+  <!-- Language -->
+  <div class="vault-feature-block">
+    <h3>🌐 Intelligent Language Selector</h3>
+    <ul>
+      <li>Supports English, Kiswahili, French, Spanish, Mandarin, Arabic</li>
+      <li>AI-powered contextual banking translations</li>
+      <li>RTL/LTR automatic UI switching</li>
+      <li>Voice banking translation integration</li>
+      <li>Localized legal notice rendering</li>
+    </ul>
+  </div>
+
+  <!-- Time Zone -->
+  <div class="vault-feature-block">
+    <h3>🕒 Time Zone Synchronization</h3>
+    <ul>
+      <li>Automatic timezone detection & manual override</li>
+      <li>Dual timestamp logging (Local + UTC)</li>
+      <li>Travel-mode auto sync</li>
+      <li>DST correction engine</li>
+      <li>Audit-ready global timestamp compliance</li>
+    </ul>
+  </div>
+
+  <!-- Country Payments -->
+  <div class="vault-feature-block">
+    <h3>🏦 Country-Specific Payment Options</h3>
+    <ul>
+      <li>Local bank rails & mobile money (M-Pesa, Airtel Money)</li>
+      <li>Smart routing via lowest cost rail</li>
+      <li>Automated regional KYC validation</li>
+      <li>ISO-standard payment switching</li>
+      <li>National QR payment compatibility</li>
+    </ul>
+  </div>
+
+  <!-- FX Lock -->
+  <div class="vault-feature-block">
+    <h3>🔒 Exchange Rate Lock Tool</h3>
+    <ul>
+      <li>Lock FX rate for future transactions</li>
+      <li>Rate-hold confirmation receipts</li>
+      <li>Expiry notifications & volatility alerts</li>
+      <li>Predictive AI rate forecasting</li>
+      <li>Integrated hedging partner pricing engine</li>
+    </ul>
+  </div>
+
+  <!-- Compliance -->
+  <div class="vault-feature-block">
+    <h3>⚖ Regulatory Compliance Overview</h3>
+    <ul>
+      <li>Country-specific AML/KYC regulations</li>
+      <li>Tax & reporting threshold alerts</li>
+      <li>Automated compliance triggers</li>
+      <li>Global legal database auto-updates</li>
+      <li>Country risk level indicators</li>
+    </ul>
+  </div>
+
+  <!-- Advanced Features -->
+  <h3 class="vault-advanced-title">🚀 ADVANCED INNOVATIONS</h3>
+
+  <div class="vault-feature-block">
+    <h4>🌎 Smart Migration Mode</h4>
+    <ul>
+      <li>Auto-detect country changes</li>
+      <li>Dynamic product adaptation</li>
+      <li>Multi-jurisdiction compliance engine</li>
+      <li>Localized onboarding transformation</li>
+    </ul>
+  </div>
+
+  <div class="vault-feature-block">
+    <h4>📊 Real-Time Economic Impact Alerts</h4>
+    <ul>
+      <li>Live global market feed integration</li>
+      <li>AI-powered volatility impact scoring</li>
+      <li>Risk analytics with suggested actions</li>
+      <li>Push, Email & SMS layered notifications</li>
+    </ul>
+  </div>
+
+  <div class="vault-feature-block">
+    <h4>🌍 Geo-Optimized Transfers</h4>
+    <ul>
+      <li>Fastest settlement route detection</li>
+      <li>Lowest FX + rail cost comparison</li>
+      <li>Network risk intelligence scoring</li>
+      <li>Automatic fallback routing protection</li>
+    </ul>
+  </div>
+
+</section>
+
+<!-- ================= END GLOBAL SETTINGS ================= --> </div>
         </div>
     </div>
 
