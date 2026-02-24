@@ -146,7 +146,7 @@ app.get('/', (req, res) => {
             <div class="v-item" onclick="playSfx(4)">
                 <span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span>
             </div>
-            <div class="v-item" onclick="playSfx(5)">
+            <div class="v-item" onclick="switchTab('assets', this); playSfx(5)">
                 <span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Crypto Keys</span>
             </div>
             <div class="v-item" onclick="playSfx(6)">
