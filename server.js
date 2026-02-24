@@ -370,15 +370,8 @@ app.get("/hamburger-menu", (req, res) => {
         }
     ];
     res.json({ menu: menuData });
-});
-
-
-    // This runs in the browser, so 'document' is finally valid!
-    
-    const hamburgerMenu = document.getElementById("hamburger-menu");
-
-    if (hamburgerBtn && hamburgerMenu) {
-        hamburgerBtn.addEventListener('click', async () => {
+}).
+   
             // Toggle visibility
             const isHidden = hamburgerMenu.style.display === "none";
             hamburgerMenu.style.display = isHidden ? "block" : "none";
