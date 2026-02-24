@@ -7,7 +7,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let transactions = [];
-const soundLibrary = Array.from({ length: 15 }, (_, i) => `sys_fx_${i + 1}.mp3`);
 
 const getKenyaTime = () => 
     new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
@@ -73,6 +72,8 @@ app.get('/', (req, res) => {
         .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
         .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
         .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
+        .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
+        .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
     </style>
 </head>
 <body>
@@ -121,26 +122,40 @@ app.get('/', (req, res) => {
         </div>
     </div>
 
-    <div id="tab-vault" class="tab-content"><div class="card"><h3>🏛️ Global Vault</h3></div></div>
-    <div id="tab-insights" class="tab-content"> 
-        <div class="card"> 
-            <h3>📊 Intel Engine</h3> 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;"> 
-                <div style="background:#f1f5f9; padding:15px; border-radius:15px;"> 
-                    <small style="color:#64748b">Success Rate</small><br> 
-                    <b id="successRate" style="font-size:18px; color:var(--accent)">0%</b> 
-                </div> 
-                <div style="background:#f1f5f9; padding:15px; border-radius:15px;"> 
-                    <small style="color:#64748b">System Load</small><br> 
-                    <b id="sysLoad" style="font-size:18px; color:var(--primary)">Low</b> 
-                </div> 
-            </div> 
-            <div style="height:150px; display:flex; align-items:flex-end; gap:8px; border-bottom:2px solid #e2e8f0; padding-bottom:5px;" id="volumeChart"> 
-                
-            </div> 
-            <p style="font-size:11px; color:#94a3b8; text-align:center; margin-top:10px;">Live Node Frequency Analysis</p> 
-        </div> 
+    <div id="tab-vault" class="tab-content">
+        <div class="card">
+            <h3>🏛️ Global Vault</h3>
+            <div style="display:grid; grid-template-columns: 1fr; gap:15px;">
+                <div style="background:#f1f5f9; padding:20px; border-radius:15px;">
+                    <small style="color:#64748b; font-weight:bold;">TOTAL PROCESSED</small>
+                    <h2 id="vaultTotal" style="margin:5px 0; color:var(--primary);">KES 0</h2>
+                </div>
+                <div style="background:#f1f5f9; padding:20px; border-radius:15px;">
+                    <small style="color:#64748b; font-weight:bold;">ACTIVE NODES</small>
+                    <h2 style="margin:5px 0; color:var(--accent);">14 Online</h2>
+                </div>
+            </div>
+        </div>
     </div>
+
+    <div id="tab-insights" class="tab-content">
+        <div class="card">
+            <h3>📊 Intel Engine</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+                <div style="background:#f1f5f9; padding:15px; border-radius:15px;">
+                    <small style="color:#64748b">Success Rate</small><br>
+                    <b id="successRate" style="font-size:18px; color:var(--accent)">0%</b>
+                </div>
+                <div style="background:#f1f5f9; padding:15px; border-radius:15px;">
+                    <small style="color:#64748b">System Load</small><br>
+                    <b id="sysLoad" style="font-size:18px; color:var(--primary)">Optimal</b>
+                </div>
+            </div>
+            <div class="chart-container" id="pulseChart"></div>
+            <p style="font-size:11px; color:#94a3b8; text-align:center; margin-top:10px;">Live Latency Pulse History</p>
+        </div>
+    </div>
+
     <div id="tab-security" class="tab-content">
         <div class="card">
             <h3>🛡️ Audio Core</h3>
@@ -191,7 +206,10 @@ app.get('/', (req, res) => {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
+                
+                // Dashboard Update
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
+                document.getElementById('vaultTotal').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 
                 const h = document.getElementById('aiHealth');
                 h.innerText = 'AI Health: ' + data.aiScore;
@@ -199,23 +217,22 @@ app.get('/', (req, res) => {
                 h.style.background = data.aiScore > 800 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255,255,255,0.1)';
                 
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
-                /* Intel Engine Analytics */ 
-                const successCount = data.transactions.filter(t => t.status.includes('Successful')).length; 
-                const rate = data.transactions.length ? Math.round((successCount / data.transactions.length) * 100) : 0; 
-                document.getElementById('successRate').innerText = rate + '%'; 
-                document.getElementById('sysLoad').innerText = data.transactions.length > 5 ? 'High' : 'Optimal'; 
-                 
-                /* Live Chart Engine */ 
-                const chart = document.getElementById('volumeChart'); 
-                const bar = document.createElement('div'); 
-                bar.style.flex = '1'; 
-                bar.style.background = 'var(--accent)'; 
-                bar.style.height = (data.todayTotal % 100) + 'px'; 
-                bar.style.borderRadius = '4px 4px 0 0'; 
-                bar.style.transition = '0.5s'; 
-                if(chart.children.length > 15) chart.removeChild(chart.firstChild); 
+
+                // Intel Engine Calculation
+                const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
+                const rate = data.transactions.length ? Math.round((successfulCount / data.transactions.length) * 100) : 0;
+                document.getElementById('successRate').innerText = rate + '%';
+                document.getElementById('sysLoad').innerText = data.latency > 30 ? 'Moderate' : 'Optimal';
+
+                // Live Pulse Chart
+                const chart = document.getElementById('pulseChart');
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar';
+                bar.style.height = (data.latency * 2) + 'px';
+                if(chart.children.length > 20) chart.removeChild(chart.firstChild);
                 chart.appendChild(bar);
 
+                // Sound Logic
                 if (data.transactions.length > 0) {
                     const top = data.transactions[0];
                     if (window.LAST_STATUS[top.id] !== top.status) {
