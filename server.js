@@ -208,6 +208,7 @@ app.get('/', (req, res) => {
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('aiHealth').innerText = 'AI Health: ' + data.aiScore;
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
+                const graph = document.getElementById('pulseGraph'); if(graph) { const bar = document.createElement('div'); bar.style.width = '8px'; bar.style.height = (data.latency * 2) + 'px'; bar.style.background = 'var(--accent)'; bar.style.borderRadius = '2px'; graph.appendChild(bar); if(graph.children.length > 25) graph.removeChild(graph.firstChild); }
                 
                 const feed = document.getElementById('activityFeed');
                 feed.innerHTML = data.transactions.length ? data.transactions.map(t => \`
