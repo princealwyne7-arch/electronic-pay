@@ -1,3 +1,4 @@
+
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
@@ -290,4 +291,98 @@ app.get('/', (req, res) => {
     `);
 });
 
-app.listen(process.env.PORT || 3000);
+<button id="hamburger-btn">☰</button>
+<div id="hamburger-menu" style="display:none;"></div>
+//////////////////////////
+// HAMBURGER MENU BACKEND
+//////////////////////////
+
+// Place this block **after your existing routes** but **before app.listen()**
+app.get('/hamburger-menu', (req, res) => {
+  // Detect logged-in user (replace with your auth/session logic)
+  const user = req.user || { name: "Guest", verified: false };
+
+  // Full structured menu
+  const menu = [
+    {
+      section: "Profile",
+      items: [
+        { name: "View Profile", route: "/profile", authRequired: true },
+        { name: "Account Settings", route: "/settings", authRequired: true },
+        { name: "Privacy & Data Control", route: "/privacy", authRequired: true },
+      ],
+    },
+    {
+      section: "Verification",
+      items: [
+        { name: "KYC Verification", route: "/kyc", authRequired: true },
+      ],
+    },
+    {
+      section: "Notifications",
+      items: [
+        { name: "Notifications & Preferences", route: "/notifications", authRequired: true },
+      ],
+    },
+    {
+      section: "Support",
+      items: [
+        { name: "Help & Support", route: "/help" },
+        { name: "Contact Us", route: "/contact" },
+      ],
+    },
+    {
+      section: "App Info",
+      items: [
+        { name: "App Version Info", route: "/version" },
+        { name: "Logout", route: "/logout", authRequired: true },
+      ],
+    },
+  ];
+
+  // Only show auth-required items if user is verified
+  const filteredMenu = menu.map(section => ({
+    section: section.section,
+    items: section.items.filter(item => !item.authRequired || user.verified),
+  }));
+
+  // Send JSON to frontend
+  res.json({ menu: filteredMenu });
+});
+//////////////////////////
+// HAMBURGER MENU FRONTEND LOGIC
+//////////////////////////
+const hamburgerBtn = document.getElementById('hamburger-btn');
+const hamburgerMenu = document.getElementById('hamburger-menu');
+
+hamburgerBtn.addEventListener('click', async () => {
+  // Toggle visibility
+  hamburgerMenu.style.display = hamburgerMenu.style.display === 'none' ? 'block' : 'none';
+
+  // Load menu only once
+  if (!hamburgerMenu.innerHTML) {
+    try {
+      const res = await fetch('/hamburger-menu');
+      const data = await res.json();
+
+      // Build HTML
+      hamburgerMenu.innerHTML = data.menu.map(section => `
+        <h4 style="padding:10px; border-bottom:1px solid #ccc;">${section.section}</h4>
+        <ul style="list-style:none; padding-left:15px;">
+          ${section.items.map(item => `<li><a href="${item.route}" style="text-decoration:none; display:block; padding:5px 0;">${item.name}</a></li>`).join('')}
+        </ul>
+      `).join('');
+    } catch (err) {
+      console.error("Error loading menu:", err);
+      hamburgerMenu.innerHTML = "<p style='padding:10px;'>Failed to load menu.</p>";
+    }
+  }
+});
+app.get('/some-existing-route', (req, res) => { ... });
+
+// <-- DROP HAMBURGER MENU HERE
+app.get('/hamburger-menu', ... );
+
+// app.listen stays here
+app.listen(3000, () => console.log('Server running...'));
+

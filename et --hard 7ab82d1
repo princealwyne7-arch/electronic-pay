@@ -1,0 +1,210 @@
+[33m1f200b8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Fix: Removed git commands from server.js
+[33mfd96391[m Fix: Removed git commands from server.js
+[33m10d16e2[m Fix: Removed git commands from server.js
+[33m9034f40[m Upgrade: Added Global & Regional Banking Infrastructure to Vault
+[33m55781b6[m Deployment: Fixed SyntaxError and Vault UI
+[33mc813835[m Deployment: Global & Regional Vault Architecture
+[33m2afadb0[m Fix: Activated Real Feature Tabs and Resolved SyntaxError
+[33ma480231[m POS Upgrade with receipt fix
+[33m1f74723[m Fix: Activated Real Feature Tabs and Resolved SyntaxError
+[33m4482b2b[m Manual update: Vault features via nano
+[33mae27a87[m Fix: Activated Real Feature Tabs and Resolved SyntaxError
+[33ma0350e3[m Manual Update: Vault UI Precision
+[33m42f593d[m Fix: Activated Real Feature Tabs and Resolved SyntaxError
+[33m8f67c1d[m Fix: Removed all internal symbols for Termux
+[33m1319380[m Ultra Secure Base64 Build
+[33m4088b9d[m Fix: Activated Real Feature Tabs and Resolved SyntaxError
+[33m6e49ecb[m Ultra Elite: Credential Extraction & High-Tech Build Fix
+[33mdba30ab[m Activation: Smart Command Center & Multi-Hub Elite Architecture
+[33m80d2bda[m Activation: Global Control Hub & System Shield
+[33m93b80fd[m Activation: Business Hub Merchant Suite
+[33mc09b1f3[m Activation: Advanced Security Core with Panic Mode
+[33m7212b63[m Elite Banking System: Multi-Hub UI with AI Insights
+[33m7634434[m POS Upgrade with receipt fix
+[33m309570c[m Fix: Rebuild with AI Predictor and Wealth Vault
+[33m2d27be8[m Fix: Resolved SyntaxError and Activated AI Predictor
+[33m834eea9[m Activation: AI Dashboard Predictor & Health Score
+[33meef3e71[m Activation: Security Sound Engine & Logic Masking
+[33m7e7c721[m System: Boundary Masks Applied for Surgical Updates
+[33m63d4897[m Elite Banking System: Multi-Hub UI with AI Insights
+[33m2e2cb36[m POS Upgrade with receipt fix
+[33m796fb81[m Elite Build: Consolidated Reliability Fix
+[33m3be5643[m Elite Banking System: Multi-Hub UI with AI Insights
+[33m03d81f5[m UI: Elevated to Elite Banking Navigation Standard
+[33me23f2b0[m System Master: Verified Shell Escaping and Tab Paging
+[33maba90b7[m UI: Elevated to Elite Banking Navigation Standard
+[33m245da1f[m Reliability Patch: Fixed Navigation and Script Logic
+[33m4e4c36e[m Layout Mastery: Fixed tag alignment for three-box settings
+[33m748ef07[m Layout Fix: Separated Sound and Regional boxes + 12 Sounds Active
+[33m6fed509[m Surgical Update: Upgraded Sound Engine to 12 Sounds and Master Toggles
+[33mea6e34b[m System Deploy: 100% Verified Regional & Sound Settings
+[33m6f2dc23[m Update: Added Regional & App Preferences features safely
+[33ma6b4bf0[m UI: Fully injected Regional & App Preferences features
+[33m2e8d7a8[m System Master: Verified Shell Escaping and Tab Paging
+[33mc08c1b4[m System Master Build: Verified UI with Padding Clearance and Granular Settings
+[33mcd96bca[m System: Full UI/Brain Harmony with Tabs, 12+ Sounds, and Regional Prefs
+[33ma57a734[m Fix: Removed floating UI elements and restored tab encapsulation
+[33m118fe2e[m Fix: Anchored Preferences module to correct tab logic
+[33mbfee8f7[m UI: Corrected Regional Preferences structural logic
+[33m04a82e5[m UI: Added Regional and App Preferences module
+[33ma9808aa[m UI: Fixed naming and expanded Notification features
+[33mbba4914[m UI: Added professional NOTIFICATIONS module to Settings
+[33m5d1fd37[m UI: Implemented Granular SOUNDS Controller with Event Mapping
+[33m89660ad[m UI: Restored 12+ sounds feature in Settings tab
+[33mc055df8[m UI: Implemented professional Navigation Controller
+[33m3044d46[m UI: Restored 12+ audio library and sound settings
+[33m4be34ee[m Fix: Resolved white page, loading hang, and restored sounds
+[33m8fab528[m UI: Upgraded Live Activity Display Engine
+[33m8c5385f[m Engine: Fixed callback sync for Live Activity
+[33m6bbd6e0[m System: Modular High-Tech Build
+[33m6ae97f9[m Engine: High-Tech Session Sync Final
+[33m45d5879[m UI: Synced session logic with browser storage
+[33m5b4127f[m Engine: Clean slate session auth deploy
+[33m161abed[m Engine: Fixed deployment error and stabilized Session Logic
+[33mb0897a5[m Engine: Fixed Session Priority for PIN 5566
+[33ma81ca77[m Engine: Implemented 5-minute Session Token for STK Pushes
+[33me572076[m Engine: Restored Paynecta Initialize logic with current UI
+[33m5ed5014[m UI: Fixed professional alignment and organized More tab
+[33m28fc71d[m Banking UI Phase 1: Premium Visuals
+[33ma42e326[m Engine: Restored Paynecta Initialize logic with current UI
+[33m1933ec8[m UI: Applied universal safe-zone padding and activity row polish
+[33m5c61fe1[m UI: Fixed banner attachment and added professional card alignment
+[33m4d002df[m UI: Moved settings to More, completed Calc digits, polished Activity
+[33mdcd0daa[m Tech: Finalized High-Technology Banking System UI
+[33m1140234[m UI: Restored Professional Navigation Bar framework
+[33m01949e8[m Engine: Restored Paynecta Initialize logic with current UI
+[33m0f685b8[m FIX: Restored /push route to solve 404 error
+[33m5c2005c[m Emergency: Restored Calculator and Full Sound Library
+[33m3fd7a9b[m System: Restored Core and Added Advanced Tech Modules
+[33m2dd1dd5[m UI: Professional Node-based injection of Search and Notifications
+[33mc14b964[m UI: Added top-right notification and search icons
+[33m1c11e84[m UI: Finalized professional search and notification tools
+[33m780679a[m UI: Safe injection of Search and Notification tools
+[33ma1e51ff[m UI: Added Notification and Search tools to the header
+[33m6381fa4[m Fix: Implemented strict callback verification for transaction truth
+[33m8ba2832[m Fix: Contained transaction engine to the Home tab
+[33m63bca13[m UI: Upgraded Side Menu with Standard Bank features
+[33m5316fd5[m UI: Moved Sound Notifications to the More tab
+[33m5d9c19f[m Surgery: Restored 12-sound notification system
+[33md81bcf6[m Rescue Build: Nav, Menu, Calc, and STK Engine fully integrated
+[33m0bf3cde[m UI: Moved Calculator to dedicated Navigation Tab
+[33m5ec8ef8[m Feature: Added selectable notification sounds and toggles
+[33m659871a[m UI: Added 3-line Side Menu and Profile Drawer
+[33m55e051c[m Surgery: Restored Paynecta Engine without touching UI
+[33me686025[m UI: Implemented Professional Navigation Bar System
+[33mb7620b6[m Engine: Restored Paynecta Initialize logic with current UI
+[33mc029a6d[m Engine: Integrated Paynecta API for Live STK Push
+[33m22f7171[m Rescue: Fixed processing hang and ready for M-Pesa connect
+[33m296b3b5[m Rescue: Restored live background transaction status logic
+[33m3879870[m Rescue: Separated Logo Upload from Live Activity
+[33m5ade106[m UI: Fixed SyntaxError and deployed Top Banner
+[33ma455192[m UI: Fixed blank page with Base64 Accuracy Restoration
+[33mec06a33[m Branding: Aligned Logic with Multer and Banner
+[33m43703c4[m UI: Fixed ReferenceError and injected Top Banner safely
+[33m847019e[m Fix: Added package.json to solve missing multer module
+[33m6268ab3[m Branding: Enabled file uploads for Logo and Banner
+[33m9b2a5f3[m UI: Added top banner wrapper
+[33mccfa8fa[m Banking UI Phase 1: Premium Visuals
+[33mb61dce5[m Admin Module: Search and Clear
+[33m2c6e9e4[m POS Upgrade with receipt fix
+[33m71bf2b9[m Final Super Accuracy Build: Fixed Navigation & Server Syntax
+[33m75e9f71[m UI: Rebuilt for super accuracy and tab separation
+[33m83802e1[m UI Fix: Clean Tabs and STK Home
+[33m49b28dc[m Master Rebuild: STK on Home, Stats on Tab 2, Tools on Tab 3
+[33m316a192[m Emergency: Complete rebuild of server logic and UI
+[33m97a9b06[m Fix: Final syntax repair and safe tab injection
+[33m2881567[m Fix: Removed stray HTML and restored safe tab logic
+[33m2596ba7[m UI: Forced injection of tab logic and data loader
+[33m9af8386[m UI: Re-injecting Navigation Bar and fixing tab visibility
+[33ma4037e1[m UI: Hard-refreshing tab visibility and versioning
+[33mdbeddab[m UI: Hard-resetting all activation logic
+[33m91cd4e2[m Emergency Fix: Activating features and tabs
+[33mc2a13d1[m UI: Finalized Tabbed Navigation Layout
+[33md9d110f[m UI: Switched to Tabbed Professional Layout
+[33m44121b2[m UI: Enabled responsive screen scaling and flex-grid
+[33md8a5a2e[m UI: Added Security and Support modules - UI Phase Complete
+[33m0d16099[m UI: Added Merchant Wallet module down the line
+[33me464f1a[m UI: Added Customer Directory down the line
+[33md22e05d[m UI: Added Business Calendar module down the line
+[33m9ca561f[m UI: Added Daily Summary module down the line
+[33me9e8f64[m UI: Added Session Timer module down the line
+[33me94f01b[m UI: Added Owner-Set Dynamic Goal Tracker
+[33mef42df6[m UI: Added Daily Goal Tracker module at the bottom
+[33m6b64cae[m UI: Added Transaction Notes module
+[33mebdb79e[m UI Fix: Pinned Live Activity and moved Calculator to bottom
+[33m25ad409[m UI: Pinned Live Activity above modules
+[33m7757dd2[m UI: Multi-module scrollable layout with Calculator
+[33m04399ce[m UI Fix: Centered status light and bold balance
+[33m0213453[m UI: Added pulsing status and button feedback
+[33m6d5de07[m UI Upgrade: Added Live Status Indicator
+[33m44896f7[m Banking UI: Safe Counter Update
+[33mefcc41b[m Banking UI Phase 1: Premium Visuals
+[33m8e8028e[m Admin Module: Search and Clear
+[33m3acc448[m POS Upgrade with receipt fix
+[33m6524320[m Critical Fix: Complete System Sync
+[33mdde1992[m Cleaning environment for fresh deploy
+[33m17d70ea[m Emergency Reset: Ultra-Light Banking UI
+[33m0d95aca[m Final Banking UI: Counter and STK Fixed
+[33m35611d3[m Banking UI: Fixed counter display logic
+[33mf24b07d[m Banking UI: Robust Counter Fix
+[33mb99da2e[m Fix: Counter data mapping
+[33mc9699f3[m Banking UI Phase 2: Transaction Counter
+[33md874873[m Banking UI Phase 1: Premium Visuals
+[33m2570271[m Admin Module: Search and Clear
+[33med80288[m POS Upgrade with receipt fix
+[33m7d677d4[m Banking Fix: Sync labels and routes
+[33m07865ac[m Emergency 404 and Data Link Fix
+[33m93fa6fb[m Banking Grade UI 1.0 Final
+[33m179ad0d[m Data link and status tracking repaired
+[33m278df8d[m Future Banking UI Complete
+[33m913e36a[m POS Upgrade with receipt fix
+[33mf156033[m Fix 404 and Logo
+[33md730607[m Fix 404 and restore live status
+[33m0a3ba45[m Emergency Professional Restore
+[33madb4554[m Closing syntax fix
+[33m6112e5a[m Closing syntax fix
+[33m6f56dcc[m Full Professional UI Fix
+[33m86a6bd4[m Expert Level UI Forwarded
+[33m951b43f[m Dashboard upgrade with CSV Reports
+[33mb88e3bf[m Added Clear History button
+[33m8e89456[m Surgical Search Bar update
+[33mcd6b29b[m Added search bar surgical update
+[33m20d0697[m POS Upgrade with receipt fix
+[33m4b5d832[m Emergency Restore
+[33m64606bd[m Ultra fix
+[33m10dae0f[m Complete syntax fix
+[33m98c1267[m Fix syntax error
+[33md8eaf69[m Added search bar and cloud title
+[33mb2bb6fc[m Database live
+[33mff1e149[m POS Upgrade with receipt fix
+[33m6172f15[m Add WhatsApp and Print buttons
+[33m925b3bf[m Fix: Remove file database to resolve Render crash
+[33m542ad3c[m Final cleanup for receipt system
+[33m8d9ab30[m Ultimate Receipt Update: WhatsApp and Printable
+[33m0eadd6a[m Split update for CSV button
+[33mad882fc[m Fix: Remove file database to resolve Render crash
+[33m44adaa1[m Add permanent database, delete button, and date stats
+[33m99fef55[m POS Upgrade with receipt fix
+[33m885e20a[m Fix syntax error and audio logic
+[33m0dcda57[m Add success sound notification
+[33m57c044d[m Aggressive status search
+[33mc183e58[m Fix time and matching
+[33m847b211[m Fix status matching logic
+[33m81b5e0e[m Fix undefined status and add detailed labels
+[33m9a57413[m Remove auto-refresh to prevent input deleting
+[33m19410ca[m Add real-time callback tracking
+[33m6141ef5[m Add scrollable history and clear button
+[33m0747b69[m Add transaction history tracking
+[33me38a583[m Make success page big and professional
+[33mf22fd26[m Add custom profile picture logo
+[33m50cf756[m Add M-Pesa logo to portal
+[33m15290d2[m Secure PIN visibility and mask input
+[33mae993f7[m Final PIN fix
+[33mdc1b6fe[m FORCE UPDATE PIN TO 5566
+[33mc4ec578[m Fix undefined variable error and consolidate login
+[33md3b019e[m Add shop login security
+[33m16df2d6[m Make UI bigger and mobile-friendly
+[33ma9eeeb5[m Add email to payment request
+[33m5e9cb77[m Fix API endpoint and request body for Paynecta
+[33m6f09e21[m Update callback URL to match Render
+[33me939ad7[m Setup STK Push for Electronic Shop
