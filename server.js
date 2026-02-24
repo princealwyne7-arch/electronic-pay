@@ -208,7 +208,7 @@ app.get('/', (req, res) => {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
-                document.getElementById('aiHealth').innerText = 'AI Health: ' + data.aiScore;
+                const healthEl = document.getElementById('aiHealth'); healthEl.innerText = 'AI Health: ' + data.aiScore; healthEl.style.color = data.aiScore > 900 ? 'var(--accent)' : '#f59e0b';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
                 const graph = document.getElementById('pulseGraph'); if(graph) { const bar = document.createElement('div'); bar.style.width = '8px'; bar.style.height = (data.latency * 2) + 'px'; bar.style.background = 'var(--accent)'; bar.style.borderRadius = '2px'; graph.appendChild(bar); if(graph.children.length > 25) graph.removeChild(graph.firstChild); }
                 
@@ -217,7 +217,7 @@ app.get('/', (req, res) => {
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                         <span><b>\${t.phone}</b><br><small style="color:#94a3b8">\${t.time}</small></span>
                         <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
-                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : t.status.includes('Cancelled') ? 'var(--red)' : '#f59e0b'}">\${t.status}</small></span>
+                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : t.status.includes('Cancelled') ? 'var(--red)' : '#f59e0b'}">\${t.status.includes('Processing') ? '<span class="pulse-dot" style="display:inline-block; width:8px; height:8px;"></span> ' + t.status : t.status}</small></span>
                     </div>
                 \`).join('') : 'No Recent Activity';
             } catch(e) {}
