@@ -415,7 +415,7 @@ app.get("/hamburger-menu", (req, res) => {
             }
         });
     }
-</script>
+
 
     
 
