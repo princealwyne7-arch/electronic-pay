@@ -209,9 +209,10 @@ app.get('/', (req, res) => {
                 const data = await res.json();
                 if(data.transactions.length > 0 && data.transactions[0].status.includes('Successful') && window.lastStatus !== 'Successful') { if(typeof playSfx === 'function') playSfx(1); }
                 window.lastStatus = data.transactions.length > 0 ? data.transactions[0].status : '';
-                document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
+                const totalEl = document.getElementById('totalRev'); totalEl.innerText = 'KES ' + data.todayTotal.toLocaleString(); totalEl.style.transition = '0.3s'; if(data.todayTotal > 0) totalEl.style.color = 'var(--accent)';
                 const healthEl = document.getElementById('aiHealth'); healthEl.innerText = 'AI Health: ' + data.aiScore; healthEl.style.color = data.aiScore > 900 ? 'var(--accent)' : '#f59e0b';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
+                if(data.transactions.length > 0) { const currentStatus = data.transactions[0].status; if(currentStatus !== window.lastKnownStatus) { if(currentStatus.includes('Successful')) playSfx(1); if(currentStatus.includes('Cancelled')) playSfx(3); window.lastKnownStatus = currentStatus; } }
                 const graph = document.getElementById('pulseGraph'); if(graph) { const bar = document.createElement('div'); bar.style.width = '8px'; bar.style.height = (data.latency * 2) + 'px'; bar.style.background = 'var(--accent)'; bar.style.borderRadius = '2px'; graph.appendChild(bar); if(graph.children.length > 25) graph.removeChild(graph.firstChild); }
                 
                 const feed = document.getElementById('activityFeed');
