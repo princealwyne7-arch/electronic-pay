@@ -348,19 +348,8 @@ app.get('/hamburger-menu', (req, res) => {
   // Send JSON to frontend
   res.json({ menu: filteredMenu });
 });
-//////////////////////////
-// HAMBURGER MENU FRONTEND LOGIC
-/////////////////////////
 
 
-
-      // Build HTML
-      hamburgerMenu.innerHTML = data.menu.map(section => `
-        <h4 style="padding:10px; border-bottom:1px solid #ccc;">${section.section}</h4>
-        <ul style="list-style:none; padding-left:15px;">
-          ${section.items.map(item => `<li><a href="${item.route}" style="text-decoration:none; display:block; padding:5px 0;">${item.name}</a></li>`).join('')}
-        </ul>
-      `).join('');
      
 // HAMBURGER MENU BACKEND - Keep this in server.js
 app.get("/hamburger-menu", (req, res) => {
