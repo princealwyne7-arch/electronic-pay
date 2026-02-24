@@ -361,7 +361,7 @@ app.get('/hamburger-menu', (req, res) => {
           ${section.items.map(item => `<li><a href="${item.route}" style="text-decoration:none; display:block; padding:5px 0;">${item.name}</a></li>`).join('')}
         </ul>
       `).join('');
-    } catch (err) {
+     catch (err) {
       console.error("Error loading menu:", err);
       hamburgerMenu.innerHTML = "<p style='padding:10px;'>Failed to load menu.</p>";
     }
