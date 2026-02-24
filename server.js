@@ -350,19 +350,9 @@ app.get('/hamburger-menu', (req, res) => {
 });
 //////////////////////////
 // HAMBURGER MENU FRONTEND LOGIC
-//////////////////////////
-const hamburgerBtn = document.getElementById('hamburger-btn');
-const hamburgerMenu = document.getElementById('hamburger-menu');
+/////////////////////////
 
-hamburgerBtn.addEventListener('click', async () => {
-  // Toggle visibility
-  hamburgerMenu.style.display = hamburgerMenu.style.display === 'none' ? 'block' : 'none';
 
-  // Load menu only once
-  if (!hamburgerMenu.innerHTML) {
-    try {
-      const res = await fetch('/hamburger-menu');
-      const data = await res.json();
 
       // Build HTML
       hamburgerMenu.innerHTML = data.menu.map(section => `
@@ -381,6 +371,9 @@ hamburgerBtn.addEventListener('click', async () => {
 // <-- DROP HAMBURGER MENU HERE
 
 
-// app.listen stays here
-app.listen(3000, () => console.log('Server running...'));
+// ... existing route logic above ...
+
+app.listen(3000, () => {
+    console.log("Server running...");
+});
 
