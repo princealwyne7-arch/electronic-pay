@@ -146,7 +146,14 @@ app.get('/', (req, res) => {
             <div class="v-item" onclick="playSfx(4)">
                 <span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span>
             </div>
-            <div class="v-item" onclick="playSfx(5)">
+            <div class="v-item" onclick="fetch('/api/status').then(r=>r.json()).then(d=>alert('📊 Digital Assets
+BTC:0
+ETH:0
+USDT:0
+USD:'+d.todayTotal+'
+EUR:0
+GBP:0
+Stocks:0'))">
                 <span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Crypto Keys</span>
             </div>
             <div class="v-item" onclick="playSfx(6)">
