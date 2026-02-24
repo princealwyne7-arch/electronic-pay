@@ -6,44 +6,29 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// SYSTEM DATA ENGINES
 let transactions = [];
 const soundLibrary = Array.from({ length: 15 }, (_, i) => `sys_fx_${i + 1}.mp3`);
 
 const getKenyaTime = () => 
     new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
-// API: AI HEALTH, SYSTEM STATUS & PULSE
 app.get('/api/status', (req, res) => {
     const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
     const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
-    const baseScore = 800;
-    const aiScore = Math.min(999, baseScore + (successfulTxs.length * 12));
-    
-    // Pulse Engine: Real-time Latency simulation
-    const latency = Math.floor(Math.random() * 35) + 10; 
-    
-    res.json({ transactions, todayTotal, aiScore, latency, soundCount: soundLibrary.length });
+    const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
+    res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
 });
 
-// ADMIN ENGINE: AUTHORIZE STK PUSH
 app.post('/admin/push', async (req, res) => {
     const { phone, amount, pin } = req.body;
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
-
     const trackingId = `BNK-${Date.now()}`;
     transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
-
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
-            code: process.env.PAYMENT_CODE,
-            mobile_number: phone,
-            amount: amount,
-            email: "princealwyne7@gmail.com",
-            callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
+            code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
+            email: "princealwyne7@gmail.com", callback_url: "https://electronic-pay.onrender.com/callback"
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' } });
         res.json({ success: true, trackingId });
     } catch (err) { 
         if(transactions[0]) transactions[0].status = "Failed ❌";
@@ -51,17 +36,13 @@ app.post('/admin/push', async (req, res) => {
     }
 });
 
-// CALLBACK ENGINE
 app.post('/callback', (req, res) => {
     const { merchant_request_id, state, status } = req.body;
     let tx = transactions.find(t => String(t.id).includes(merchant_request_id));
-    if (tx) {
-        tx.status = (state === 'completed' || status === 'success') ? "Successful ✅" : "Cancelled ⚠️";
-    }
+    if (tx) { tx.status = (state === 'completed' || status === 'success') ? "Successful ✅" : "Cancelled ⚠️"; }
     res.sendStatus(200);
 });
 
-// UI ENGINE
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -73,31 +54,22 @@ app.get('/', (req, res) => {
     <style>
         :root { --primary: #0f172a; --accent: #28a745; --bg: #f8fafc; --card: #ffffff; --red: #ef4444; }
         body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; overflow-x: hidden; }
-        
         .topbar { position:fixed; top:0; width:100%; height:65px; background: white; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-sizing:border-box; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.03); }
-        
-        /* PULSE DOT ANIMATION */
         .pulse-indicator { font-size: 9px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 800; }
         .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
         .side-drawer { position:fixed; left:-280px; top:0; width:280px; height:100%; background:var(--primary); z-index:2000; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); padding:20px; box-sizing:border-box; color:white; }
         .side-drawer.open { left:0; }
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:1999; }
         .drawer-item { padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); color:white; text-decoration:none; display:block; font-size:14px; }
-
         .tab-content { display: none; padding: 85px 15px 20px 15px; animation: fadeIn 0.3s ease; }
         .active-tab { display: block; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; } }
-        
         .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #f1f5f9; }
         .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
-        
         .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
-        
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
-
         .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
         .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
         .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
@@ -105,7 +77,6 @@ app.get('/', (req, res) => {
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-    
     <div class="side-drawer" id="drawer">
         <div style="margin-bottom:30px;">
             <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:50px; border-radius:50%; border:2px solid var(--accent);">
@@ -127,10 +98,7 @@ app.get('/', (req, res) => {
                 <span style="font-weight:800; font-size:14px;">Pay <span style="color:var(--accent)">Elite</span></span>
             </div>
         </div>
-        <div class="pulse-indicator">
-            <div class="pulse-dot"></div>
-            <span id="latencyText">PULSE: 0ms</span>
-        </div>
+        <div class="pulse-indicator"><div class="pulse-dot"></div><span id="latencyText">PULSE: 0ms</span></div>
     </div>
 
     <div id="tab-dash" class="tab-content active-tab">
@@ -138,9 +106,8 @@ app.get('/', (req, res) => {
             <div class="mode-badge" id="modeLabel">CLIENT</div>
             <div style="font-size:12px; opacity:0.8; font-weight:bold;">TOTAL VOLUME</div>
             <h1 id="totalRev" style="margin:8px 0; font-size:36px;">KES 0</h1>
-            <div id="aiHealth" style="font-size:11px; background:rgba(255,255,255,0.1); display:inline-block; padding:5px 12px; border-radius:10px; font-weight:bold;">AI Health: --</div>
+            <div id="aiHealth" style="font-size:11px; background:rgba(255,255,255,0.1); display:inline-block; padding:5px 12px; border-radius:10px; font-weight:bold; transition: 0.3s;">AI Health: --</div>
         </div>
-
         <div class="card" id="adminControl" style="display:none; border: 2px solid var(--accent);">
             <h3 style="margin-top:0; color:var(--accent);">Admin Command</h3>
             <input type="password" id="adminPin" placeholder="Manager Secure PIN">
@@ -148,7 +115,6 @@ app.get('/', (req, res) => {
             <input type="number" id="pAmount" placeholder="Amount (KES)">
             <button onclick="runPush()" class="btn-exec">AUTHORIZE STK PUSH</button>
         </div>
-
         <div class="card">
             <h4 style="margin:0 0 15px 0;">Live Activity</h4>
             <div id="activityFeed" style="font-size:13px;">Syncing with Nodes...</div>
@@ -156,8 +122,16 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-vault" class="tab-content"><div class="card"><h3>🏛️ Global Vault</h3></div></div>
-    <div id="tab-insights" class="tab-content"><div class="card"><h3>📊 Intel Engine</h3><p style="font-size:12px; color:#64748b;">Live Latency Pulse History</p><div style="height:150px; width:100%; background:#f1f5f9; border-radius:12px; display:flex; align-items:flex-end; gap:2px; padding:10px; box-sizing:border-box; overflow:hidden;" id="pulseGraph"></div></div></div>
-    <div id="tab-security" class="tab-content"><div class="card"><h3>🛡️ Audio Core</h3><p style="font-size:11px;color:#64748b;margin-bottom:15px;">System Sound Assets: 15 Loaded</p><div id="audioGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;"></div><button class="btn-exec" style="background:var(--red);">LOCK SYSTEM</button></div></div>
+    <div id="tab-insights" class="tab-content"><div class="card"><h3>📊 Intel Engine</h3></div></div>
+    <div id="tab-security" class="tab-content">
+        <div class="card">
+            <h3>🛡️ Audio Core</h3>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                ${Array.from({length: 15}, (_, i) => `<button onclick="playSfx(${i+1})" style="padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px;">FX ${i+1}</button>`).join('')}
+            </div>
+            <button class="btn-exec" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
+        </div>
+    </div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('dash', this)">🏠<br>Dash</div>
@@ -168,7 +142,12 @@ app.get('/', (req, res) => {
 
     <script>
         let isAdmin = false;
-        const playSfx = (id) => { console.log("Playing Asset: sys_fx_" + id + ".mp3"); const audio = new Audio("https://your-asset-host.com/sys_fx_" + id + ".mp3"); audio.play().catch(e => console.warn("Asset link pending")); };
+        window.LAST_STATUS = {};
+        
+        const playSfx = (idx) => {
+            const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
+            audio.play().catch(() => console.log("Sound Triggered: FX " + idx));
+        };
 
         function toggleMenu() {
             const d = document.getElementById('drawer');
@@ -190,49 +169,48 @@ app.get('/', (req, res) => {
             el.classList.add('active');
         }
 
-        async function runPush() {
-            const pin = document.getElementById('adminPin').value;
-            const phone = document.getElementById('pPhone').value;
-            const amount = document.getElementById('pAmount').value;
-            const res = await fetch('/admin/push', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({pin, phone, amount})
-            });
-        const grid = document.getElementById("audioGrid"); if(grid) { for(let i=1; i<=15; i++) { const b = document.createElement("button"); b.innerText = "FX " + i; b.style = "padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:white;font-size:10px;font-weight:bold;cursor:pointer;"; b.onclick = () => playSfx(i); grid.appendChild(b); } }
-            if(res.ok) { alert('Push Initialized'); update(); } else { alert('Access Denied'); }
-        }
-
         async function update() {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
-                if(data.transactions.length > 0 && data.transactions[0].status.includes('Successful') && window.lastStatus !== 'Successful') { if(typeof playSfx === 'function') playSfx(1); }
-                window.lastStatus = data.transactions.length > 0 ? data.transactions[0].status : '';
-                const totalEl = document.getElementById('totalRev'); totalEl.innerText = 'KES ' + data.todayTotal.toLocaleString(); totalEl.style.transition = '0.3s'; if(data.todayTotal > 0) totalEl.style.color = 'var(--accent)';
-                const healthEl = document.getElementById('aiHealth'); healthEl.innerText = 'AI Health: ' + data.aiScore; healthEl.style.color = data.aiScore > 900 ? 'var(--accent)' : '#f59e0b';
-                document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
-                if(data.transactions.length > 0) { const currentStatus = data.transactions[0].status; if(currentStatus !== window.lastKnownStatus) { if(currentStatus.includes('Successful')) playSfx(1); if(currentStatus.includes('Cancelled')) playSfx(3); window.lastKnownStatus = currentStatus; } }
-                const graph = document.getElementById('pulseGraph'); if(graph) { const bar = document.createElement('div'); bar.style.width = '8px'; bar.style.height = (data.latency * 2) + 'px'; bar.style.background = 'var(--accent)'; bar.style.borderRadius = '2px'; graph.appendChild(bar); if(graph.children.length > 25) graph.removeChild(graph.firstChild); }
+                document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 
-                const feed = document.getElementById('activityFeed');
-                feed.innerHTML = data.transactions.length ? data.transactions.map(t => \`
+                const h = document.getElementById('aiHealth');
+                h.innerText = 'AI Health: ' + data.aiScore;
+                h.style.color = data.aiScore > 800 ? '#4ade80' : 'white';
+                h.style.background = data.aiScore > 800 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255,255,255,0.1)';
+                
+                document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
+
+                if (data.transactions.length > 0) {
+                    const top = data.transactions[0];
+                    if (window.LAST_STATUS[top.id] !== top.status) {
+                        if (top.status.includes('Successful')) playSfx(1);
+                        if (top.status.includes('Processing')) playSfx(2);
+                        if (top.status.includes('Cancelled')) playSfx(3);
+                        window.LAST_STATUS[top.id] = top.status;
+                    }
+                }
+
+                document.getElementById('activityFeed').innerHTML = data.transactions.length ? data.transactions.map(t => \`
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                         <span><b>\${t.phone}</b><br><small style="color:#94a3b8">\${t.time}</small></span>
                         <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
-                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : t.status.includes('Cancelled') ? 'var(--red)' : '#f59e0b'}">\${t.status.includes('Processing') ? '<span class="pulse-dot" style="display:inline-block; width:8px; height:8px;"></span> ' + t.status : t.status}</small></span>
-                    </div>
-                \`).join('') : 'No Recent Activity';
+                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : t.status.includes('Cancelled') ? 'var(--red)' : '#f59e0b'}">\${t.status}</small></span>
+                    </div>\`).join('') : 'No Recent Activity';
             } catch(e) {}
         }
-
-        setInterval(update, 3000);
-        const grid = document.getElementById("audioGrid"); if(grid) { for(let i=1; i<=15; i++) { const b = document.createElement("button"); b.innerText = "FX " + i; b.style = "padding:10px;border:1px solid #e2e8f0;border-radius:8px;background:white;font-size:10px;font-weight:bold;cursor:pointer;"; b.onclick = () => playSfx(i); grid.appendChild(b); } }
-        update();
+        setInterval(update, 3000); update();
+        async function runPush() {
+            const pin = document.getElementById('adminPin').value;
+            const phone = document.getElementById('pPhone').value;
+            const amount = document.getElementById('pAmount').value;
+            const res = await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) });
+            if(res.ok) update();
+        }
     </script>
 </body>
 </html>
     `);
 });
-
 app.listen(process.env.PORT || 3000);
