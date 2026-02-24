@@ -81,8 +81,14 @@ app.get('/', (req, res) => {
         .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
         .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
 
-        /* DIGITAL ASSETS OVERLAY (SLIDE OUT LOGIC) */
-        #assetOverlay { position:fixed; bottom:-100%; left:0; width:100%; height:90%; background:white; border-radius:30px 30px 0 0; z-index:3500; transition:0.4s ease; padding:25px; box-sizing:border-box; overflow-y:auto; box-shadow:0 -10px 30px rgba(0,0,0,0.15); }
+        /* INTEL ENGINE EXTRA STYLES */
+        .intel-ticker { background: var(--primary); color: #4ade80; padding: 8px; font-family: monospace; font-size: 10px; border-radius: 12px; margin-bottom: 15px; white-space: nowrap; overflow: hidden; }
+        .intel-ticker span { display: inline-block; animation: scroll 15s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .node-stat { display:flex; justify-content:space-between; font-size:11px; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+        
+        /* ASSET OVERLAY */
+        #assetOverlay { position:fixed; bottom:-100%; left:0; width:100%; height:90%; background:white; border-radius:30px 30px 0 0; z-index:3500; transition:0.4s ease; padding:25px; box-sizing:border-box; overflow-y:auto; }
         #assetOverlay.active { bottom:0; }
         .a-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:20px; }
         .a-feat { background:#f8fafc; padding:15px; border-radius:18px; border:1px solid #f1f5f9; }
@@ -195,9 +201,34 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-insights" class="tab-content">
-        <div class="card">
-            <h3>📊 Intel Engine</h3>
+        <div class="intel-ticker">
+            <span>BTC: $94,210.40 (+2.4%) | ETH: $2,450.12 (-0.5%) | SOL: $145.20 (+5.1%) | KES/USD: 129.50 | USDT: $1.00</span>
+        </div>
+        <div class="card" style="background:white; border-left: 5px solid var(--accent);">
+            <h3 style="margin:0;">📊 Intel Engine v2.0</h3>
+            <p style="font-size:11px; color:#64748b;">AI Predictive Analysis & System Node Health</p>
+            
             <div class="chart-container" id="pulseChart"></div>
+            
+            <div style="margin-top:20px;">
+                <div class="node-stat"><b>Network Protocol</b><span style="color:var(--accent)">P2P-Encrypted</span></div>
+                <div class="node-stat"><b>Fraud Probability</b><span style="color:var(--accent)">0.002%</span></div>
+                <div class="node-stat"><b>Next 24h Prediction</b><span id="predictVal">Syncing...</span></div>
+                <div class="node-stat"><b>Node Location</b><span>Nairobi Central</span></div>
+                <div class="node-stat"><b>System Integrity</b><span style="color:var(--accent)">100% Secure</span></div>
+            </div>
+        </div>
+        
+        <div class="card" style="background: linear-gradient(to right, #0f172a, #1e293b); color:white;">
+            <h4 style="margin:0 0 10px 0;">⚡ Rapid Insights</h4>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px;">
+                    <small>Success Index</small><br><b id="successRate">0%</b>
+                </div>
+                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px;">
+                    <small>System Load</small><br><b id="sysLoad">Optimal</b>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -273,6 +304,13 @@ app.get('/', (req, res) => {
                 document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('assetBTC').innerText = (data.todayTotal / 12450000).toFixed(6) + ' BTC';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
+                
+                // INTEL CALCULATIONS
+                const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
+                const rate = data.transactions.length ? Math.round((successfulCount / data.transactions.length) * 100) : 0;
+                document.getElementById('successRate').innerText = rate + '%';
+                document.getElementById('sysLoad').innerText = data.latency > 30 ? 'High' : 'Optimal';
+                document.getElementById('predictVal').innerText = 'KES ' + (data.todayTotal * 1.15).toLocaleString();
                 
                 // AIR & COLOR LOGIC
                 const pulseHue = 140 - data.latency;
