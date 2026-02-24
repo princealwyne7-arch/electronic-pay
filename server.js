@@ -74,6 +74,14 @@ app.get('/', (req, res) => {
         .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
         .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
         .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
+        
+        /* VAULT GRID STYLING */
+        .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
+        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.2s; }
+        .v-item:active { transform: scale(0.95); background: #f8fafc; }
+        .v-icon { font-size: 22px; margin-bottom: 5px; display: block; }
+        .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
+        .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -107,7 +115,7 @@ app.get('/', (req, res) => {
             <div class="mode-badge" id="modeLabel">CLIENT</div>
             <div style="font-size:12px; opacity:0.8; font-weight:bold;">TOTAL VOLUME</div>
             <h1 id="totalRev" style="margin:8px 0; font-size:36px;">KES 0</h1>
-            <div id="aiHealth" style="font-size:11px; background:rgba(255,255,255,0.1); display:inline-block; padding:5px 12px; border-radius:10px; font-weight:bold; transition: 0.3s;">AI Health: --</div>
+            <div id="aiHealth" style="font-size:11px; background:rgba(255,255,255,0.1); display:inline-block; padding:5px 12px; border-radius:10px; font-weight:bold;">AI Health: --</div>
         </div>
         <div class="card" id="adminControl" style="display:none; border: 2px solid var(--accent);">
             <h3 style="margin-top:0; color:var(--accent);">Admin Command</h3>
@@ -123,17 +131,53 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-vault" class="tab-content">
-        <div class="card">
-            <h3>🏛️ Global Vault</h3>
-            <div style="display:grid; grid-template-columns: 1fr; gap:15px;">
-                <div style="background:#f1f5f9; padding:20px; border-radius:15px;">
-                    <small style="color:#64748b; font-weight:bold;">TOTAL PROCESSED</small>
-                    <h2 id="vaultTotal" style="margin:5px 0; color:var(--primary);">KES 0</h2>
+        <div class="card balance-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <small style="color:var(--accent); font-weight:800;">VAULT STATUS: <span id="vLockStatus">ENCRYPTED</span></small>
+                    <h2 id="vaultTotalDisplay" style="margin:5px 0; font-size:28px;">KES 0</h2>
+                    <div style="font-size:10px; opacity:0.7;">Active Session: #882-ELITE</div>
                 </div>
-                <div style="background:#f1f5f9; padding:20px; border-radius:15px;">
-                    <small style="color:#64748b; font-weight:bold;">ACTIVE NODES</small>
-                    <h2 style="margin:5px 0; color:var(--accent);">14 Online</h2>
-                </div>
+                <button onclick="emergencyLockdown()" style="background:var(--red); color:white; border:none; padding:10px; border-radius:12px; font-size:10px; font-weight:bold;">LOCKDOWN</button>
+            </div>
+        </div>
+
+        <div class="vault-grid">
+            <div class="v-item" onclick="playSfx(4)">
+                <span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span>
+            </div>
+            <div class="v-item" onclick="playSfx(5)">
+                <span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Crypto Keys</span>
+            </div>
+            <div class="v-item" onclick="playSfx(6)">
+                <span class="v-icon">📁</span><span class="v-label">Documents</span><span class="v-sub">IDs & Bank</span>
+            </div>
+            <div class="v-item" onclick="playSfx(7)">
+                <span class="v-icon">🔑</span><span class="v-label">Backups</span><span class="v-sub">Recovery Keys</span>
+            </div>
+            <div class="v-item" onclick="playSfx(8)">
+                <span class="v-icon">📝</span><span class="v-label">Private Notes</span><span class="v-sub">Encrypted</span>
+            </div>
+            <div class="v-item" onclick="playSfx(9)">
+                <span class="v-icon">🔒</span><span class="v-label">Secret Files</span><span class="v-sub">U-Secure</span>
+            </div>
+            <div class="v-item" onclick="playSfx(10)">
+                <span class="v-icon">🆔</span><span class="v-label">Access</span><span class="v-sub">PIN/Biometrics</span>
+            </div>
+            <div class="v-item" onclick="playSfx(11)">
+                <span class="v-icon">📡</span><span class="v-label">Monitor</span><span class="v-sub">Risk: Low</span>
+            </div>
+            <div class="v-item" onclick="playSfx(12)">
+                <span class="v-icon">⏲️</span><span class="v-label">Auto-Lock</span><span id="lockTimer" class="v-sub">14:59</span>
+            </div>
+            <div class="v-item" onclick="playSfx(13)">
+                <span class="v-icon">📜</span><span class="v-label">Activity Log</span><span class="v-sub">Full History</span>
+            </div>
+            <div class="v-item" onclick="playSfx(14)">
+                <span class="v-icon">🛡️</span><span class="v-label">Settings</span><span class="v-sub">Vault Config</span>
+            </div>
+            <div class="v-item" onclick="playSfx(15)">
+                <span class="v-icon">❄️</span><span class="v-label">Freeze</span><span class="v-sub">Node Shutdown</span>
             </div>
         </div>
     </div>
@@ -162,7 +206,7 @@ app.get('/', (req, res) => {
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                 ${Array.from({length: 15}, (_, i) => `<button onclick="playSfx(${i+1})" style="padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px;">FX ${i+1}</button>`).join('')}
             </div>
-            <button class="btn-exec" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
+            <button class="btn-exec" onclick="emergencyLockdown()" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
         </div>
     </div>
 
@@ -181,6 +225,13 @@ app.get('/', (req, res) => {
             const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
             audio.play().catch(() => console.log("Sound Triggered: FX " + idx));
         };
+
+        function emergencyLockdown() {
+            playSfx(10);
+            document.getElementById('vLockStatus').innerText = "LOCKED";
+            document.body.style.filter = "grayscale(100%) brightness(70%)";
+            alert("EMERGENCY PROTOCOL ACTIVATED: SYSTEM FROZEN");
+        }
 
         function toggleMenu() {
             const d = document.getElementById('drawer');
@@ -207,24 +258,20 @@ app.get('/', (req, res) => {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 
-                // Dashboard Update
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
-                document.getElementById('vaultTotal').innerText = 'KES ' + data.todayTotal.toLocaleString();
+                document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 
                 const h = document.getElementById('aiHealth');
                 h.innerText = 'AI Health: ' + data.aiScore;
                 h.style.color = data.aiScore > 800 ? '#4ade80' : 'white';
-                h.style.background = data.aiScore > 800 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(255,255,255,0.1)';
                 
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
 
-                // Intel Engine Calculation
                 const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
                 const rate = data.transactions.length ? Math.round((successfulCount / data.transactions.length) * 100) : 0;
                 document.getElementById('successRate').innerText = rate + '%';
                 document.getElementById('sysLoad').innerText = data.latency > 30 ? 'Moderate' : 'Optimal';
 
-                // Live Pulse Chart
                 const chart = document.getElementById('pulseChart');
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
@@ -232,13 +279,10 @@ app.get('/', (req, res) => {
                 if(chart.children.length > 20) chart.removeChild(chart.firstChild);
                 chart.appendChild(bar);
 
-                // Sound Logic
                 if (data.transactions.length > 0) {
                     const top = data.transactions[0];
                     if (window.LAST_STATUS[top.id] !== top.status) {
                         if (top.status.includes('Successful')) playSfx(1);
-                        if (top.status.includes('Processing')) playSfx(2);
-                        if (top.status.includes('Cancelled')) playSfx(3);
                         window.LAST_STATUS[top.id] = top.status;
                     }
                 }
@@ -247,7 +291,7 @@ app.get('/', (req, res) => {
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                         <span><b>\${t.phone}</b><br><small style="color:#94a3b8">\${t.time}</small></span>
                         <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
-                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : t.status.includes('Cancelled') ? 'var(--red)' : '#f59e0b'}">\${t.status}</small></span>
+                        <small style="font-weight:bold; color:\${t.status.includes('Successful') ? 'var(--accent)' : '#f59e0b'}">\${t.status}</small></span>
                     </div>\`).join('') : 'No Recent Activity';
             } catch(e) {}
         }
@@ -256,8 +300,8 @@ app.get('/', (req, res) => {
             const pin = document.getElementById('adminPin').value;
             const phone = document.getElementById('pPhone').value;
             const amount = document.getElementById('pAmount').value;
-            const res = await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) });
-            if(res.ok) update();
+            await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) });
+            update();
         }
     </script>
 </body>
