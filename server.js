@@ -146,7 +146,7 @@ app.get('/', (req, res) => {
             <div class="v-item" onclick="playSfx(4)">
                 <span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span>
             </div>
-            <div class="v-item" onclick="openDigitalAssets()">
+            <div class="v-item" onclick="playSfx(5)">
                 <span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Crypto Keys</span>
             </div>
             <div class="v-item" onclick="playSfx(6)">
@@ -218,28 +218,6 @@ app.get('/', (req, res) => {
     </nav>
 
     <script>
-function openDigitalAssets() {
-    fetch('/api/status')
-    .then(res => res.json())
-    .then(data => {
-        const assets = [
-            {name:"Bitcoin", symbol:"BTC", balance:0},
-            {name:"Ethereum", symbol:"ETH", balance:0},
-            {name:"USDT", symbol:"USDT", balance:0},
-            {name:"USD", symbol:"USD", balance:data.todayTotal},
-            {name:"EUR", symbol:"EUR", balance:0},
-            {name:"GBP", symbol:"GBP", balance:0},
-            {name:"Apple Stock", symbol:"AAPL", balance:0},
-            {name:"Tesla Stock", symbol:"TSLA", balance:0},
-            {name:"Google Stock", symbol:"GOOGL", balance:0}
-        ];
-        const content = assets.map(a => ).join("
-");
-        alert("📊 Digital Assets
-
-" + content);
-    });
-}
         let isAdmin = false;
         window.LAST_STATUS = {};
         
