@@ -373,7 +373,7 @@ app.get("/hamburger-menu", (req, res) => {
 }).
    
             // Toggle visibility
-            const isHidden = hamburgerMenu.style.display === "none";
+            const Hidden = hamburgerMenu.style.display === "none";
             hamburgerMenu.style.display = isHidden ? "block" : "none";
 
             // Load menu content from server if empty
