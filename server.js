@@ -1,28 +1,47 @@
 const express = require("express");
 const axios = require("axios");
+const mongoose = require("mongoose");
 require("dotenv").config();
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-let transactions = [];
+// DATABASE CONNECTION
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Database Linked ✅"))
+    .catch(err => console.error("DB Error:", err));
+
+const Transaction = mongoose.model("Transaction", new mongoose.Schema({
+    id: { type: String, required: true, unique: true },
+    phone: String,
+    amount: Number,
+    status: String,
+    time: String,
+    createdAt: { type: Date, default: Date.now }
+}));
 
 const getKenyaTime = () => 
     new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
-app.get('/api/status', (req, res) => {
-    const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
-    const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
-    const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
-    res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
+app.get('/api/status', async (req, res) => {
+    try {
+        const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(20);
+        const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
+        const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
+        const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
+        res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
+    } catch (err) { res.status(500).json({ error: "Sync Failed" }); }
 });
 
 app.post('/admin/push', async (req, res) => {
     const { phone, amount, pin } = req.body;
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
     const trackingId = `BNK-${Date.now()}`;
-    transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+    
+    // Persistent Save
+    await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
+    
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
@@ -30,15 +49,15 @@ app.post('/admin/push', async (req, res) => {
         }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' } });
         res.json({ success: true, trackingId });
     } catch (err) { 
-        if(transactions[0]) transactions[0].status = "Failed ❌";
+        await Transaction.updateOne({ id: trackingId }, { status: "Failed ❌" });
         res.status(500).json({ success: false });
     }
 });
 
-app.post('/callback', (req, res) => {
+app.post('/callback', async (req, res) => {
     const { merchant_request_id, state, status } = req.body;
-    let tx = transactions.find(t => String(t.id).includes(merchant_request_id));
-    if (tx) { tx.status = (state === 'completed' || status === 'success') ? "Successful ✅" : "Cancelled ⚠️"; }
+    const finalStatus = (state === 'completed' || status === 'success') ? "Successful ✅" : "Cancelled ⚠️";
+    await Transaction.updateOne({ id: { $regex: merchant_request_id } }, { status: finalStatus });
     res.sendStatus(200);
 });
 
@@ -73,7 +92,6 @@ app.get('/', (req, res) => {
         .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
         .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
         
-        /* LIQUID PULSE INTEL NAV */
         .intel-nav { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .intel-nav::-webkit-scrollbar { display: none; }
         .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
@@ -324,6 +342,6 @@ app.get('/', (req, res) => {
     </script>
 </body>
 </html>
-    `);
+`);
 });
 app.listen(process.env.PORT || 3000);
