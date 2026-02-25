@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // DATABASE CONNECTION
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Database Linked ✅"))
+    .then(() => console.log("Global Database Linked ✅"))
     .catch(err => console.error("DB Error:", err));
 
 const Transaction = mongoose.model("Transaction", new mongoose.Schema({
@@ -39,7 +39,6 @@ app.post('/admin/push', async (req, res) => {
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
     const trackingId = `BNK-${Date.now()}`;
     
-    // Persistent Save
     await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
     
     try {
@@ -62,7 +61,7 @@ app.post('/callback', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send(`
+    res.send(\`
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -274,7 +273,7 @@ app.get('/', (req, res) => {
         <div class="card">
             <h3>🛡️ Audio Core Diagnostics</h3>
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                ${Array.from({length: 15}, (_, i) => `<button class="fx-btn" onclick="playSfx(${i+1})">FX ENGINE ${i+1}</button>`).join('')}
+                \${Array.from({length: 15}, (_, i) => \`<button class="fx-btn" onclick="playSfx(\${i+1})">FX ENGINE \${i+1}</button>\`).join('')}
             </div>
             <button class="btn-exec" onclick="emergencyLockdown()" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
         </div>
@@ -342,6 +341,6 @@ app.get('/', (req, res) => {
     </script>
 </body>
 </html>
-`);
+\`);
 });
 app.listen(process.env.PORT || 3000);
