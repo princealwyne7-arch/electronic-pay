@@ -133,11 +133,11 @@ app.get('/', (req, res) => {
             <div style="margin-top:10px; font-weight:bold;">Manager Admin</div>
             <div style="font-size:11px; color:var(--accent);">Active Engine ●</div>
         </div>
-        <a href="#" class="drawer-item">👤 Profile</a>
-        <a href="#" class="drawer-item">⚙️ Settings</a>
-        <a href="#" class="drawer-item">🛡️ Security</a>
-        <a href="#" class="drawer-item">🆔 KYC</a>
-        <a href="#" class="drawer-item">🎧 Support</a>
+        <a href="#" class="drawer-item" onclick="playSfx(1)">👤 Profile</a>
+        <a href="#" class="drawer-item" onclick="playSfx(2)">⚙️ Settings</a>
+        <a href="#" class="drawer-item" onclick="playSfx(3)">🛡️ Security</a>
+        <a href="#" class="drawer-item" onclick="playSfx(4)">🆔 KYC</a>
+        <a href="#" class="drawer-item" onclick="playSfx(5)">🎧 Support</a>
     </div>
 
     <div class="topbar">
@@ -247,37 +247,42 @@ app.get('/', (req, res) => {
     <script>
         let isAdmin = false;
         window.LAST_STATUS = {};
+        
+        // AUDIO CORE BACKGROUND ENGINE
         const playSfx = (idx) => {
             const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
             audio.play().catch(() => {});
         };
 
         function openAssetHub() {
-            playSfx(5);
+            playSfx(5); // Audio Feedback for Assets
             document.getElementById('assetOverlay').classList.add('active');
             document.getElementById('overlay').style.display = 'block';
         }
 
         function closeAll() {
+            playSfx(12); // Closing Feedback
             document.getElementById('assetOverlay').classList.remove('active');
             document.getElementById('drawer').classList.remove('open');
             document.getElementById('overlay').style.display = 'none';
         }
 
         function emergencyLockdown() {
-            playSfx(10);
+            playSfx(15); // Maximum Alert SFX
             document.getElementById('vLockStatus').innerText = "LOCKED";
             document.body.style.filter = "grayscale(100%) brightness(70%)";
             alert("EMERGENCY PROTOCOL ACTIVATED");
         }
 
         function toggleMenu() {
+            playSfx(1);
             const d = document.getElementById('drawer');
             d.classList.toggle('open');
             document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none';
         }
 
         function toggleAdminMode() {
+            playSfx(isAdmin ? 7 : 8); // Toggle Specific SFX
             isAdmin = !isAdmin;
             document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none';
             document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT';
@@ -285,6 +290,7 @@ app.get('/', (req, res) => {
         }
 
         function switchTab(id, el) {
+            playSfx(2); // Navigation Feedback
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
             document.getElementById('tab-' + id).classList.add('active-tab');
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
@@ -326,6 +332,7 @@ app.get('/', (req, res) => {
         }
         setInterval(update, 3000); update();
         async function runPush() {
+            playSfx(10); // Authorization Audio
             const pin = document.getElementById('adminPin').value;
             const phone = document.getElementById('pPhone').value;
             const amount = document.getElementById('pAmount').value;
