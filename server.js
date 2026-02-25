@@ -9,8 +9,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // --- MONGODB CORE CONNECTION ---
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Database Linked ✅"))
-    .catch(err => console.error("Database Link Failed ❌", err));
+    .then(() => console.log("Database Linked Successfully ✅"))
+    .catch(err => console.error("Database Connection Error ❌", err));
 
 const TransactionSchema = new mongoose.Schema({
     id: { type: String, required: true, unique: true },
@@ -30,7 +30,7 @@ app.get('/api/status', async (req, res) => {
     try {
         const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(20);
         const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
-        const todayTotal = successfulTxs.reduce((sum, t) => sum + (t.amount || 0), 0);
+        const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
         const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
         res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
     } catch (err) { res.status(500).json({ error: "Sync Failed" }); }
@@ -41,8 +41,14 @@ app.post('/admin/push', async (req, res) => {
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
     const trackingId = `BNK-${Date.now()}`;
     
-    // Save to Database
-    await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
+    // Save to MongoDB
+    await new Transaction({ 
+        id: trackingId, 
+        phone, 
+        amount, 
+        status: 'Processing... 🔄', 
+        time: getKenyaTime() 
+    }).save();
 
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
@@ -63,7 +69,7 @@ app.post('/callback', async (req, res) => {
     res.sendStatus(200);
 });
 
-// --- CORE INTERFACE ---
+// --- CORE INTERFACE (100% ORIGINAL FEATURES) ---
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -79,8 +85,10 @@ app.get('/', (req, res) => {
         .pulse-indicator { font-size: 9px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 800; }
         .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        
         .fx-btn { padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px; cursor:pointer; transition: 0.2s; border: 1px solid transparent; }
         .fx-btn:active { transform: scale(0.92); background: var(--accent); color: white; box-shadow: 0 0 10px var(--accent); }
+
         .side-drawer { position:fixed; left:-280px; top:0; width:280px; height:100%; background:var(--primary); z-index:4000; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); padding:20px; box-sizing:border-box; color:white; }
         .side-drawer.open { left:0; }
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:2999; backdrop-filter: blur(2px); }
@@ -88,13 +96,17 @@ app.get('/', (req, res) => {
         .tab-content { display: none; padding: 85px 15px 20px 15px; animation: fadeIn 0.3s ease; }
         .active-tab { display: block; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; } }
+        
         .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #f1f5f9; }
         .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
         .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
+        
         .intel-nav { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .intel-nav::-webkit-scrollbar { display: none; }
         .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
         .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+        .intel-nav-item:active { transform: scale(0.95); }
+
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
         .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
@@ -102,16 +114,19 @@ app.get('/', (req, res) => {
         .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
         .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
         .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
+        
         .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
         .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; }
         .v-item:active { transform: scale(0.95); background: #f8fafc; }
         .v-icon { font-size: 22px; margin-bottom: 5px; display: block; }
         .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
         .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
+
         .intel-ticker { background: var(--primary); color: #4ade80; padding: 8px; font-family: monospace; font-size: 10px; border-radius: 12px; margin-bottom: 15px; white-space: nowrap; overflow: hidden; }
         .intel-ticker span { display: inline-block; animation: scroll 15s linear infinite; }
         @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
         .node-stat { display:flex; justify-content:space-between; font-size:11px; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+        
         #assetOverlay { position:fixed; bottom:-100%; left:0; width:100%; height:90%; background:white; border-radius:30px 30px 0 0; z-index:3500; transition:0.4s ease; padding:25px; box-sizing:border-box; overflow-y:auto; }
         #assetOverlay.active { bottom:0; }
         .a-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:20px; }
@@ -234,6 +249,7 @@ app.get('/', (req, res) => {
             <div class="intel-nav-item" onclick="activateIntel(this, 6)">LEDGER AUDIT</div>
             <div class="intel-nav-item" onclick="activateIntel(this, 7)">P2P MESH</div>
         </div>
+
         <div class="intel-ticker">
             <span>BTC: $95,210.40 (+2.4%) | ETH: $2,550.12 (+1.5%) | SOL: $148.20 (+5.1%) | KES/USD: 129.50 | USDT: $1.00</span>
         </div>
@@ -286,12 +302,14 @@ app.get('/', (req, res) => {
             const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
             audio.play().catch(() => {});
         };
+
         function activateIntel(el, sfx) {
             playSfx(sfx);
             document.querySelectorAll('.intel-nav-item').forEach(item => item.classList.remove('active'));
             el.classList.add('active');
             el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
+
         function openAssetHub() { playSfx(5); document.getElementById('assetOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
         function closeAll() { document.getElementById('assetOverlay').classList.remove('active'); document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
         function emergencyLockdown() { playSfx(10); document.getElementById('vLockStatus').innerText = "LOCKED"; document.body.style.filter = "grayscale(100%) brightness(70%)"; alert("EMERGENCY PROTOCOL ACTIVATED"); }
@@ -312,6 +330,8 @@ app.get('/', (req, res) => {
                 document.getElementById('successRate').innerText = rate + '%';
                 document.getElementById('sysLoad').innerText = data.latency > 30 ? 'High' : 'Optimal';
                 document.getElementById('predictVal').innerText = 'KES ' + Math.floor(data.todayTotal * 1.18).toLocaleString();
+                const pulseHue = 140 - data.latency;
+                document.documentElement.style.setProperty('--accent', \`hsl(\${pulseHue}, 60%, 40%)\`);
                 const chart = document.getElementById('pulseChart');
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
@@ -335,4 +355,4 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Engine running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Engine active on port ${PORT}`));
