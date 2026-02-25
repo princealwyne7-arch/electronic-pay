@@ -73,11 +73,12 @@ app.get('/', (req, res) => {
         .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
         .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
         
-        /* INTEL NAVIGATION BAR STYLING */
-        .intel-nav { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
+        /* LIQUID PULSE INTEL NAV */
+        .intel-nav { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .intel-nav::-webkit-scrollbar { display: none; }
-        .intel-nav-item { background: #f1f5f9; padding: 8px 16px; border-radius: 12px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: 0.2s; }
-        .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+        .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
+        .intel-nav-item:active { transform: scale(0.95); }
 
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
@@ -212,14 +213,14 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-insights" class="tab-content">
-        <div class="intel-nav">
-            <div class="intel-nav-item active" onclick="playSfx(1)">CORE ANALYTICS</div>
-            <div class="intel-nav-item" onclick="playSfx(2)">NODE TRAFFIC</div>
-            <div class="intel-nav-item" onclick="playSfx(3)">AI FORECAST</div>
-            <div class="intel-nav-item" onclick="playSfx(4)">GEO-SENTRY</div>
-            <div class="intel-nav-item" onclick="playSfx(5)">RISK MATRIX</div>
-            <div class="intel-nav-item" onclick="playSfx(6)">LEDGER AUDIT</div>
-            <div class="intel-nav-item" onclick="playSfx(7)">P2P MESH</div>
+        <div class="intel-nav" id="intelNav">
+            <div class="intel-nav-item active" onclick="activateIntel(this, 1)">CORE ANALYTICS</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 2)">NODE TRAFFIC</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 3)">AI FORECAST</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 4)">GEO-SENTRY</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 5)">RISK MATRIX</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 6)">LEDGER AUDIT</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 7)">P2P MESH</div>
         </div>
 
         <div class="intel-ticker">
@@ -236,7 +237,6 @@ app.get('/', (req, res) => {
                 <div class="node-stat"><b>Node Location</b><span>Nairobi Central Hub</span></div>
                 <div class="node-stat"><b>System Integrity</b><span style="color:var(--accent)">100% Secure</span></div>
                 <div class="node-stat"><b>Active Channels</b><span style="color:var(--accent)">14 Nodes Online</span></div>
-                <div class="node-stat"><b>Mesh Status</b><span style="color:var(--accent)">Synchronized</span></div>
             </div>
         </div>
         <div class="card" style="background: linear-gradient(to right, #0f172a, #1e293b); color:white;">
@@ -273,14 +273,23 @@ app.get('/', (req, res) => {
         let isAdmin = false;
         const playSfx = (idx) => {
             const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
-            audio.play().catch(() => { console.log("Audio Core Prime Required"); });
+            audio.play().catch(() => {});
         };
+
+        function activateIntel(el, sfx) {
+            playSfx(sfx);
+            document.querySelectorAll('.intel-nav-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
+
         function openAssetHub() { playSfx(5); document.getElementById('assetOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
         function closeAll() { document.getElementById('assetOverlay').classList.remove('active'); document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
         function emergencyLockdown() { playSfx(10); document.getElementById('vLockStatus').innerText = "LOCKED"; document.body.style.filter = "grayscale(100%) brightness(70%)"; alert("EMERGENCY PROTOCOL ACTIVATED"); }
         function toggleMenu() { playSfx(1); const d = document.getElementById('drawer'); d.classList.toggle('open'); document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none'; }
         function toggleAdminMode() { isAdmin = !isAdmin; playSfx(isAdmin ? 8 : 9); document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; document.getElementById('modeLabel').style.background = isAdmin ? 'var(--red)' : 'var(--accent)'; }
         function switchTab(id, el) { playSfx(2); document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab')); document.getElementById('tab-' + id).classList.add('active-tab'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
+
         async function update() {
             try {
                 const res = await fetch('/api/status');
