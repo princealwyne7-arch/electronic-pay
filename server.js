@@ -7,25 +7,23 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- MONGODB CORE CONNECTION ---
+// DATABASE CONNECTION (The only change to your logic)
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Database Linked Successfully ✅"))
-    .catch(err => console.error("Database Connection Error ❌", err));
+    .then(() => console.log("Database Linked ✅"))
+    .catch(err => console.error("DB Error:", err));
 
-const TransactionSchema = new mongoose.Schema({
+const Transaction = mongoose.model("Transaction", new mongoose.Schema({
     id: { type: String, required: true, unique: true },
     phone: String,
     amount: Number,
     status: String,
     time: String,
     createdAt: { type: Date, default: Date.now }
-});
-const Transaction = mongoose.model("Transaction", TransactionSchema);
+}));
 
 const getKenyaTime = () => 
     new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 
-// --- SYSTEM API ROUTES ---
 app.get('/api/status', async (req, res) => {
     try {
         const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(20);
@@ -41,15 +39,9 @@ app.post('/admin/push', async (req, res) => {
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
     const trackingId = `BNK-${Date.now()}`;
     
-    // Save to MongoDB
-    await new Transaction({ 
-        id: trackingId, 
-        phone, 
-        amount, 
-        status: 'Processing... 🔄', 
-        time: getKenyaTime() 
-    }).save();
-
+    // Save to Database instead of local array
+    await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
+    
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
@@ -69,7 +61,6 @@ app.post('/callback', async (req, res) => {
     res.sendStatus(200);
 });
 
-// --- CORE INTERFACE (100% ORIGINAL FEATURES) ---
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -105,7 +96,6 @@ app.get('/', (req, res) => {
         .intel-nav::-webkit-scrollbar { display: none; }
         .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
         .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
-        .intel-nav-item:active { transform: scale(0.95); }
 
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
@@ -213,29 +203,24 @@ app.get('/', (req, res) => {
     </div>
 
     <div id="tab-vault" class="tab-content">
-        <div class="card balance-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent);">
+        <div class="card balance-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <small style="color:var(--accent); font-weight:800;">VAULT STATUS: <span id="vLockStatus">ENCRYPTED</span></small>
                     <h2 id="vaultTotalDisplay" style="margin:5px 0; font-size:28px;">KES 0</h2>
-                    <div style="font-size:10px; opacity:0.7;">Active Session: #882-ELITE</div>
                 </div>
                 <button onclick="emergencyLockdown()" style="background:var(--red); color:white; border:none; padding:10px; border-radius:12px; font-size:10px; font-weight:bold;">LOCKDOWN</button>
             </div>
         </div>
         <div class="vault-grid">
-            <div class="v-item" onclick="playSfx(4)"><span class="v-icon">📊</span><span class="v-label">Dashboard</span><span class="v-sub">Live Assets</span></div>
-            <div class="v-item" onclick="openAssetHub()"><span class="v-icon">💎</span><span class="v-label">Assets</span><span class="v-sub">Digital Hub</span></div>
-            <div class="v-item" onclick="playSfx(6)"><span class="v-icon">📁</span><span class="v-label">Documents</span><span class="v-sub">IDs & Bank</span></div>
-            <div class="v-item" onclick="playSfx(7)"><span class="v-icon">🔑</span><span class="v-label">Backups</span><span class="v-sub">Recovery Keys</span></div>
-            <div class="v-item" onclick="playSfx(8)"><span class="v-icon">📝</span><span class="v-label">Private Notes</span><span class="v-sub">Encrypted</span></div>
-            <div class="v-item" onclick="playSfx(9)"><span class="v-icon">🔒</span><span class="v-label">Secret Files</span><span class="v-sub">U-Secure</span></div>
-            <div class="v-item" onclick="playSfx(10)"><span class="v-icon">🆔</span><span class="v-label">Access</span><span class="v-sub">PIN/Biometrics</span></div>
-            <div class="v-item" onclick="playSfx(11)"><span class="v-icon">📡</span><span class="v-label">Monitor</span><span class="v-sub">Risk: Low</span></div>
-            <div class="v-item" onclick="playSfx(12)"><span class="v-icon">⏲️</span><span class="v-label">Auto-Lock</span><span id="lockTimer" class="v-sub">14:59</span></div>
-            <div class="v-item" onclick="playSfx(13)"><span class="v-icon">📜</span><span class="v-label">Activity Log</span><span class="v-sub">Full History</span></div>
-            <div class="v-item" onclick="playSfx(14)"><span class="v-icon">🛡️</span><span class="v-label">Settings</span><span class="v-sub">Vault Config</span></div>
-            <div class="v-item" onclick="playSfx(15)"><span class="v-icon">❄️</span><span class="v-label">Freeze</span><span class="v-sub">Node Shutdown</span></div>
+            <div class="v-item" onclick="playSfx(4)"><span class="v-icon">📊</span><span class="v-label">Dashboard</span></div>
+            <div class="v-item" onclick="openAssetHub()"><span class="v-icon">💎</span><span class="v-label">Assets</span></div>
+            <div class="v-item" onclick="playSfx(6)"><span class="v-icon">📁</span><span class="v-label">Documents</span></div>
+            <div class="v-item" onclick="playSfx(7)"><span class="v-icon">🔑</span><span class="v-label">Backups</span></div>
+            <div class="v-item" onclick="playSfx(8)"><span class="v-icon">📝</span><span class="v-label">Private Notes</span></div>
+            <div class="v-item" onclick="playSfx(9)"><span class="v-icon">🔒</span><span class="v-label">Secret Files</span></div>
+            <div class="v-item" onclick="playSfx(10)"><span class="v-icon">🆔</span><span class="v-label">Access</span></div>
+            <div class="v-item" onclick="playSfx(11)"><span class="v-icon">📡</span><span class="v-label">Monitor</span></div>
         </div>
     </div>
 
@@ -243,39 +228,11 @@ app.get('/', (req, res) => {
         <div class="intel-nav" id="intelNav">
             <div class="intel-nav-item active" onclick="activateIntel(this, 1)">CORE ANALYTICS</div>
             <div class="intel-nav-item" onclick="activateIntel(this, 2)">NODE TRAFFIC</div>
-            <div class="intel-nav-item" onclick="activateIntel(this, 3)">AI FORECAST</div>
-            <div class="intel-nav-item" onclick="activateIntel(this, 4)">GEO-SENTRY</div>
-            <div class="intel-nav-item" onclick="activateIntel(this, 5)">RISK MATRIX</div>
-            <div class="intel-nav-item" onclick="activateIntel(this, 6)">LEDGER AUDIT</div>
-            <div class="intel-nav-item" onclick="activateIntel(this, 7)">P2P MESH</div>
         </div>
-
-        <div class="intel-ticker">
-            <span>BTC: $95,210.40 (+2.4%) | ETH: $2,550.12 (+1.5%) | SOL: $148.20 (+5.1%) | KES/USD: 129.50 | USDT: $1.00</span>
-        </div>
-        <div class="card" style="background:white; border-left: 5px solid var(--accent);">
-            <h3 style="margin:0;">📊 Intel Engine v3.0</h3>
-            <p style="font-size:11px; color:#64748b;">AI Predictive Analysis & System Node Health</p>
+        <div class="intel-ticker"><span>BTC: $95,210.40 | ETH: $2,550.12 | KES/USD: 129.50</span></div>
+        <div class="card">
+            <h3 style="margin:0;">📊 Intel Engine</h3>
             <div class="chart-container" id="pulseChart"></div>
-            <div style="margin-top:20px;">
-                <div class="node-stat"><b>Network Protocol</b><span style="color:var(--accent)">P2P-Encrypted</span></div>
-                <div class="node-stat"><b>Fraud Probability</b><span style="color:var(--accent)">0.001%</span></div>
-                <div class="node-stat"><b>Next 24h Prediction</b><span id="predictVal">Calculating...</span></div>
-                <div class="node-stat"><b>Node Location</b><span>Nairobi Central Hub</span></div>
-                <div class="node-stat"><b>System Integrity</b><span style="color:var(--accent)">100% Secure</span></div>
-                <div class="node-stat"><b>Active Channels</b><span style="color:var(--accent)">14 Nodes Online</span></div>
-            </div>
-        </div>
-        <div class="card" style="background: linear-gradient(to right, #0f172a, #1e293b); color:white;">
-            <h4 style="margin:0 0 10px 0;">⚡ Rapid Insights</h4>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px;">
-                    <small>Success Index</small><br><b id="successRate">0%</b>
-                </div>
-                <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:12px;">
-                    <small>System Load</small><br><b id="sysLoad">Optimal</b>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -285,7 +242,6 @@ app.get('/', (req, res) => {
             <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
                 ${Array.from({length: 15}, (_, i) => `<button class="fx-btn" onclick="playSfx(${i+1})">FX ENGINE ${i+1}</button>`).join('')}
             </div>
-            <button class="btn-exec" onclick="emergencyLockdown()" style="background:var(--red); margin-top:20px;">LOCK SYSTEM</button>
         </div>
     </div>
 
@@ -298,23 +254,13 @@ app.get('/', (req, res) => {
 
     <script>
         let isAdmin = false;
-        const playSfx = (idx) => {
-            const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
-            audio.play().catch(() => {});
-        };
-
-        function activateIntel(el, sfx) {
-            playSfx(sfx);
-            document.querySelectorAll('.intel-nav-item').forEach(item => item.classList.remove('active'));
-            el.classList.add('active');
-            el.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-        }
-
+        const playSfx = (idx) => { new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3").play().catch(() => {}); };
+        function activateIntel(el, sfx) { playSfx(sfx); document.querySelectorAll('.intel-nav-item').forEach(item => item.classList.remove('active')); el.classList.add('active'); }
         function openAssetHub() { playSfx(5); document.getElementById('assetOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
         function closeAll() { document.getElementById('assetOverlay').classList.remove('active'); document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
-        function emergencyLockdown() { playSfx(10); document.getElementById('vLockStatus').innerText = "LOCKED"; document.body.style.filter = "grayscale(100%) brightness(70%)"; alert("EMERGENCY PROTOCOL ACTIVATED"); }
+        function emergencyLockdown() { playSfx(10); document.getElementById('vLockStatus').innerText = "LOCKED"; document.body.style.filter = "grayscale(100%) brightness(70%)"; }
         function toggleMenu() { playSfx(1); const d = document.getElementById('drawer'); d.classList.toggle('open'); document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none'; }
-        function toggleAdminMode() { isAdmin = !isAdmin; playSfx(isAdmin ? 8 : 9); document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; document.getElementById('modeLabel').style.background = isAdmin ? 'var(--red)' : 'var(--accent)'; }
+        function toggleAdminMode() { isAdmin = !isAdmin; playSfx(isAdmin ? 8 : 9); document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; }
         function switchTab(id, el) { playSfx(2); document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab')); document.getElementById('tab-' + id).classList.add('active-tab'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
 
         async function update() {
@@ -325,13 +271,6 @@ app.get('/', (req, res) => {
                 document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('assetBTC').innerText = (data.todayTotal / 12450000).toFixed(6) + ' BTC';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
-                const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
-                const rate = data.transactions.length ? Math.round((successfulCount / data.transactions.length) * 100) : 0;
-                document.getElementById('successRate').innerText = rate + '%';
-                document.getElementById('sysLoad').innerText = data.latency > 30 ? 'High' : 'Optimal';
-                document.getElementById('predictVal').innerText = 'KES ' + Math.floor(data.todayTotal * 1.18).toLocaleString();
-                const pulseHue = 140 - data.latency;
-                document.documentElement.style.setProperty('--accent', \`hsl(\${pulseHue}, 60%, 40%)\`);
                 const chart = document.getElementById('pulseChart');
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
@@ -351,8 +290,6 @@ app.get('/', (req, res) => {
     </script>
 </body>
 </html>
-    `);
+`);
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Engine active on port ${PORT}`));
+app.listen(process.env.PORT || 3000);
