@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // DATABASE CONNECTION
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Global Database Linked ✅"))
+    .then(() => console.log("Database Linked ✅"))
     .catch(err => console.error("DB Error:", err));
 
 const Transaction = mongoose.model("Transaction", new mongoose.Schema({
