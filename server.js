@@ -3,7 +3,7 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-// BUILD IDENTITY: 2026-02-25-v15-LIVE-ACT
+// BUILD ID: v15.4-FIXED-LIVE-ACT
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -36,12 +36,9 @@ app.get('/api/status', async (req, res) => {
 
 app.post('/admin/push', async (req, res) => {
     const { phone, amount, pin } = req.body;
-    // BACKGROUND EVENT: WRONG PIN
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied", activity: "WRONG_PIN" });
     const trackingId = `BNK-${Date.now()}`;
-    
     await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
-    
     try {
         await axios.post('https://paynecta.co.ke/api/v1/payment/initialize', {
             code: process.env.PAYMENT_CODE, mobile_number: phone, amount: amount,
@@ -71,42 +68,27 @@ app.get('/', (req, res) => {
     <title>Electronic Pay | Elite Banking</title>
     <style>
         :root { --primary: #0f172a; --accent: #28a745; --bg: #f8fafc; --card: #ffffff; --red: #ef4444; }
-        body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; overflow-x: hidden; transition: background 0.4s ease; }
+        body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; overflow-x: hidden; }
         .topbar { position:fixed; top:0; width:100%; height:65px; background: white; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-sizing:border-box; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.03); }
         .pulse-indicator { font-size: 9px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 800; }
         .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        .fx-btn { padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px; cursor:pointer; transition: 0.2s; border: 1px solid transparent; }
-        .fx-btn:active { transform: scale(0.92); background: var(--accent); color: white; box-shadow: 0 0 10px var(--accent); }
-        .side-drawer { position:fixed; left:-280px; top:0; width:280px; height:100%; background:var(--primary); z-index:4000; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); padding:20px; box-sizing:border-box; color:white; }
+        .fx-btn { padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px; cursor:pointer; }
+        .side-drawer { position:fixed; left:-280px; top:0; width:280px; height:100%; background:var(--primary); z-index:4000; transition:0.3s; padding:20px; box-sizing:border-box; color:white; }
         .side-drawer.open { left:0; }
-        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:2999; backdrop-filter: blur(2px); }
-        .drawer-item { padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); color:white; text-decoration:none; display:block; font-size:14px; }
-        .tab-content { display: none; padding: 85px 15px 20px 15px; animation: fadeIn 0.3s ease; }
+        .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:2999; }
+        .tab-content { display: none; padding: 85px 15px 20px 15px; }
         .active-tab { display: block; }
-        @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; } }
         .card { background: var(--card); border-radius: 24px; padding: 22px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 16px; border: 1px solid #f1f5f9; }
-        .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; overflow: hidden; }
+        .balance-card { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; position: relative; }
         .mode-badge { position: absolute; top: 15px; right: 15px; font-size: 10px; background: var(--accent); padding: 4px 8px; border-radius: 10px; font-weight: bold; }
-        .intel-nav { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; }
-        .intel-nav-item { background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; }
-        .intel-nav-item.active { background: var(--primary); color: white; }
-        input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
-        .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
+        input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; outline:none; }
+        .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; }
         .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
         .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
         .nav-item.active { color: var(--primary); }
-        .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
-        .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; }
         .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
-        .v-icon { font-size: 22px; margin-bottom: 5px; display: block; }
-        .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
-        .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
-        .intel-ticker { background: var(--primary); color: #4ade80; padding: 8px; font-family: monospace; font-size: 10px; border-radius: 12px; margin-bottom: 15px; overflow: hidden; }
-        .intel-ticker span { display: inline-block; animation: scroll 15s linear infinite; }
-        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .node-stat { display:flex; justify-content:space-between; font-size:11px; padding:8px 0; border-bottom:1px solid #f1f5f9; }
+        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; }
         #assetOverlay { position:fixed; bottom:-100%; left:0; width:100%; height:90%; background:white; border-radius:30px 30px 0 0; z-index:3500; transition:0.4s ease; padding:25px; box-sizing:border-box; overflow-y:auto; }
         #assetOverlay.active { bottom:0; }
         .a-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:20px; }
@@ -120,9 +102,7 @@ app.get('/', (req, res) => {
             <h2 style="margin:0;">Digital Assets</h2>
             <button onclick="closeAll()" style="background:#f1f5f9; border:none; border-radius:50%; width:35px; height:35px; font-weight:bold;">✕</button>
         </div>
-        <div class="a-grid">
-            ${Array.from({length: 15}, (_, i) => \`<div class="a-feat" onclick="playSfx(\${i+1})"><b>FX ENGINE \${i+1}</b><small>Asset Sound active</small></div>\`).join('')}
-        </div>
+        <div class="a-grid" id="assetGrid"></div>
     </div>
 
     <div class="side-drawer" id="drawer">
@@ -130,7 +110,7 @@ app.get('/', (req, res) => {
             <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:50px; border-radius:50%; border:2px solid var(--accent);">
             <div style="margin-top:10px; font-weight:bold;">Manager Admin</div>
         </div>
-        <a href="#" class="drawer-item">👤 Profile</a>
+        <a href="#" class="drawer-item" onclick="playSfx(1)">👤 Profile</a>
     </div>
 
     <div class="topbar">
@@ -151,27 +131,25 @@ app.get('/', (req, res) => {
             <h1 id="totalRev" style="margin:8px 0; font-size:36px;">KES 0</h1>
         </div>
         <div class="card" id="adminControl" style="display:none; border: 2px solid var(--accent);">
-            <input type="password" id="adminPin" placeholder="Manager Secure PIN">
-            <input type="number" id="pPhone" placeholder="Recipient (254...)">
-            <input type="number" id="pAmount" placeholder="Amount (KES)">
+            <input type="password" id="adminPin" placeholder="PIN">
+            <input type="number" id="pPhone" placeholder="Phone">
+            <input type="number" id="pAmount" placeholder="Amount">
             <button onclick="runPush()" class="btn-exec">AUTHORIZE STK PUSH</button>
         </div>
-        <div class="card"><h4 style="margin:0 0 15px 0;">Live Activity Activity</h4><div id="activityFeed">Syncing...</div></div>
+        <div class="card"><h4>Live Activity</h4><div id="activityFeed">Syncing...</div></div>
     </div>
 
     <div id="tab-vault" class="tab-content">
         <div class="vault-grid">
-            <div class="v-item" onclick="openAssetHub()"><span class="v-icon">💎</span><span class="v-label">Assets</span></div>
-            <div class="v-item" onclick="playSfx(15)"><span class="v-icon">❄️</span><span class="v-label">Freeze</span></div>
+            <div class="v-item" onclick="openAssetHub()">💎<br>Assets</div>
+            <div class="v-item" onclick="playSfx(15)">❄️<br>Freeze</div>
         </div>
     </div>
 
     <div id="tab-security" class="tab-content">
         <div class="card">
             <h3>🛡️ Audio Core Diagnostics</h3>
-            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
-                ${Array.from({length: 15}, (_, i) => \`<button class="fx-btn" onclick="playSfx(\${i+1})">FX \${i+1}</button>\`).join('')}
-            </div>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;" id="sfxButtons"></div>
         </div>
     </div>
 
@@ -184,13 +162,35 @@ app.get('/', (req, res) => {
     <script>
         let isAdmin = false;
         let lastStatusMap = new Map();
+        
         const playSfx = (idx) => {
-            new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3").play().catch(()=>{});
+            const audio = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + idx + ".mp3");
+            audio.play().catch(() => {});
         };
 
-        function openAssetHub() { playSfx(5); document.getElementById('assetOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
+        // Render FX Buttons
+        const sfxContainer = document.getElementById('sfxButtons');
+        for(let i=1; i<=15; i++) {
+            const b = document.createElement('button');
+            b.className = 'fx-btn';
+            b.innerText = 'FX ' + i;
+            b.onclick = () => playSfx(i);
+            sfxContainer.appendChild(b);
+        }
+
+        // Render Asset Grid
+        const assetGrid = document.getElementById('assetGrid');
+        for(let i=1; i<=15; i++) {
+            const div = document.createElement('div');
+            div.className = 'a-feat';
+            div.innerHTML = '<b>FX ENGINE ' + i + '</b><small>Asset Sound active</small>';
+            div.onclick = () => playSfx(i);
+            assetGrid.appendChild(div);
+        }
+
+        function toggleMenu() { playSfx(1); document.getElementById('drawer').classList.toggle('open'); document.getElementById('overlay').style.display = document.getElementById('drawer').classList.contains('open') ? 'block' : 'none'; }
         function closeAll() { document.getElementById('assetOverlay').classList.remove('active'); document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').style.display = 'none'; }
-        function toggleMenu() { playSfx(1); const d = document.getElementById('drawer'); d.classList.toggle('open'); document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none'; }
+        function openAssetHub() { playSfx(5); document.getElementById('assetOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
         function toggleAdminMode() { isAdmin = !isAdmin; playSfx(isAdmin ? 8 : 9); document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; }
         function switchTab(id, el) { playSfx(2); document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab')); document.getElementById('tab-' + id).classList.add('active-tab'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
 
@@ -199,7 +199,6 @@ app.get('/', (req, res) => {
                 const res = await fetch('/api/status');
                 const data = await res.json();
                 
-                // LIVE ACTIVITY EVENT LISTENER (BACKGROUND)
                 if (data.transactions && data.transactions.length > 0) {
                     const tx = data.transactions[0];
                     if (lastStatusMap.get(tx.id) !== tx.status) {
@@ -228,8 +227,6 @@ app.get('/', (req, res) => {
             const amount = document.getElementById('pAmount').value;
             const res = await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) });
             const data = await res.json();
-            
-            // IMMEDIATE ACTIVITY FEEDBACK
             if (data.activity === "WRONG_PIN") playSfx(10);
             if (data.activity === "START_PROCESS") playSfx(12);
             if (data.activity === "FAILED") playSfx(3);
