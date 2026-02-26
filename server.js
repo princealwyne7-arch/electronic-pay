@@ -387,3 +387,59 @@ app.get('/manager-admin', (req, res) => {
         <div class="status-panel">
             <div class="status-row"><span>ENGINE STATUS</span> <span class="val-active">ACTIVE ✗</span></div>
             <div class="status-row"><span>SECURITY LEVEL</span> <span style="color:var(--p-accent)">HIGH 
+// --- START: MANAGER ADMIN EXTENSION ---
+app.get('/manager-admin', (req, res) => {
+    const adminHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elite Control | Manager Panel</title>
+    <style>
+        :root { --p-dark: #020617; --p-accent: #38bdf8; --p-green: #22c55e; }
+        body { margin:0; font-family: -apple-system, sans-serif; background: var(--p-dark); color: white; overflow: hidden; }
+        .sidebar-admin { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: var(--p-dark); z-index: 9999; transform: translateX(-100%); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        .sidebar-admin.active { transform: translateX(0); }
+        .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .f-btn { width: 100%; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; color: white; text-align: left; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 14px; margin-bottom: 10px; border: none; }
+        .f-btn:active { background: var(--p-accent); color: black; }
+        #mainView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 8000; display: none; padding: 30px; box-sizing: border-box; color: #0f172a; }
+        .engine-log { background: #000; color: var(--p-green); padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; margin-top: 20px; height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <button onclick="openMenu()" style="position:fixed; top:20px; right:20px; z-index:9000; background:var(--p-accent); border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">MANAGER MENU</button>
+    <div id="mainView">
+        <button onclick="this.parentElement.style.display='none'" style="background:var(--p-dark); color:white; border:none; padding:10px 20px; border-radius:8px; margin-bottom:20px;">← BACK</button>
+        <h1 id="viewTitle">Engine</h1>
+        <div class="engine-log" id="logOut"></div>
+    </div>
+    <div class="sidebar-admin" id="sidebar">
+        <div class="nav-header">
+            <div style="font-weight:bold; font-size:18px; color:var(--p-accent);">MANAGER ADMIN</div>
+        </div>
+        <div id="fList"></div>
+    </div>
+    <script>
+        const features = [['🧠', 'AI Command'], ['👥', 'Clients'], ['💳', 'Ledger'], ['🔐', 'Vault'], ['🛡️', 'Security']];
+        const fList = document.getElementById('fList');
+        features.forEach(f => {
+            const b = document.createElement('button');
+            b.className = 'f-btn';
+            b.innerHTML = f[0] + ' ' + f[1];
+            b.onclick = () => {
+                document.getElementById('sidebar').classList.remove('active');
+                document.getElementById('mainView').style.display = 'block';
+                document.getElementById('viewTitle').innerText = f[1];
+                document.getElementById('logOut').innerHTML = "> Initializing " + f[1] + "...<br>> Secure Handshake...<br>> Node Online.";
+            };
+            fList.appendChild(b);
+        });
+        function openMenu() { document.getElementById('sidebar').classList.add('active'); }
+    </script>
+</body>
+</html>`;
+    res.send(adminHtml);
+});
+// --- END: MANAGER ADMIN EXTENSION ---
