@@ -39,6 +39,7 @@ app.post('/admin/push', async (req, res) => {
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
     const trackingId = `BNK-${Date.now()}`;
     
+    // Persistent Save
     await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
     
     try {
@@ -321,19 +322,19 @@ app.get('/', (req, res) => {
                 document.getElementById('sysLoad').innerText = data.latency > 30 ? 'High' : 'Optimal';
                 document.getElementById('predictVal').innerText = 'KES ' + Math.floor(data.todayTotal * 1.18).toLocaleString();
                 const pulseHue = 140 - data.latency;
-                document.documentElement.style.setProperty('--accent', `hsl(${pulseHue}, 60%, 40%)`);
+                document.documentElement.style.setProperty('--accent', \`hsl(\${pulseHue}, 60%, 40%)\`);
                 const chart = document.getElementById('pulseChart');
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
                 bar.style.height = (data.latency * 2) + 'px';
                 if(chart.children.length > 20) chart.removeChild(chart.firstChild);
                 chart.appendChild(bar);
-                document.getElementById('activityFeed').innerHTML = data.transactions.map(t => `
+                document.getElementById('activityFeed').innerHTML = data.transactions.map(t => \`
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
-                        <span><b>${t.phone}</b><br><small>${t.time}</small></span>
-                        <span style="text-align:right;"><b style="color:var(--accent)">KES ${t.amount}</b><br>
-                        <small style="font-weight:bold;">${t.status}</small></span>
-                    </div>`).join('') || 'No Activity';
+                        <span><b>\${t.phone}</b><br><small>\${t.time}</small></span>
+                        <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
+                        <small style="font-weight:bold;">\${t.status}</small></span>
+                    </div>\`).join('') || 'No Activity';
             } catch(e) {}
         }
         setInterval(update, 3000); update();
