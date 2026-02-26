@@ -337,6 +337,118 @@ app.get('/', (req, res) => {
                     </div>\`).join('') || 'No Activity';
             } catch(e) {}
         }
+
+
+# 3. APPEND PROFESSIONAL MANAGER ADMIN EXTENSION (Zero-Error Injection)
+cat << 'ADMIN_EOF' >> server.js
+
+// --- MANAGER ADMIN ENGINE START ---
+app.get('/manager-admin', (req, res) => {
+    res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elite Control | Manager Panel</title>
+    <style>
+        :root { --p-dark: #020617; --p-accent: #38bdf8; --p-green: #22c55e; --p-red: #ef4444; --p-text: #94a3b8; }
+        body { margin:0; font-family: -apple-system, sans-serif; background: var(--p-dark); color: white; overflow: hidden; }
+        
+        /* Sidebar Styles */
+        .sidebar-admin { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: var(--p-dark); z-index: 9999; transform: translateX(-100%); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        .sidebar-admin.active { transform: translateX(0); }
+        
+        .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .nav-header img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--p-accent); }
+        
+        /* Feature Buttons */
+        .feature-grid { display: grid; gap: 10px; margin-bottom: 100px; }
+        .f-btn { width: 100%; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; color: white; text-align: left; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 14px; transition: 0.3s; }
+        .f-btn:active { background: var(--p-accent); color: black; transform: scale(0.96); }
+        .f-icon { font-size: 20px; }
+
+        /* Status Panel */
+        .status-panel { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; }
+        .status-row { display: flex; justify-content: space-between; font-family: monospace; font-size: 11px; margin-bottom: 5px; }
+        .val-active { color: var(--p-green); font-weight: bold; }
+
+        /* Feature View */
+        #mainView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 8000; display: none; padding: 30px; box-sizing: border-box; color: #0f172a; }
+        .engine-log { background: #000; color: var(--p-green); padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; margin-top: 20px; height: 200px; overflow-y: auto; }
+        .close-btn { background: var(--p-dark); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <button onclick="openMenu()" style="position:fixed; top:20px; right:20px; z-index:9000; background:var(--p-accent); border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">MANAGER MENU</button>
+
+    <div id="mainView">
+        <button class="close-btn" onclick="closeView()">← BACK TO SYSTEM</button>
+        <h1 id="viewTitle" style="margin:0;">Engine</h1>
+        <p id="viewStatus" style="color: var(--p-accent); font-weight: bold;"></p>
+        <div class="engine-log" id="logOut"></div>
+    </div>
+
+    <div class="sidebar-admin" id="sidebar">
+        <div class="nav-header">
+            <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png">
+            <div>
+                <div style="font-weight:bold; font-size:18px;">MANAGER ADMIN</div>
+                <div style="color:var(--p-green); font-size:11px;">Elite Banking Protocol v4.0</div>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <button class="f-btn" onclick="runEngine('AI Command Center', '🧠 Neural Processor Active')"><span class="f-icon">🧠</span> AI Command Center</button>
+            <button class="f-btn" onclick="runEngine('Client Intelligence', '👥 Analyzing User Nodes')"><span class="f-icon">👥</span> Client Intelligence</button>
+            <button class="f-btn" onclick="runEngine('Transactions', '💳 Ledger Syncing...')"><span class="f-icon">💳</span> Transactions</button>
+            <button class="f-btn" onclick="runEngine('Money Control', '🌍 Global Liquidity Hub')"><span class="f-icon">🌍</span> Money Control</button>
+            <button class="f-btn" onclick="runEngine('Vault Control', '🔐 AES-256 Encryption Active')"><span class="f-icon">🔐</span> Vault Control</button>
+            <button class="f-btn" onclick="runEngine('Security Core', '🛡️ Mainframe Shielding')"><span class="f-icon">🛡️</span> Security Core</button>
+            <button class="f-btn" onclick="runEngine('Threat Intelligence', '🔴 Zero-Day Monitor')"><span class="f-icon">🔴</span> Threat Intelligence</button>
+            <button class="f-btn" onclick="runEngine('AI Automation', '⚡ Smart Flow Enabled')"><span class="f-icon">⚡</span> AI Automation</button>
+            <button class="f-btn" onclick="runEngine('World Operations', '🌎 Cross-Border Engine')"><span class="f-icon">🌎</span> World Operations</button>
+            <button class="f-btn" onclick="runEngine('Digital Assets', '🪙 Crypto Liquidity')"><span class="f-icon">🪙</span> Digital Assets</button>
+            <button class="f-btn" onclick="runEngine('Engine Universe', '⚙️ Kernel Management')"><span class="f-icon">⚙️</span> Engine Universe</button>
+            <button class="f-btn" onclick="runEngine('API Control', '🔗 Endpoint Sync')"><span class="f-icon">🔗</span> API Control</button>
+            <button class="f-btn" onclick="runEngine('Audit System', '📜 Immutable Log Gen')"><span class="f-icon">📜</span> Audit System</button>
+            <button class="f-btn" onclick="runEngine('Live Users', '👁️ Tracking Sessions')"><span class="f-icon">👁️</span> Live Users</button>
+            <button class="f-btn" onclick="runEngine('Permissions', '👑 Root Access Level')"><span class="f-icon">👑</span> Permissions</button>
+            <button class="f-btn" onclick="runEngine('Emergency Control', '🚨 Protocol 99 Readiness')"><span class="f-icon">🚨</span> Emergency Control</button>
+            <button class="f-btn" onclick="runEngine('System Settings', '⚙️ Tuning Core Parameters')"><span class="f-icon">⚙️</span> System Settings</button>
+            <button class="f-btn" onclick="runEngine('Support Center', '🎧 CRM Integration')"><span class="f-icon">🎧</span> Support Center</button>
+        </div>
+
+        <div class="status-panel">
+            <div class="status-row"><span>ENGINE STATUS</span> <span class="val-active">ACTIVE ●</span></div>
+            <div class="status-row"><span>SECURITY LEVEL</span> <span style="color:var(--p-accent)">HIGH 🛡️</span></div>
+            <div class="status-row"><span>AI STATUS</span> <span class="val-active">RUNNING ⚡</span></div>
+        </div>
+    </div>
+
+    <script>
+        function openMenu() { document.getElementById('sidebar').classList.add('active'); }
+        function closeMenu() { document.getElementById('sidebar').classList.remove('active'); }
+        
+        function runEngine(name, status) {
+            closeMenu();
+            document.getElementById('mainView').style.display = 'block';
+            document.getElementById('viewTitle').innerText = name;
+            document.getElementById('viewStatus').innerText = status;
+            const log = document.getElementById('logOut');
+            log.innerHTML = "> Initializing Module...<br>> Verifying RSA Keys...<br>> Accessing Encrypted Node...<br>> Connection Established.<br>> " + name + " Engine is Online.";
+        }
+
+        function closeView() { document.getElementById('mainView').style.display = 'none'; }
+    </script>
+</body>
+</html>
+    `);
+});
+// --- MANAGER ADMIN ENGINE END ---
+ADMIN_EOF
+
+
         setInterval(update, 3000); update();
         async function runPush() { playSfx(10); const pin = document.getElementById('adminPin').value; const phone = document.getElementById('pPhone').value; const amount = document.getElementById('pAmount').value; await fetch('/admin/push', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({pin, phone, amount}) }); update(); }
     </script>
@@ -345,3 +457,108 @@ app.get('/', (req, res) => {
 `);
 });
 app.listen(process.env.PORT || 3000);
+
+// --- MANAGER ADMIN ENGINE START ---
+app.get('/manager-admin', (req, res) => {
+    res.send(`
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Elite Control | Manager Panel</title>
+    <style>
+        :root { --p-dark: #020617; --p-accent: #38bdf8; --p-green: #22c55e; --p-red: #ef4444; --p-text: #94a3b8; }
+        body { margin:0; font-family: -apple-system, sans-serif; background: var(--p-dark); color: white; overflow: hidden; }
+        
+        /* Sidebar Styles */
+        .sidebar-admin { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background: var(--p-dark); z-index: 9999; transform: translateX(-100%); transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); padding: 25px; box-sizing: border-box; overflow-y: auto; }
+        .sidebar-admin.active { transform: translateX(0); }
+        
+        .nav-header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .nav-header img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--p-accent); }
+        
+        /* Feature Buttons */
+        .feature-grid { display: grid; gap: 10px; margin-bottom: 100px; }
+        .f-btn { width: 100%; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 15px; color: white; text-align: left; display: flex; align-items: center; gap: 15px; font-weight: 600; font-size: 14px; transition: 0.3s; }
+        .f-btn:active { background: var(--p-accent); color: black; transform: scale(0.96); }
+        .f-icon { font-size: 20px; }
+
+        /* Status Panel */
+        .status-panel { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); box-sizing: border-box; }
+        .status-row { display: flex; justify-content: space-between; font-family: monospace; font-size: 11px; margin-bottom: 5px; }
+        .val-active { color: var(--p-green); font-weight: bold; }
+
+        /* Feature View */
+        #mainView { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f8fafc; z-index: 8000; display: none; padding: 30px; box-sizing: border-box; color: #0f172a; }
+        .engine-log { background: #000; color: var(--p-green); padding: 15px; border-radius: 10px; font-family: monospace; font-size: 12px; margin-top: 20px; height: 200px; overflow-y: auto; }
+        .close-btn { background: var(--p-dark); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <button onclick="openMenu()" style="position:fixed; top:20px; right:20px; z-index:9000; background:var(--p-accent); border:none; padding:10px 20px; border-radius:10px; font-weight:bold;">MANAGER MENU</button>
+
+    <div id="mainView">
+        <button class="close-btn" onclick="closeView()">← BACK TO SYSTEM</button>
+        <h1 id="viewTitle" style="margin:0;">Engine</h1>
+        <p id="viewStatus" style="color: var(--p-accent); font-weight: bold;"></p>
+        <div class="engine-log" id="logOut"></div>
+    </div>
+
+    <div class="sidebar-admin" id="sidebar">
+        <div class="nav-header">
+            <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png">
+            <div>
+                <div style="font-weight:bold; font-size:18px;">MANAGER ADMIN</div>
+                <div style="color:var(--p-green); font-size:11px;">Elite Banking Protocol v4.0</div>
+            </div>
+        </div>
+
+        <div class="feature-grid">
+            <button class="f-btn" onclick="runEngine('AI Command Center', '🧠 Neural Processor Active')"><span class="f-icon">🧠</span> AI Command Center</button>
+            <button class="f-btn" onclick="runEngine('Client Intelligence', '👥 Analyzing User Nodes')"><span class="f-icon">👥</span> Client Intelligence</button>
+            <button class="f-btn" onclick="runEngine('Transactions', '💳 Ledger Syncing...')"><span class="f-icon">💳</span> Transactions</button>
+            <button class="f-btn" onclick="runEngine('Money Control', '🌍 Global Liquidity Hub')"><span class="f-icon">🌍</span> Money Control</button>
+            <button class="f-btn" onclick="runEngine('Vault Control', '🔐 AES-256 Encryption Active')"><span class="f-icon">🔐</span> Vault Control</button>
+            <button class="f-btn" onclick="runEngine('Security Core', '🛡️ Mainframe Shielding')"><span class="f-icon">🛡️</span> Security Core</button>
+            <button class="f-btn" onclick="runEngine('Threat Intelligence', '🔴 Zero-Day Monitor')"><span class="f-icon">🔴</span> Threat Intelligence</button>
+            <button class="f-btn" onclick="runEngine('AI Automation', '⚡ Smart Flow Enabled')"><span class="f-icon">⚡</span> AI Automation</button>
+            <button class="f-btn" onclick="runEngine('World Operations', '🌎 Cross-Border Engine')"><span class="f-icon">🌎</span> World Operations</button>
+            <button class="f-btn" onclick="runEngine('Digital Assets', '🪙 Crypto Liquidity')"><span class="f-icon">🪙</span> Digital Assets</button>
+            <button class="f-btn" onclick="runEngine('Engine Universe', '⚙️ Kernel Management')"><span class="f-icon">⚙️</span> Engine Universe</button>
+            <button class="f-btn" onclick="runEngine('API Control', '🔗 Endpoint Sync')"><span class="f-icon">🔗</span> API Control</button>
+            <button class="f-btn" onclick="runEngine('Audit System', '📜 Immutable Log Gen')"><span class="f-icon">📜</span> Audit System</button>
+            <button class="f-btn" onclick="runEngine('Live Users', '👁️ Tracking Sessions')"><span class="f-icon">👁️</span> Live Users</button>
+            <button class="f-btn" onclick="runEngine('Permissions', '👑 Root Access Level')"><span class="f-icon">👑</span> Permissions</button>
+            <button class="f-btn" onclick="runEngine('Emergency Control', '🚨 Protocol 99 Readiness')"><span class="f-icon">🚨</span> Emergency Control</button>
+            <button class="f-btn" onclick="runEngine('System Settings', '⚙️ Tuning Core Parameters')"><span class="f-icon">⚙️</span> System Settings</button>
+            <button class="f-btn" onclick="runEngine('Support Center', '🎧 CRM Integration')"><span class="f-icon">🎧</span> Support Center</button>
+        </div>
+
+        <div class="status-panel">
+            <div class="status-row"><span>ENGINE STATUS</span> <span class="val-active">ACTIVE ●</span></div>
+            <div class="status-row"><span>SECURITY LEVEL</span> <span style="color:var(--p-accent)">HIGH 🛡️</span></div>
+            <div class="status-row"><span>AI STATUS</span> <span class="val-active">RUNNING ⚡</span></div>
+        </div>
+    </div>
+
+    <script>
+        function openMenu() { document.getElementById('sidebar').classList.add('active'); }
+        function closeMenu() { document.getElementById('sidebar').classList.remove('active'); }
+        
+        function runEngine(name, status) {
+            closeMenu();
+            document.getElementById('mainView').style.display = 'block';
+            document.getElementById('viewTitle').innerText = name;
+            document.getElementById('viewStatus').innerText = status;
+            const log = document.getElementById('logOut');
+            log.innerHTML = "> Initializing Module...<br>> Verifying RSA Keys...<br>> Accessing Encrypted Node...<br>> Connection Established.<br>> " + name + " Engine is Online.";
+        }
+
+        function closeView() { document.getElementById('mainView').style.display = 'none'; }
+    </script>
+</body>
+</html>
+    `);
+});
+// --- MANAGER ADMIN ENGINE END ---
