@@ -29,6 +29,7 @@ app.get('/api/status', async (req, res) => {
         const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(20);
         const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
         const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
+        // AI COMMAND CENTER CALCULATION
         const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
         res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
     } catch (err) { res.status(500).json({ error: "Sync Failed" }); }
@@ -39,7 +40,6 @@ app.post('/admin/push', async (req, res) => {
     if (pin !== "5566") return res.status(403).json({ error: "Access Denied" });
     const trackingId = `BNK-${Date.now()}`;
     
-    // Persistent Save
     await new Transaction({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() }).save();
     
     try {
@@ -96,7 +96,6 @@ app.get('/', (req, res) => {
         .intel-nav::-webkit-scrollbar { display: none; }
         .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
         .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
-        .intel-nav-item:active { transform: scale(0.95); }
 
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
@@ -108,8 +107,6 @@ app.get('/', (req, res) => {
         
         .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
         .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; }
-        .v-item:active { transform: scale(0.95); background: #f8fafc; }
-        .v-icon { font-size: 22px; margin-bottom: 5px; display: block; }
         .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
         .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
 
@@ -316,6 +313,7 @@ app.get('/', (req, res) => {
                 document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('assetBTC').innerText = (data.todayTotal / 12450000).toFixed(6) + ' BTC';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
+                // AI COMMAND CENTER SYNC
                 document.getElementById('aiHealth').innerText = 'AI Health: ' + data.aiScore;
                 
                 const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
@@ -323,23 +321,20 @@ app.get('/', (req, res) => {
                 document.getElementById('successRate').innerText = rate + '%';
                 document.getElementById('sysLoad').innerText = data.latency > 30 ? 'High' : 'Optimal';
                 document.getElementById('predictVal').innerText = 'KES ' + Math.floor(data.todayTotal * 1.18).toLocaleString();
-                
                 const pulseHue = 140 - data.latency;
-                document.documentElement.style.setProperty('--accent', `hsl(${pulseHue}, 60%, 40%)`);
-                
+                document.documentElement.style.setProperty('--accent', \`hsl(\${pulseHue}, 60%, 40%)\`);
                 const chart = document.getElementById('pulseChart');
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
                 bar.style.height = (data.latency * 2) + 'px';
                 if(chart.children.length > 20) chart.removeChild(chart.firstChild);
                 chart.appendChild(bar);
-                
-                document.getElementById('activityFeed').innerHTML = data.transactions.map(t => `
+                document.getElementById('activityFeed').innerHTML = data.transactions.map(t => \`
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
-                        <span><b>${t.phone}</b><br><small>${t.time}</small></span>
-                        <span style="text-align:right;"><b style="color:var(--accent)">KES ${t.amount}</b><br>
-                        <small style="font-weight:bold;">${t.status}</small></span>
-                    </div>`).join('') || 'No Activity';
+                        <span><b>\${t.phone}</b><br><small>\${t.time}</small></span>
+                        <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br>
+                        <small style="font-weight:bold;">\${t.status}</small></span>
+                    </div>\`).join('') || 'No Activity';
             } catch(e) {}
         }
         setInterval(update, 3000); update();
