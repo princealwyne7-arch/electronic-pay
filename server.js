@@ -30,18 +30,7 @@ app.get('/api/status', async (req, res) => {
         const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
         const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
         const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
-        
-        // Master AI Live Metrics
-        const lastMinute = new Date(Date.now() - 60000);
-        const tps = (await Transaction.countDocuments({ createdAt: { $gte: lastMinute } }) / 60).toFixed(2);
-        const load = Math.floor(Math.random() * 25) + 15;
-        
-        res.json({ 
-            transactions, todayTotal, aiScore, tps, load,
-            latency: Math.floor(Math.random() * 35) + 10,
-            users: Math.floor(Math.random() * 50) + 120,
-            risk: todayTotal > 500000 ? "MODERATE" : "LOW"
-        });
+        res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
     } catch (err) { res.status(500).json({ error: "Sync Failed" }); }
 });
 
@@ -78,18 +67,20 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Electronic Pay | Elite Banking</title>
     <style>
-        :root { --primary: #0f172a; --accent: #28a745; --bg: #f8fafc; --card: #ffffff; --red: #ef4444; --ai-blue: #3b82f6; }
+        :root { --primary: #0f172a; --accent: #28a745; --bg: #f8fafc; --card: #ffffff; --red: #ef4444; --ai: #3b82f6; }
         body { margin:0; font-family: -apple-system, sans-serif; background: var(--bg); color: #1e293b; padding-bottom: 90px; overflow-x: hidden; transition: background 0.4s ease; }
         .topbar { position:fixed; top:0; width:100%; height:65px; background: white; display:flex; align-items:center; justify-content:space-between; padding:0 20px; box-sizing:border-box; z-index:1000; box-shadow:0 2px 10px rgba(0,0,0,0.03); }
         .pulse-indicator { font-size: 9px; color: #94a3b8; display: flex; align-items: center; gap: 4px; font-weight: 800; }
         .pulse-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: blink 1s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
         
+        .fx-btn { padding:10px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; font-size:10px; cursor:pointer; transition: 0.2s; border: 1px solid transparent; }
+        .fx-btn:active { transform: scale(0.92); background: var(--accent); color: white; box-shadow: 0 0 10px var(--accent); }
+
         .side-drawer { position:fixed; left:-280px; top:0; width:280px; height:100%; background:var(--primary); z-index:4000; transition:0.3s cubic-bezier(0.4, 0, 0.2, 1); padding:20px; box-sizing:border-box; color:white; }
         .side-drawer.open { left:0; }
         .overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:none; z-index:2999; backdrop-filter: blur(2px); }
-        .drawer-item { padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); color:white; text-decoration:none; display:flex; align-items:center; gap:10px; font-size:14px; }
-        
+        .drawer-item { padding:15px; border-bottom:1px solid rgba(255,255,255,0.05); color:white; text-decoration:none; display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; }
         .tab-content { display: none; padding: 85px 15px 20px 15px; animation: fadeIn 0.3s ease; }
         .active-tab { display: block; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; } }
@@ -100,60 +91,58 @@ app.get('/', (req, res) => {
         
         .intel-nav { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 15px 0; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
         .intel-nav::-webkit-scrollbar { display: none; }
-        .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .intel-nav-item { position: relative; background: #f1f5f9; padding: 10px 18px; border-radius: 14px; font-size: 10px; font-weight: 800; white-space: nowrap; border: 1px solid #e2e8f0; color: #64748b; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+        .intel-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
 
         input { width:100%; padding:16px; margin:8px 0; border:1px solid #e2e8f0; border-radius:14px; box-sizing:border-box; font-size:16px; outline:none; }
         .btn-exec { width:100%; padding:18px; background: var(--accent); color:white; border:none; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; }
-        
         .bottom-nav { position:fixed; bottom:15px; left:50%; transform:translateX(-50%); width:92%; height:75px; background:white; border-radius:25px; display:flex; justify-content:space-around; align-items:center; box-shadow:0 10px 30px rgba(0,0,0,0.08); z-index:1000; }
         .nav-item { text-align:center; font-size:10px; font-weight:700; color:#94a3b8; cursor:pointer; flex:1; }
-        .nav-item.active { color: var(--primary); }
-
+        .nav-item.active { color: var(--primary); transform: translateY(-3px); transition: 0.2s; }
+        .chart-container { height: 120px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
+        .chart-bar { flex: 1; background: var(--accent); border-radius: 4px 4px 0 0; transition: height 0.3s ease; }
+        
         .vault-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px; }
-        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+        .v-item { background: white; padding: 18px 10px; border-radius: 20px; border: 1px solid #f1f5f9; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.2s; cursor: pointer; }
+        .v-icon { font-size: 22px; margin-bottom: 5px; display: block; }
+        .v-label { font-size: 11px; font-weight: 800; color: #1e293b; }
+        .v-sub { font-size: 9px; color: #94a3b8; font-weight: 600; }
+
+        .intel-ticker { background: var(--primary); color: #4ade80; padding: 8px; font-family: monospace; font-size: 10px; border-radius: 12px; margin-bottom: 15px; white-space: nowrap; overflow: hidden; }
+        .intel-ticker span { display: inline-block; animation: scroll 15s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .node-stat { display:flex; justify-content:space-between; font-size:11px; padding:8px 0; border-bottom:1px solid #f1f5f9; }
         
         #assetOverlay, #aiOverlay { position:fixed; bottom:-100%; left:0; width:100%; height:90%; background:white; border-radius:30px 30px 0 0; z-index:3500; transition:0.4s cubic-bezier(0.4, 0, 0.2, 1); padding:25px; box-sizing:border-box; overflow-y:auto; }
         #assetOverlay.active, #aiOverlay.active { bottom:0; }
-        
-        .ai-meter-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 18px; margin-bottom: 10px; }
-        .ai-bar-bg { width: 100%; height: 6px; background: #e2e8f0; border-radius: 10px; margin-top: 8px; overflow: hidden; }
-        .ai-bar-fill { height: 100%; background: var(--ai-blue); transition: 1s ease; }
+        .a-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; margin-top:20px; }
+        .a-feat { background:#f8fafc; padding:15px; border-radius:18px; border:1px solid #f1f5f9; }
+        .a-feat b { font-size:11px; display:block; margin-top:5px; }
+        .a-feat small { font-size:9px; color:var(--accent); font-weight:800; }
     </style>
 </head>
 <body>
     <div class="overlay" id="overlay" onclick="closeAll()"></div>
 
     <div id="aiOverlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0;">🧠 AI Command Center</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0;">🧠 AI Command System</h2>
             <button onclick="closeAll()" style="background:#f1f5f9; border:none; border-radius:50%; width:35px; height:35px; font-weight:bold;">✕</button>
         </div>
-        <div class="card" style="background:var(--primary); color:white;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:11px;">
-                <div class="ai-meter-box" style="background:rgba(255,255,255,0.05); border:none;">
-                    <small>USERS ONLINE</small><br><b id="aiUsers" style="font-size:18px; color:var(--ai-blue)">--</b>
-                </div>
-                <div class="ai-meter-box" style="background:rgba(255,255,255,0.05); border:none;">
-                    <small>TX PER SECOND</small><br><b id="aiTps" style="font-size:18px; color:var(--accent)">--</b>
-                </div>
-            </div>
+        <div class="card" style="background:var(--primary); color:white; margin-top:20px;">
+            <small style="opacity:0.7">NEURAL SYNC SCORE</small>
+            <h1 id="aiScoreDisplay" style="margin:5px 0;">--</h1>
+            <div style="font-size:10px; color:var(--ai)">● System Fully Autonomous</div>
         </div>
-        <div class="ai-meter-box">
-            <div style="display:flex; justify-content:space-between;"><small>SYSTEM POWER</small><b id="pwrVal">0%</b></div>
-            <div class="ai-bar-bg"><div id="pwrBar" class="ai-bar-fill" style="width:0%"></div></div>
+        <div class="a-grid">
+            <div class="a-feat" onclick="playSfx(1)">⚡<b>Auto-Optimize</b><small>Core Sync</small></div>
+            <div class="a-feat" onclick="playSfx(2)">🛡️<b>Neural Firewall</b><small>Active</small></div>
+            <div class="a-feat" onclick="playSfx(3)">📡<b>Node Scanning</b><small>Global</small></div>
+            <div class="a-feat" onclick="playSfx(4)">📈<b>Forecast</b><small>Predictive</small></div>
         </div>
-        <div class="ai-meter-box">
-            <div style="display:flex; justify-content:space-between;"><small>SECURITY LEVEL</small><b>LEVEL 5</b></div>
-            <div class="ai-bar-bg"><div class="ai-bar-fill" style="width:100%; background:var(--ai-blue)"></div></div>
-        </div>
-        <div class="card" style="border-left:5px solid var(--ai-blue); font-size:12px; background:#f0f7ff;">
-            <b>AI SUGGESTION:</b><br>
-            <span id="aiAdvice" style="color:#1e40af;">Analyzing node traffic...</span>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="fx-btn" style="padding:15px; background:var(--ai-blue); color:white;" onclick="playSfx(1)">OPTIMIZE SYSTEM</button>
-            <button class="fx-btn" style="padding:15px; background:var(--accent); color:white;" onclick="playSfx(2)">AUTO FIX PROBLEMS</button>
+        <div class="card" style="margin-top:15px; border-left:4px solid var(--ai);">
+            <small>AI DIAGNOSTIC MESSAGE</small>
+            <p id="aiMsg" style="font-size:12px; margin:5px 0;">Initializing AI Command Protocols...</p>
         </div>
     </div>
 
@@ -167,11 +156,15 @@ app.get('/', (req, res) => {
             <h2 id="assetBTC" style="margin:5px 0;">0.000000 BTC</h2>
             <div style="font-size:10px; color:var(--accent)">● Market Live</div>
         </div>
-        <div class="vault-grid" style="grid-template-columns: repeat(2, 1fr);">
-            <div class="v-item" onclick="playSfx(1)">🏦<b>Wallets</b><br><small>Storage</small></div>
-            <div class="v-item" onclick="playSfx(2)">📈<b>Portfolio</b><br><small>Overview</small></div>
-            <div class="v-item" onclick="playSfx(3)">💰<b>Buy/Sell</b><br><small>Fiat</small></div>
-            <div class="v-item" onclick="playSfx(4)">🔄<b>Swap</b><br><small>Instant</small></div>
+        <div class="a-grid">
+            <div class="a-feat" onclick="playSfx(1)">🏦<b>Wallets</b><small>Secure Storage</small></div>
+            <div class="a-feat" onclick="playSfx(2)">📈<b>Portfolio</b><small>Real-time</small></div>
+            <div class="a-feat" onclick="playSfx(3)">💰<b>Buy / Sell</b><small>Fiat Gateway</small></div>
+            <div class="a-feat" onclick="playSfx(4)">🔄<b>Swap</b><small>Instant</small></div>
+            <div class="a-feat" onclick="playSfx(5)">📤<b>Send/Recv</b><small>Transfer</small></div>
+            <div class="a-feat" onclick="playSfx(6)">📜<b>Ledger</b><small>Sync</small></div>
+            <div class="a-feat" onclick="playSfx(7)">📊<b>Market</b><small>Data</small></div>
+            <div class="a-feat" onclick="playSfx(8)">🔔<b>Alerts</b><small>Triggers</small></div>
         </div>
     </div>
 
@@ -179,16 +172,20 @@ app.get('/', (req, res) => {
         <div style="margin-bottom:30px;">
             <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:50px; border-radius:50%; border:2px solid var(--accent);">
             <div style="margin-top:10px; font-weight:bold;">Manager Admin</div>
+            <div style="font-size:11px; color:var(--accent);">Active Engine ●</div>
         </div>
-        <a href="#" class="drawer-item" onclick="openAiCenter()" style="background:rgba(59,130,246,0.1); border-left:4px solid var(--ai-blue);">🧠 AI Command Center</a>
-        <a href="#" class="drawer-item" onclick="playSfx(2)">👤 Profile</a>
-        <a href="#" class="drawer-item" onclick="playSfx(3)">⚙️ Settings</a>
+        <a class="drawer-item" onclick="openAiCommand()" style="background:rgba(59,130,246,0.1); border-left:3px solid var(--ai);">🧠 AI Command System</a>
+        <a class="drawer-item" onclick="playSfx(2)">👤 Profile</a>
+        <a class="drawer-item" onclick="playSfx(3)">⚙️ Settings</a>
+        <a class="drawer-item" onclick="playSfx(4)">🛡️ Security</a>
+        <a class="drawer-item" onclick="playSfx(5)">🆔 KYC</a>
+        <a class="drawer-item" onclick="playSfx(6)">🎧 Support</a>
     </div>
 
     <div class="topbar">
         <div style="display:flex; align-items:center; gap:12px;">
             <span onclick="toggleMenu()" style="font-size:24px; cursor:pointer;">☰</span>
-            <div onclick="toggleAdminMode()" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
+            <div id="adminToggle" onclick="toggleAdminMode()" style="cursor:pointer; display:flex; align-items:center; gap:8px;">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" style="width:35px; height:35px; border-radius:50%; border:2px solid var(--accent);">
                 <span style="font-weight:800; font-size:14px;">Pay <span style="color:var(--accent)">Elite</span></span>
             </div>
@@ -204,7 +201,7 @@ app.get('/', (req, res) => {
             <div id="aiHealth" style="font-size:11px; background:rgba(255,255,255,0.1); display:inline-block; padding:5px 12px; border-radius:10px; font-weight:bold;">AI Health: --</div>
         </div>
         <div class="card" id="adminControl" style="display:none; border: 2px solid var(--accent);">
-            <h3 style="margin-top:0;">Admin Command</h3>
+            <h3 style="margin-top:0; color:var(--accent);">Admin Command</h3>
             <input type="password" id="adminPin" placeholder="Manager Secure PIN">
             <input type="number" id="pPhone" placeholder="Recipient (254...)">
             <input type="number" id="pAmount" placeholder="Amount (KES)">
@@ -212,24 +209,55 @@ app.get('/', (req, res) => {
         </div>
         <div class="card">
             <h4 style="margin:0 0 15px 0;">Live Activity</h4>
-            <div id="activityFeed" style="font-size:13px;">Syncing...</div>
+            <div id="activityFeed" style="font-size:13px;">Syncing with Nodes...</div>
         </div>
     </div>
 
     <div id="tab-vault" class="tab-content">
-        <div class="card balance-card">
-            <small>VAULT STATUS: <span id="vLockStatus">ENCRYPTED</span></small>
-            <h2 id="vaultTotalDisplay" style="margin:5px 0;">KES 0</h2>
+        <div class="card balance-card" style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid var(--accent);">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <small style="color:var(--accent); font-weight:800;">VAULT STATUS: <span id="vLockStatus">ENCRYPTED</span></small>
+                    <h2 id="vaultTotalDisplay" style="margin:5px 0; font-size:28px;">KES 0</h2>
+                </div>
+                <button onclick="emergencyLockdown()" style="background:var(--red); color:white; border:none; padding:10px; border-radius:12px; font-size:10px; font-weight:bold;">LOCKDOWN</button>
+            </div>
         </div>
         <div class="vault-grid">
-            <div class="v-item" onclick="openAssetHub()">💎<br>Assets</div>
-            <div class="v-item" onclick="playSfx(6)">📁<br>Docs</div>
+            <div class="v-item" onclick="playSfx(4)"><span class="v-icon">📊</span><span class="v-label">Dashboard</span></div>
+            <div class="v-item" onclick="openAssetHub()"><span class="v-icon">💎</span><span class="v-label">Assets</span></div>
+            <div class="v-item" onclick="playSfx(6)"><span class="v-icon">📁</span><span class="v-label">Documents</span></div>
+            <div class="v-item" onclick="playSfx(7)"><span class="v-icon">🔑</span><span class="v-label">Backups</span></div>
+        </div>
+    </div>
+
+    <div id="tab-insights" class="tab-content">
+        <div class="intel-nav" id="intelNav">
+            <div class="intel-nav-item active" onclick="activateIntel(this, 1)">CORE ANALYTICS</div>
+            <div class="intel-nav-item" onclick="activateIntel(this, 2)">NODE TRAFFIC</div>
+        </div>
+        <div class="intel-ticker"><span>BTC: $95,210.40 (+2.4%) | ETH: $2,550.12 | USDT: $1.00</span></div>
+        <div class="card">
+            <div class="chart-container" id="pulseChart"></div>
+            <div class="node-stat"><b>System Integrity</b><span style="color:var(--accent)">100% Secure</span></div>
+            <div class="node-stat"><b>Fraud Prob.</b><span style="color:var(--accent)">0.001%</span></div>
+        </div>
+    </div>
+
+    <div id="tab-security" class="tab-content">
+        <div class="card">
+            <h3>🛡️ Audio Core Diagnostics</h3>
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                ${Array.from({length: 15}, (_, i) => `<button class="fx-btn" onclick="playSfx(${i+1})">FX ${i+1}</button>`).join('')}
+            </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('dash', this)">🏠<br>Dash</div>
         <div class="nav-item" onclick="switchTab('vault', this)">💼<br>Vault</div>
+        <div class="nav-item" onclick="switchTab('insights', this)">📊<br>Intel</div>
+        <div class="nav-item" onclick="switchTab('security', this)">🛡️<br>Secure</div>
     </nav>
 
     <script>
@@ -240,8 +268,14 @@ app.get('/', (req, res) => {
         };
 
         function openAssetHub() { playSfx(5); document.getElementById('assetOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
-        function openAiCenter() { playSfx(1); document.getElementById('aiOverlay').classList.add('active'); document.getElementById('overlay').style.display = 'block'; }
         
+        function openAiCommand() { 
+            playSfx(1); 
+            document.getElementById('drawer').classList.remove('open'); // Slide back sidebar
+            document.getElementById('aiOverlay').classList.add('active'); 
+            document.getElementById('overlay').style.display = 'block'; 
+        }
+
         function closeAll() { 
             document.getElementById('assetOverlay').classList.remove('active'); 
             document.getElementById('aiOverlay').classList.remove('active'); 
@@ -250,7 +284,7 @@ app.get('/', (req, res) => {
         }
 
         function toggleMenu() { playSfx(1); const d = document.getElementById('drawer'); d.classList.toggle('open'); document.getElementById('overlay').style.display = d.classList.contains('open') ? 'block' : 'none'; }
-        function toggleAdminMode() { isAdmin = !isAdmin; document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; }
+        function toggleAdminMode() { isAdmin = !isAdmin; playSfx(isAdmin ? 8 : 9); document.getElementById('adminControl').style.display = isAdmin ? 'block' : 'none'; document.getElementById('modeLabel').innerText = isAdmin ? 'ADMIN' : 'CLIENT'; document.getElementById('modeLabel').style.background = isAdmin ? 'var(--red)' : 'var(--accent)'; }
         function switchTab(id, el) { playSfx(2); document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab')); document.getElementById('tab-' + id).classList.add('active-tab'); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); el.classList.add('active'); }
 
         async function update() {
@@ -262,18 +296,19 @@ app.get('/', (req, res) => {
                 document.getElementById('assetBTC').innerText = (data.todayTotal / 12450000).toFixed(6) + ' BTC';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
                 document.getElementById('aiHealth').innerText = 'AI Score: ' + data.aiScore;
-                
-                // AI Center Update
-                document.getElementById('aiUsers').innerText = data.users;
-                document.getElementById('aiTps').innerText = data.tps;
-                document.getElementById('pwrVal').innerText = data.load + '%';
-                document.getElementById('pwrBar').style.width = data.load + '%';
-                document.getElementById('aiAdvice').innerText = data.load > 30 ? "Server load high. Optimizing node pathways..." : "Neural protection Level 5 is stable.";
+                document.getElementById('aiScoreDisplay').innerText = data.aiScore;
+                document.getElementById('aiMsg').innerText = data.latency < 20 ? "System latency optimal. Neural pathways clear." : "Traffic spike detected. Balancing nodes...";
+
+                const chart = document.getElementById('pulseChart');
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar'; bar.style.height = (data.latency * 2) + 'px';
+                if(chart.children.length > 20) chart.removeChild(chart.firstChild);
+                chart.appendChild(bar);
 
                 document.getElementById('activityFeed').innerHTML = data.transactions.map(t => \`
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                         <span><b>\${t.phone}</b><br><small>\${t.time}</small></span>
-                        <span style="text-align:right;"><b>KES \${t.amount}</b><br><small>\${t.status}</small></span>
+                        <span style="text-align:right;"><b style="color:var(--accent)">KES \${t.amount}</b><br><small>\${t.status}</small></span>
                     </div>\`).join('') || 'No Activity';
             } catch(e) {}
         }
