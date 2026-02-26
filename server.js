@@ -9,8 +9,8 @@ app.use(express.urlencoded({ extended: true }));
 
 // DATABASE CONNECTION
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Database Linked ✅"))
-    .catch(err => console.error("DB Error:", err));
+    .then(() => console.log("Bank Core: Database Linked ✅"))
+    .catch(err => console.error("Bank Core: DB Error:", err));
 
 const Transaction = mongoose.model("Transaction", new mongoose.Schema({
     id: { type: String, required: true, unique: true },
@@ -29,9 +29,16 @@ app.get('/api/status', async (req, res) => {
         const transactions = await Transaction.find().sort({ createdAt: -1 }).limit(20);
         const successfulTxs = transactions.filter(t => t.status.includes('Successful'));
         const todayTotal = successfulTxs.reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
-        // AI COMMAND CENTER CALCULATION
+        
+        // AI COMMAND CENTER LOGIC: Neural Health Calculation
         const aiScore = Math.min(999, 800 + (successfulTxs.length * 12));
-        res.json({ transactions, todayTotal, aiScore, latency: Math.floor(Math.random() * 35) + 10 });
+        
+        res.json({ 
+            transactions, 
+            todayTotal, 
+            aiScore, 
+            latency: Math.floor(Math.random() * 35) + 10 
+        });
     } catch (err) { res.status(500).json({ error: "Sync Failed" }); }
 });
 
@@ -309,11 +316,14 @@ app.get('/', (req, res) => {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
+                
+                // CORE SYNC
                 document.getElementById('totalRev').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('vaultTotalDisplay').innerText = 'KES ' + data.todayTotal.toLocaleString();
                 document.getElementById('assetBTC').innerText = (data.todayTotal / 12450000).toFixed(6) + ' BTC';
                 document.getElementById('latencyText').innerText = 'PULSE: ' + data.latency + 'ms';
-                // AI COMMAND CENTER SYNC
+                
+                // AI COMMAND CENTER: Neural Health Feedback
                 document.getElementById('aiHealth').innerText = 'AI Health: ' + data.aiScore;
                 
                 const successfulCount = data.transactions.filter(t => t.status.includes('Successful')).length;
@@ -321,14 +331,18 @@ app.get('/', (req, res) => {
                 document.getElementById('successRate').innerText = rate + '%';
                 document.getElementById('sysLoad').innerText = data.latency > 30 ? 'High' : 'Optimal';
                 document.getElementById('predictVal').innerText = 'KES ' + Math.floor(data.todayTotal * 1.18).toLocaleString();
+                
+                // Dynamics
                 const pulseHue = 140 - data.latency;
                 document.documentElement.style.setProperty('--accent', \`hsl(\${pulseHue}, 60%, 40%)\`);
+                
                 const chart = document.getElementById('pulseChart');
                 const bar = document.createElement('div');
                 bar.className = 'chart-bar';
                 bar.style.height = (data.latency * 2) + 'px';
                 if(chart.children.length > 20) chart.removeChild(chart.firstChild);
                 chart.appendChild(bar);
+                
                 document.getElementById('activityFeed').innerHTML = data.transactions.map(t => \`
                     <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f1f5f9;">
                         <span><b>\${t.phone}</b><br><small>\${t.time}</small></span>
