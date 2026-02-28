@@ -8,13 +8,18 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "animejs": "^4.3.6",
     "axios": "^1.3.4",
+    "canvas-confetti": "^1.9.4",
+    "chart.js": "^4.5.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "framer-motion": "^12.34.3",
     "howler": "^2.2.4",
     "lucide-react": "^0.575.0",
+    "lucide-static": "^0.575.0",
     "mongoose": "^7.8.9",
+    "systeminformation": "^5.31.1",
     "web-vitals": "^5.1.0"
   }
 }
