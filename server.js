@@ -466,6 +466,75 @@ app.get('/', (req, res) => {
             } 
         }); 
     </script>
+    
+    <div id="transfer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(1, 4, 9, 0.98); z-index:10000; backdrop-filter:blur(15px); align-items:center; justify-content:center; overflow-y:auto; padding:40px 0;"> 
+        <div style="width:850px; background:rgba(15, 23, 42, 0.9); border:1px solid rgba(0, 210, 255, 0.3); border-radius:12px; padding:50px; position:relative; box-shadow:0 0 100px rgba(0,0,0,1);"> 
+            <div onclick="closeTransferModal()" style="position:absolute; top:25px; right:30px; cursor:pointer; color:var(--neon-red); font-family:Orbitron; font-size:12px; letter-spacing:2px; border:1px solid var(--neon-red); padding:5px 15px;">[ TERMINATE SESSION ]</div> 
+            
+            <div style="margin-bottom:40px; border-bottom:1px solid rgba(0,210,255,0.1); padding-bottom:20px;"> 
+                <h1 style="font-family:Orbitron; color:var(--neon-blue); margin:0; font-size:24px; letter-spacing:3px;">CENTRAL TRANSFER GATEWAY</h1> 
+                <p style="color:#64748b; font-size:11px; margin-top:10px;">AUTHORIZED ACCESS ONLY | ENCRYPTED QUANTUM TUNNEL ACTIVE</p> 
+            </div> 
+            
+            <div style="display:flex; flex-direction:column; gap:20px;"> 
+                
+                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(0,0,0,0.3); padding:20px; border-left:4px solid var(--neon-blue); border-radius:4px;" onmouseover="this.style.background="rgba(0,210,255,0.05)"" onmouseout="this.style.background="rgba(0,0,0,0.3)""> 
+                    <div style="font-family:Orbitron; font-size:14px; color:#fff;">SEND MONEY</div> 
+                    <div style="color:#64748b; font-size:11px;">P2P Global Instant Remittance (KES/USD/EUR)</div> 
+                    <button class="btn-core" onclick="play(4); alert("Launching P2P Engine...")">ACTIVATE</button> 
+                </div> 
+                
+                
+                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(0,0,0,0.3); padding:20px; border-left:4px solid var(--neon-gold); border-radius:4px;"> 
+                    <div style="font-family:Orbitron; font-size:14px; color:#fff;">RECEIVE FUNDS</div> 
+                    <div style="color:#64748b; font-size:11px;">Generate Dynamic QR & Merchant Payment Links</div> 
+                    <button class="btn-core" onclick="play(5); alert("Awaiting Inbound Data...")">OPEN GATE</button> 
+                </div> 
+                
+                
+                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(57, 255, 20, 0.05); padding:20px; border-left:4px solid var(--neon-green); border-radius:4px;"> 
+                    <div style="font-family:Orbitron; font-size:14px; color:var(--neon-green);">STK PUSH (MPESA)</div> 
+                    <div style="color:#64748b; font-size:11px;">Direct Paynecta Gateway Integration - Immediate Prompt</div> 
+                    <button class="btn-core" style="background:var(--neon-green); color:#000; font-weight:bold; border:none;" onclick="play(11); triggerSTKEngine()">EXECUTE</button> 
+                </div> 
+                
+                
+                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(0,0,0,0.3); padding:20px; border-left:4px solid #fff; border-radius:4px;"> 
+                    <div style="font-family:Orbitron; font-size:14px; color:#fff;">INTERNAL TRANSFER</div> 
+                    <div style="color:#64748b; font-size:11px;">Zero-Fee Asset Movement Between System Vaults</div> 
+                    <button class="btn-core" onclick="play(1); alert("Scanning Vault Nodes...")">TRANSFER</button> 
+                </div> 
+                
+                
+                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(255, 49, 49, 0.05); padding:20px; border-left:4px solid var(--neon-red); border-radius:4px;"> 
+                    <div style="font-family:Orbitron; font-size:14px; color:var(--neon-red);">EXTERNAL WIRE</div> 
+                    <div style="color:#64748b; font-size:11px;">SWIFT / RTGS / SEPA Outbound Banking Protocols</div> 
+                    <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2); alert("Connecting to World Bank API...")">INITIATE WIRE</button> 
+                </div> 
+            </div> 
+        </div> 
+    </div> 
+    <script> 
+        function openTransferEngine() { play(4); document.getElementById("transfer-modal").style.display = "flex"; } 
+        function closeTransferModal() { document.getElementById("transfer-modal").style.display = "none"; } 
+        function triggerSTKEngine() { 
+            const p = prompt("TARGET PHONE (e.g. 254712345678):"); 
+            const a = prompt("TRANSACTION AMOUNT (KES):"); 
+            if(p && a) { 
+                play(11); 
+                alert("PAYNECTA PROTOCOL: Sending KES " + a + " STK Prompt to " + p); 
+            } 
+        } 
+        /* Auto-Binding to existing sidebar */ 
+        setInterval(() => { 
+            document.querySelectorAll(".nav-link").forEach(link => { 
+                if(link.innerText.includes("Transfers & Wire")) { 
+                    link.onclick = openTransferEngine; 
+                    link.style.color = "var(--neon-blue)"; 
+                } 
+            }); 
+        }, 1000); 
+    </script>
 </body>
 </html>
 `);
