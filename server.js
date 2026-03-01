@@ -381,4 +381,14 @@ app.get('/', (req, res) => {
 `);
 });
 
+// --- CLIENTS MANAGEMENT ENGINE ---
+app.use(express.json());
+const clientsRouter = require("./routes/clients");
+app.use("/api/clients", clientsRouter);
+
+app.get('/clients-management', (req, res) => {
+    res.sendFile(__dirname + '/public/clients.html');
+});
+
+
 app.listen(3000, () => console.log("System Engine V4 Pro Online"));
