@@ -9,7 +9,7 @@ app.get('/', (req, res) => {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI COMMAND CENTER V4 - GLOBAL INTELLIGENCE</title>
+    <title>AI COMMAND CENTER V4 - FULL SYSTEM ENGINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -38,6 +38,7 @@ app.get('/', (req, res) => {
             font-family: 'Inter', sans-serif; overflow: hidden; 
         }
 
+        /* MASTER LAYOUT */
         .app-shell {
             display: grid;
             grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
@@ -46,6 +47,7 @@ app.get('/', (req, res) => {
             width: 100vw;
         }
 
+        /* --- 1. HEADER ENGINE --- */
         header {
             grid-column: 1 / 4;
             background: #000;
@@ -60,8 +62,10 @@ app.get('/', (req, res) => {
         .logo-box { width: 40px; height: 40px; border: 1px solid var(--neon-blue); display: flex; align-items: center; justify-content: center; transform: rotate(45deg); }
         .logo-box i { transform: rotate(-45deg); font-family: 'Orbitron'; font-size: 20px; color: var(--neon-blue); }
         .header-center { font-family: 'Roboto Mono'; font-size: 16px; color: var(--neon-gold); letter-spacing: 1px; }
+        .admin-profile { display: flex; align-items: center; gap: 10px; font-size: 12px; }
         .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--neon-green); background: url('https://i.ibb.co/9G6vH4P/user-prof.jpg') center/cover; }
 
+        /* --- 2. SIDEBAR ENGINE --- */
         .sidebar {
             grid-row: 2;
             background: var(--bg-sidebar);
@@ -72,6 +76,7 @@ app.get('/', (req, res) => {
             overflow-y: auto;
             z-index: 500;
         }
+        .menu-label { padding: 0 20px; font-size: 10px; color: #475569; letter-spacing: 2px; margin-bottom: 15px; text-transform: uppercase; }
         .nav-link { 
             padding: 14px 25px; display: flex; align-items: center; gap: 12px; 
             color: #94a3b8; font-size: 13px; cursor: pointer; transition: 0.3s;
@@ -80,63 +85,112 @@ app.get('/', (req, res) => {
         .nav-link:hover { background: rgba(0, 210, 255, 0.05); color: var(--neon-blue); }
         .nav-active { background: rgba(0, 210, 255, 0.1); color: var(--neon-blue); border-left: 3px solid var(--neon-blue); font-weight: 600; }
         
+        .health-module { margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .stat-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
+        .progress-bg { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 15px; }
+        .progress-fill { height: 100%; border-radius: 2px; transition: 1s; }
+
+        /* --- 3. MAIN WORKSPACE --- */
         .workspace {
             grid-row: 2;
             background: radial-gradient(circle at top right, #0a192f 0%, #020617 100%);
-            padding: 20px;
-            overflow-y: auto;
+            padding: 25px;
+            overflow-y: scroll;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 30px;
         }
+        .conn-bar { 
+            display: flex; gap: 20px; font-size: 11px; color: #64748b; 
+            padding: 12px 20px; background: rgba(0,0,0,0.3); border-radius: 6px; border: var(--glass-border);
+        }
+        .conn-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 
-        /* CENTRAL WORLD MAP CORE */
-        .map-container {
-            width: 100%;
-            height: 450px;
-            background: #000;
-            border: 1px solid var(--neon-blue);
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.15);
-        }
-        #main-geo-engine { width: 100%; height: 100%; filter: brightness(0.7) contrast(1.2); }
-        
-        .map-stats-overlay {
-            position: absolute; top: 20px; left: 20px; z-index: 1000;
-            background: rgba(1, 4, 9, 0.85); padding: 15px; border-radius: 8px; border: var(--glass-border);
-            font-family: 'Roboto Mono'; font-size: 11px; pointer-events: none;
-        }
-
-        .grid-meters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+        .grid-meters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
         .meter-card { 
-            background: var(--bg-panel); border: var(--glass-border); padding: 15px; border-radius: 8px; 
-            text-align: center;
+            background: var(--bg-panel); border: var(--glass-border); padding: 20px; border-radius: 8px; 
+            text-align: center; position: relative; overflow: hidden;
         }
-        .meter-value { font-family: 'Orbitron'; font-size: 20px; color: var(--neon-blue); }
+        .meter-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .meter-value { font-family: 'Orbitron'; font-size: 24px; color: var(--neon-blue); margin-top: 10px; }
 
+        /* LIVE BANKING MAP - PRIMARY POSITION */
+        .banking-map-core {
+            height: 400px; width: 100%; border-radius: 12px; 
+            border: 1px solid var(--neon-blue); background: #000;
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 210, 255, 0.1);
+        }
+        #live-earth-map { width: 100%; height: 100%; filter: contrast(1.2) brightness(0.8) hue-rotate(180deg) invert(0.9); }
+        .map-ui-overlay {
+            position: absolute; top: 15px; left: 15px; z-index: 1000;
+            background: rgba(0,0,0,0.8); padding: 12px; border: var(--glass-border);
+            font-family: 'Roboto Mono'; font-size: 10px; pointer-events: none;
+        }
+
+        .vault-core {
+            background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
+            border: 1px solid rgba(0, 210, 255, 0.4);
+            border-radius: 12px; padding: 40px; text-align: center; position: relative;
+        }
+        .vault-total { font-family: 'Orbitron'; font-size: 48px; margin: 20px 0; text-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
+        .vault-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 30px; }
+        .v-box { padding: 15px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
+
+        .section-header { font-family: 'Orbitron'; font-size: 14px; color: var(--neon-blue); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .data-wrap { background: var(--bg-panel); border: var(--glass-border); border-radius: 8px; overflow: hidden; }
+        .sys-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .sys-table th { background: rgba(0,0,0,0.4); text-align: left; padding: 15px; color: #64748b; font-weight: 500; }
+        .sys-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+
+        .ai-neural-card {
+            background: rgba(0, 210, 255, 0.02); border: 1px solid var(--neon-blue); border-radius: 12px;
+            display: grid; grid-template-columns: 200px 1fr; padding: 30px; gap: 30px; position: relative;
+        }
+        .ai-visual { 
+            width: 150px; height: 150px; 
+            background: url('https://i.ibb.co/Xz90Cyz/ai-bot.png') center/cover;
+            filter: drop-shadow(0 0 15px var(--neon-blue));
+            animation: pulse 4s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
+        .ai-logic-stream { display: flex; flex-direction: column; gap: 12px; }
+        .logic-item { padding: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; border-left: 3px solid var(--neon-blue); font-size: 12px; }
+
+        /* --- 4. RIGHT SECURITY PANEL --- */
         .security-side {
-            grid-row: 2; background: rgba(1, 4, 9, 0.9); border-left: var(--glass-border);
-            padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;
+            grid-row: 2; background: rgba(1, 4, 9, 0.8); border-left: var(--glass-border);
+            padding: 25px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; z-index: 500;
         }
-        .alert-card { background: rgba(255, 49, 49, 0.1); border: 1px solid var(--neon-red); padding: 12px; border-radius: 8px; font-size: 12px; }
+        .alert-card { background: rgba(255, 49, 49, 0.05); border: 1px solid var(--neon-red); padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative; }
+        .map-frame { height: 200px; width: 100%; border-radius: 8px; border: var(--glass-border); background: #000 url('https://i.ibb.co/F4pYhX7/map.png') center/cover; position: relative; }
+        .map-blip { position: absolute; width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: blip 2s infinite; }
 
-        .sys-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .sys-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-
-        footer { grid-column: 1 / 4; background: #000; border-top: var(--glass-border); display: flex; justify-content: center; align-items: center; font-size: 11px; color: #475569; }
-        
+        /* --- 5. BANKING OVERLAY --- */
         #banking-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(1, 4, 9, 0.98); z-index: 10000; backdrop-filter: blur(20px);
             align-items: center; justify-content: center;
         }
         .engine-modal {
-            width: 850px; background: var(--bg-panel); border: 1px solid var(--neon-blue);
-            border-radius: 12px; display: flex; flex-direction: column;
+            width: 850px; max-height: 85vh; background: var(--bg-panel); border: 1px solid var(--neon-blue);
+            border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0, 210, 255, 0.2);
         }
-        .btn-core { padding: 8px 15px; background: transparent; border: 1px solid var(--neon-blue); color: white; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
+        .modal-header { padding: 25px 35px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { flex: 1; overflow-y: auto; padding: 20px 35px; }
+        
+        .bank-feature-row {
+            display: grid; grid-template-columns: 200px 1fr 140px; align-items: center;
+            padding: 22px; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 20px;
+        }
+        .bank-feature-row:hover { background: rgba(0, 210, 255, 0.02); }
+
+        footer { grid-column: 1 / 4; background: #000; border-top: var(--glass-border); display: flex; justify-content: center; align-items: center; font-size: 11px; color: #475569; }
+
+        .btn-core { padding: 10px 20px; background: transparent; border: 1px solid var(--neon-blue); color: white; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .btn-core:hover { background: var(--neon-blue); color: black; }
+        .btn-danger { border-color: var(--neon-red); color: var(--neon-red); }
     </style>
 </head>
 <body>
@@ -144,96 +198,178 @@ app.get('/', (req, res) => {
         <header>
             <div class="header-brand">
                 <div class="logo-box"><i>B</i></div>
-                <div>
-                    <div style="font-size:16px; color:var(--neon-blue); font-family:'Orbitron'">AI COMMAND CENTER</div>
-                    <div style="font-size:10px; color:#64748b;">QUANTUM BANKING LEDGER V4</div>
+                <div style="font-family:'Orbitron'; line-height:1.2;">
+                    <div style="font-size:16px; color:var(--neon-blue);">AI COMMAND CENTER</div>
+                    <div style="font-size:10px; color:#64748b;">GLOBAL DIGITAL BANK - V4 PRO</div>
                 </div>
             </div>
-            <div class="header-center" id="main-timer">CONNECTING...</div>
+            <div class="header-center" id="main-timer">INITIALIZING SYSTEM...</div>
             <div class="admin-profile">
-                <div style="text-align:right"><div style="font-weight:bold">Admin: Manager</div><div style="font-size:10px; color:var(--neon-green)">● SECURE NODE</div></div>
+                <div style="text-align:right">
+                    <div style="font-weight:bold">Admin: Manager</div>
+                    <div style="font-size:10px; color:var(--neon-green)">● SYSTEM ONLINE</div>
+                </div>
                 <div class="avatar"></div>
             </div>
         </header>
 
         <aside class="sidebar">
+            <div class="menu-label">Main Navigation</div>
             <div class="nav-link nav-active" onclick="play(1)">Dashboard</div>
-            <div class="nav-link" onclick="play(2)">Clients</div>
-            <div class="nav-link" onclick="openBanking()">Transfers & Wire</div>
+            <div class="nav-link" onclick="play(2)">Clients Management</div>
+            <div class="nav-link" onclick="play(3)">Banking Accounts</div>
+            <div class="nav-link" onclick="openBanking()" style="color:var(--neon-blue); font-weight:bold; border-left:3px solid var(--neon-blue);">Transfers & Wire</div>
             <div class="nav-link" onclick="play(5)">Vault Storage</div>
+            <div class="nav-link" onclick="play(6)">Digital Assets</div>
+            <div class="nav-link" onclick="play(7)">Transaction History</div>
             <div class="nav-link" onclick="play(8)">AI Neural Center</div>
-            <div class="nav-link" onclick="triggerMapScan()" style="color:var(--neon-gold); border-left:3px solid var(--neon-gold);">
-                <span id="map-btn-text">World Map Activity</span>
-            </div>
+            <div class="nav-link" onclick="play(10)">Security Gateway</div>
             <div class="nav-link" onclick="play(12)">System Reports</div>
+            <div class="nav-link" onclick="triggerMapScan()" style="color:var(--neon-gold)">World Map Activity</div>
+            <div class="nav-link" onclick="play(14)">Automation Tasks</div>
             <div class="nav-link" onclick="play(15)">Master Settings</div>
 
-            <div style="margin-top:auto; padding:20px; border-top:1px solid rgba(255,255,255,0.05);">
-                <div style="font-size:10px; color:#475569; margin-bottom:10px;">ENGINE HEALTH</div>
-                <div style="font-size:11px; margin-bottom:5px;">CPU: 43%</div>
-                <div style="height:4px; background:#1e293b; border-radius:2px;"><div style="width:43%; background:var(--neon-green); height:100%;"></div></div>
+            <div class="health-module">
+                <div class="menu-label">System Health</div>
+                <div class="stat-row"><span>CPU Usage</span><span>43%</span></div>
+                <div class="progress-bg"><div class="progress-fill" style="width:43%; background:var(--neon-green)"></div></div>
+                <div class="stat-row"><span>Memory Load</span><span>62%</span></div>
+                <div class="progress-bg"><div class="progress-fill" style="width:62%; background:var(--neon-gold)"></div></div>
             </div>
         </aside>
 
         <main class="workspace">
-            <div class="grid-meters">
-                <div class="meter-card"><div style="font-size:10px; color:#94a3b8;">GLOBAL LIQUIDITY</div><div class="meter-value">KES 2.43B</div></div>
-                <div class="meter-card"><div style="font-size:10px; color:#94a3b8;">SWIFT NODES</div><div class="meter-value" id="node-count">142</div></div>
-                <div class="meter-card"><div style="font-size:10px; color:#94a3b8;">ACTIVE SESSIONS</div><div class="meter-value" id="user-sync">1,284</div></div>
-                <div class="meter-card" style="border-color:var(--neon-red)"><div style="font-size:10px; color:var(--neon-red);">THREAT LEVEL</div><div class="meter-value" style="color:var(--neon-red)">CRITICAL</div></div>
+            <div class="conn-bar">
+                <span><span class="conn-dot" style="background:var(--neon-green)"></span>System Engine</span>
+                <span><span class="conn-dot" style="background:var(--neon-green)"></span>Security Engine</span>
+                <span><span class="conn-dot" style="background:var(--neon-blue)"></span>AI Neural Engine</span>
+                <span style="color:var(--neon-green); margin-left:auto">● LIVE DATA STREAM ACTIVE</span>
             </div>
 
-            <div class="map-container">
-                <div id="main-geo-engine"></div>
-                <div class="map-stats-overlay">
-                    <div style="color:var(--neon-blue); border-bottom:1px solid rgba(0,210,255,0.3); padding-bottom:5px; margin-bottom:5px;">LIVE WIRE TRAFFIC</div>
-                    <div>INBOUND: <span style="color:var(--neon-green)">KES 1.2M</span></div>
-                    <div>OUTBOUND: <span style="color:var(--neon-red)">KES 850K</span></div>
-                    <div id="map-status" style="margin-top:5px; font-size:9px; color:var(--neon-gold)">[ MONITORING CROSS-BORDER FLOWS ]</div>
+            <div class="grid-meters">
+                <div class="meter-card"><div class="meter-label">Users Online</div><div class="meter-value" id="user-sync">1,284</div></div>
+                <div class="meter-card"><div class="meter-label">TPS</div><div class="meter-value">38</div></div>
+                <div class="meter-card"><div class="meter-label">Active Transfers</div><div class="meter-value">142</div></div>
+                <div class="meter-card" style="border-color:var(--neon-red)"><div class="meter-label" style="color:var(--neon-red)">Fraud Alerts</div><div class="meter-value" style="color:var(--neon-red)">3</div></div>
+            </div>
+
+            <div class="banking-map-core">
+                <div id="live-earth-map"></div>
+                <div class="map-ui-overlay">
+                    <div style="color:var(--neon-blue); font-weight:bold; margin-bottom:5px;">GLOBAL SWIFT NODES</div>
+                    <div id="map-status">STATUS: MONITORING TRAFFIC</div>
+                    <div id="active-wires">ACTIVE WIRES: 12</div>
+                    <div id="lat-long" style="color:var(--neon-gold); margin-top:5px;">COORDS: SCANNING...</div>
                 </div>
             </div>
 
-            <div style="background:var(--bg-panel); border:var(--glass-border); border-radius:12px; padding:20px;">
-                <div style="font-family:'Orbitron'; font-size:13px; color:var(--neon-blue); margin-bottom:15px;">LIVE TRANSACTION STREAM</div>
-                <table class="sys-table">
-                    <tbody id="tx-stream">
-                        <tr><td>14:35</td><td><b>New York Node</b></td><td>Cross-Border Transfer</td><td style="color:var(--neon-green)">+ KES 450,000</td><td>SUCCESS</td></tr>
-                        <tr><td>14:34</td><td><b>Nairobi Node</b></td><td>Mobile Remittance</td><td style="color:var(--neon-blue)">- KES 12,000</td><td>SUCCESS</td></tr>
-                    </tbody>
-                </table>
+            <section class="vault-core">
+                <div style="font-size:12px; color:#94a3b8; letter-spacing:2px;">TOTAL BANK LIQUIDITY</div>
+                <div class="vault-total">KES 2,438,920,440</div>
+                <div class="vault-grid">
+                    <div class="v-box"><div style="color:var(--neon-green); font-size:16px;">1.90B</div><small>Available</small></div>
+                    <div class="v-box"><div style="color:var(--neon-gold); font-size:16px;">200M</div><small>Reserved</small></div>
+                    <div class="v-box"><div style="color:var(--neon-red); font-size:16px;">80M</div><small>Frozen</small></div>
+                    <div class="v-box"><div style="color:var(--neon-blue); font-size:16px;">258.9M</div><small>Moving</small></div>
+                </div>
+            </section>
+
+            <div class="section-group">
+                <div class="section-header">AI DECISION PANEL</div>
+                <div class="ai-neural-card">
+                    <div class="ai-visual"></div>
+                    <div>
+                        <div class="ai-logic-stream">
+                            <div class="logic-item" style="border-color:var(--neon-red)">Fraud risk rising in <b style="color:var(--neon-red)">mobile transfers</b>.</div>
+                            <div class="logic-item" style="border-color:var(--neon-gold)">Server load at 65%. Dynamic resource allocation suggested.</div>
+                        </div>
+                        <div style="display:flex; gap:15px; margin-top:25px;">
+                            <button class="btn-core" style="background:var(--neon-green); color:black; border:none; font-weight:bold" onclick="play(11)">APPLY FIX</button>
+                            <button class="btn-core" onclick="play(9)">IGNORE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-group">
+                <div class="section-header">LIVE TRANSACTION STREAM</div>
+                <div class="data-wrap">
+                    <table class="sys-table">
+                        <thead><tr><th>Time</th><th>User</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+                        <tbody>
+                            <tr><td>14:35</td><td>Alex T</td><td>Deposit</td><td>KES 20,000</td><td><span class="status-pill" style="background:rgba(57,255,20,0.1); color:var(--neon-green)">SUCCESS</span></td></tr>
+                            <tr><td>14:34</td><td>Susan M</td><td>Transfer</td><td>KES 8,300</td><td><span class="status-pill" style="background:rgba(57,255,20,0.1); color:var(--neon-green)">SUCCESS</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
 
         <aside class="security-side">
-            <div style="font-family:'Orbitron'; font-size:12px; color:var(--neon-red)">SECURITY INTELLIGENCE</div>
-            <div class="alert-card">
-                <b>AML ALERT</b><br>
-                <small>Sudden spike in high-value transfers between Node 04 (Nairobi) and Node 82 (London).</small>
+            <div class="section-header" style="color:var(--neon-red)">SECURITY ALERTS</div>
+            <div class="alert-card"><b style="color:var(--neon-red)">Suspicious Login</b><br><small>John Doe - Nairobi Hub</small></div>
+            <div class="map-frame"><div class="map-blip" style="top:40%; left:20%;"></div><div class="map-blip" style="top:30%; left:75%;"></div></div>
+            <div class="section-header" style="color:var(--neon-gold)">QUICK ACTIONS</div>
+            <div style="display:grid; gap:10px;">
+                <button class="btn-core" onclick="play(15)">+ NEW CLIENT</button>
+                <button class="btn-core" onclick="openBanking()">+ NEW TRANSFER</button>
+                <button class="btn-core" onclick="play(5)">VAULT CONTROL</button>
             </div>
-            
-            <div style="font-family:'Orbitron'; font-size:12px; color:var(--neon-gold); margin-top:20px;">QUICK ACTIONS</div>
-            <button class="btn-core" onclick="play(4)">+ NEW SWIFT WIRE</button>
-            <button class="btn-core" onclick="play(11)">FREEZE GLOBAL NODES</button>
-            
-            <div style="font-family:'Orbitron'; font-size:12px; color:var(--neon-blue); margin-top:20px;">SYSTEM LOGS</div>
-            <div style="font-family:'Roboto Mono'; font-size:10px; color:#64748b; background:rgba(0,0,0,0.3); padding:10px; border-radius:5px;">
-                <div>[10:02:35] SWIFT_MT103_SENT</div>
-                <div>[10:02:40] GEO_SYNC_OK</div>
-                <div style="color:var(--neon-green)">[10:02:45] ENCRYPTION_SECURE</div>
+
+            <div class="section-header" style="color:var(--neon-blue)">LIVE SYSTEM FEED</div>
+            <div style="font-family:'Roboto Mono'; font-size:10px; color:#64748b; background:rgba(0,0,0,0.3); padding:10px; border-radius:5px; border:1px solid rgba(255,255,255,0.05);">
+                <div>[18:24:01] HANDSHAKE_SUCCESS</div>
+                <div>[18:24:05] DB_SYNC_COMPLETE</div>
+                <div>[18:24:10] ENCRYPTION_LAYER_ACTIVE</div>
+                <div style="color:var(--neon-green)">[18:24:15] MONITORING_LIVE...</div>
             </div>
         </aside>
 
-        <footer>© 2026 GLOBAL DIGITAL BANK | QUANTUM ENCRYPTION ACTIVE | POWERED BY AI V4 PRO</footer>
+        <footer>© 2026 GLOBAL DIGITAL BANK | ENCRYPTED QUANTUM PROTOCOL | POWERED BY AI V4 PRO</footer>
     </div>
 
     <div id="banking-overlay">
         <div class="engine-modal">
-            <div style="padding:20px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;">
-                <h2 style="font-family:'Orbitron'; color:var(--neon-blue); margin:0;">BANKING GATEWAY</h2>
-                <button onclick="closeBanking()" class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red)">CLOSE</button>
+            <div class="modal-header">
+                <h2 style="font-family:'Orbitron'; color:var(--neon-blue); margin:0;">SOCIETY BANKING GATEWAY</h2>
+                <button onclick="closeBanking()" class="btn-core btn-danger">RETURN TO CENTER</button>
             </div>
-            <div style="padding:40px; text-align:center; color:#94a3b8;">
-                SELECT TRANSFER PROTOCOL FROM SIDEBAR OR MAP NODES.
+            <div class="modal-body">
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron;">SEND MONEY</div><small style="color:var(--neon-blue)">Node 04</small></div>
+                    <div style="font-size:11px; color:#64748b;">Instant Society-to-Bank Remittance Protocol</div>
+                    <button class="btn-core" onclick="play(4)">ACTIVATE</button>
+                </div>
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron;">RECEIVE</div><small style="color:var(--neon-blue)">Node 05</small></div>
+                    <div style="font-size:11px; color:#64748b;">Merchant Inbound Data Protocol Gateway</div>
+                    <button class="btn-core" onclick="play(5)">OPEN</button>
+                </div>
+                <div class="bank-feature-row" style="background:rgba(57, 255, 20, 0.05); border-left:3px solid var(--neon-green);">
+                    <div><div style="font-family:Orbitron; color:var(--neon-green);">STK PUSH</div><small>Paynecta</small></div>
+                    <div style="font-size:11px; color:#64748b;">Direct Mobile Society Prompt Trigger</div>
+                    <button class="btn-core" style="background:var(--neon-green); color:black; border:none;" onclick="stkEngine()">EXECUTE</button>
+                </div>
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron;">INTERNAL</div><small>Vault Sync</small></div>
+                    <div style="font-size:11px; color:#64748b;">Cross-Vault Internal Asset Migration</div>
+                    <button class="btn-core" onclick="play(1)">TRANSFER</button>
+                </div>
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron; color:var(--neon-red);">EXTERNAL WIRE</div><small>SWIFT</small></div>
+                    <div style="font-size:11px; color:#64748b;">RTGS Global Node Asset Tunnel</div>
+                    <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2)">WIRE</button>
+                </div>
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron;">CRYPTO BRIDGE</div><small>Web3</small></div>
+                    <div style="font-size:11px; color:#64748b;">Blockchain Ledger Asset Migration</div>
+                    <button class="btn-core" onclick="play(6)">BRIDGE</button>
+                </div>
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron;">MASS PAYOUT</div><small>Bulk</small></div>
+                    <div style="font-size:11px; color:#64748b;">Automated Multi-Node Remittance</div>
+                    <button class="btn-core" onclick="play(14)">GENERATE</button>
+                </div>
             </div>
         </div>
     </div>
@@ -248,58 +384,50 @@ app.get('/', (req, res) => {
 
         function openBanking() { play(4); document.getElementById('banking-overlay').style.display = 'flex'; }
         function closeBanking() { play(10); document.getElementById('banking-overlay').style.display = 'none'; }
+        
+        function stkEngine() { 
+            play(11);
+            const p = prompt("PHONE:"); const a = prompt("AMOUNT:");
+            if(p && a) alert("PAYNECTA: Sending prompt to " + p);
+        }
 
-        /* --- GEO-SPATIAL BANKING ENGINE --- */
-        let map = L.map('main-geo-engine', {
-            center: [20, 10],
-            zoom: 2,
-            zoomControl: false,
-            attributionControl: false
+        /* --- LIVE MAP ENGINE --- */
+        let map = L.map('live-earth-map', {
+            center: [1.2921, 36.8219], zoom: 2, zoomControl: false, attributionControl: false
         });
 
-        // Professional Banking Dark Layer
+        // Dark-Themed Banking Tile Set
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-        const bankingNodes = [
-            { name: "Nairobi Hub", coords: [-1.2921, 36.8219], status: "ACTIVE" },
-            { name: "London Swift Node", coords: [51.5074, -0.1278], status: "ACTIVE" },
-            { name: "New York Fed", coords: [40.7128, -74.0060], status: "MONITORING" },
-            { name: "Tokyo Exchange", coords: [35.6762, 139.6503], status: "ACTIVE" },
-            { name: "Dubai Finance", coords: [25.2048, 55.2708], status: "ACTIVE" }
+        const nodes = [
+            { name: "Nairobi Hub", lat: -1.2921, lng: 36.8219 },
+            { name: "New York Node", lat: 40.7128, lng: -74.0060 },
+            { name: "London Swift", lat: 51.5074, lng: -0.1278 },
+            { name: "Tokyo Node", lat: 35.6762, lng: 139.6503 }
         ];
 
-        let markers = [];
-        bankingNodes.forEach(node => {
-            let m = L.circleMarker(node.coords, {
-                radius: 6,
-                fillColor: '#00d2ff',
-                color: '#fff',
-                weight: 1,
-                fillOpacity: 0.8
-            }).addTo(map).bindTooltip(node.name + " [" + node.status + "]");
-            markers.push(m);
+        nodes.forEach(n => {
+            L.circleMarker([n.lat, n.lng], { radius: 5, color: 'var(--neon-blue)', fillOpacity: 0.8 }).addTo(map).bindTooltip(n.name);
         });
 
-        // USES OF THE MAP IN BANKING:
-        // 1. AML Visualisation (Arched lines show money movement)
-        // 2. Regional Threat Assessment
-        // 3. Server Node Latency mapping
         function triggerMapScan() {
             play(13);
-            document.getElementById('map-status').innerText = "[ SCANNING GLOBAL AML THREATS... ]";
-            document.getElementById('map-status').style.color = 'var(--neon-red)';
+            document.getElementById('map-status').innerText = "STATUS: SCANNING GLOBAL THREATS...";
+            document.getElementById('map-status').style.color = "var(--neon-red)";
             
-            // Visualizing a "Swift Transfer" line
-            let start = bankingNodes[0].coords; // Nairobi
-            let end = bankingNodes[1].coords;   // London
-            let line = L.polyline([start, end], {color: 'var(--neon-gold)', weight: 2, dashArray: '10, 10'}).addTo(map);
+            // Draw a simulated money transfer path (SWIFT Path)
+            let path = L.polyline([[nodes[0].lat, nodes[0].lng], [nodes[2].lat, nodes[2].lng]], {color: 'var(--neon-gold)', weight: 2, dashArray: '10, 10'}).addTo(map);
             
             setTimeout(() => {
-                map.removeLayer(line);
-                document.getElementById('map-status').innerText = "[ GLOBAL SCAN COMPLETE - 0 THREATS ]";
-                document.getElementById('map-status').style.color = 'var(--neon-green)';
-            }, 4000);
+                map.removeLayer(path);
+                document.getElementById('map-status').innerText = "STATUS: SECURE";
+                document.getElementById('map-status').style.color = "var(--neon-green)";
+            }, 3000);
         }
+
+        map.on('mousemove', function(e) {
+            document.getElementById('lat-long').innerText = "COORDS: " + e.latlng.lat.toFixed(4) + " / " + e.latlng.lng.toFixed(4);
+        });
 
         setInterval(() => {
             document.getElementById('main-timer').innerText = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
@@ -308,7 +436,7 @@ app.get('/', (req, res) => {
         setInterval(() => {
             const el = document.getElementById('user-sync');
             let val = parseInt(el.innerText.replace(',',''));
-            val += Math.floor(Math.random() * 5) - 2;
+            val += Math.floor(Math.random() * 3) - 1;
             el.innerText = val.toLocaleString();
         }, 3000);
     </script>
@@ -317,4 +445,4 @@ app.get('/', (req, res) => {
 `);
 });
 
-app.listen(3000, () => console.log("Global Banking System V4 Online"));
+app.listen(3000, () => console.log("System Engine V4 Pro Online"));
