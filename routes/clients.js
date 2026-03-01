@@ -1,53 +1,37 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
-// Enterprise Mock Data with Deep Stats
+// Mock Database for Enterprise UI Testing (Connect your MongoDB Model here)
 let clients = [
-    { 
-        id: 1, name: "Alex T", acc: "88001122", phone: "2547000000", email: "alex@global.bank", 
-        balance: 250000, status: "Active", idNo: "ID-992233", riskLevel: "Low",
-        totalDeposits: 450000, totalWithdrawals: 200000, totalTransfers: 12,
-        createdAt: "2026-01-10", logs: ["[02/03/2026] System Login: Success"]
-    },
-    { 
-        id: 2, name: "Susan M", acc: "88004455", phone: "2547111111", email: "susan@global.bank", 
-        balance: 8500, status: "Active", idNo: "ID-445566", riskLevel: "Medium",
-        totalDeposits: 15000, totalWithdrawals: 6500, totalTransfers: 4,
-        createdAt: "2026-02-15", logs: ["[01/03/2026] Profile Updated"]
-    }
+    { id: 1, name: "Alexander Wright", account: "882044192", phone: "+254 712 345 678", email: "a.wright@global.com", balance: 1450000, status: "Active", risk: "Low", registered: "2025-10-12", idNumber: "ID-992834" },
+    { id: 2, name: "Sarah Jenkins", account: "882055201", phone: "+1 415 902 1100", email: "s.jenkins@vault.io", balance: 85400, status: "Frozen", risk: "Medium", registered: "2026-01-05", idNumber: "PASS-US-22" },
+    { id: 3, name: "Chen Wei", account: "882011993", phone: "+86 21 6632 001", email: "wei.chen@asia-bank.cn", balance: 12000000, status: "Suspended", risk: "High", registered: "2024-05-20", idNumber: "ID-CN-001" }
 ];
 
-// GET: Advanced Dashboard Stats & List
-router.get("/", (req, res) => {
-    const stats = {
-        total: clients.length,
-        active: clients.filter(c => c.status === "Active").length,
-        frozen: clients.filter(c => c.status === "Frozen").length,
-        newToday: clients.filter(c => c.createdAt === new Date().toISOString().split('T')[0]).length
-    };
-    res.json({ clients, stats });
+// GET ALL CLIENTS / SEARCH
+router.get('/data', (req, res) => {
+    const { search } = req.query;
+    if (search) {
+        const filtered = clients.filter(c => 
+            c.name.toLowerCase().includes(search.toLowerCase()) || 
+            c.account.includes(search) || 
+            c.email.toLowerCase().includes(search.toLowerCase())
+        );
+        return res.json(filtered);
+    }
+    res.json(clients);
 });
 
-// GET: Deep Intelligence Profile
-router.get("/:id/details", (req, res) => {
-    const client = clients.find(c => c.id == req.params.id);
-    res.json(client || {});
-});
-
-// PATCH: Admin Control Protocol
-router.patch("/:id/control", (req, res) => {
-    const client = clients.find(c => c.id == req.params.id);
-    if (!client) return res.status(404).send();
-    
-    const { action } = req.body;
-    const timestamp = new Date().toLocaleString();
-
-    if (action === 'freeze') { client.status = "Frozen"; client.logs.unshift(`[${timestamp}] Account Frozen by Admin`); }
-    if (action === 'unfreeze') { client.status = "Active"; client.logs.unshift(`[${timestamp}] Account Unfrozen by Admin`); }
-    if (action === 'logout') { client.logs.unshift(`[${timestamp}] Forced Session Termination`); }
-    if (action === 'reset_pw') { client.logs.unshift(`[${timestamp}] Security Credential Reset`); }
-
-    res.json(client);
+// UPDATE STATUS LOGIC
+router.post('/status', (req, res) => {
+    const { id, status } = req.body;
+    const client = clients.find(c => c.id == id);
+    if (client) {
+        client.status = status;
+        res.json({ success: true, message: `Account ${status} successfully` });
+    } else {
+        res.status(404).json({ success: false });
+    }
 });
 
 module.exports = router;
