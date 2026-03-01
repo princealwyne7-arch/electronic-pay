@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 require("dotenv").config();
+const axios = require('axios');const PAYNECTA_CODE = process.env.PAYNECTA_CODE;const PAYNECTA_SECRET = process.env.PAYNECTA_SECRET;app.post('/api/stk-push', async (req, res) => {    const { phone, amount } = req.body;    try {        const response = await axios.post('https://api.paynecta.com/v1/stk/push', {            merchant_code: PAYNECTA_CODE,            phone: phone,            amount: amount        }, {            headers: { 'Authorization': `Bearer ${PAYNECTA_SECRET}` }        });        res.status(200).json({ status: 'SUCCESS', message: 'STK PROMPT SENT' });    } catch (err) {        res.status(500).json({ status: 'FAILED', error: err.message });    }});
 
 app.get('/', (req, res) => {
     res.send(`
