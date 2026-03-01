@@ -3,120 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLIENTS ENGINE | GLOBAL DIGITAL BANK</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>CLIENT ARCHITECTURE | GLOBAL BANK ADMIN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #020617; --neon: #00d2ff; --green: #39ff14; --red: #ff3131; --gold: #ffcc00; --glass: rgba(15, 23, 42, 0.95); --border: 1px solid rgba(0, 210, 255, 0.2); }
-        body { background: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
+        :root { --bg: #020617; --neon: #00d2ff; --green: #39ff14; --red: #ff3131; --gold: #ffcc00; --glass: rgba(15, 23, 42, 0.98); --border: 1px solid rgba(0, 210, 255, 0.2); }
+        body { background: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 25px; overflow-x: hidden; }
         
-        /* DASHBOARD CARDS */
-        .dashboard-header { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 25px; }
-        .card { background: var(--glass); border: var(--border); padding: 15px; border-radius: 4px; text-align: center; }
-        .card label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-        .card div { font-family: 'Orbitron'; font-size: 16px; color: var(--neon); margin-top: 5px; }
+        /* DASHBOARD SECTION */
+        .header-strip { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: var(--border); padding-bottom: 20px; }
+        .title-group h1 { font-family: 'Orbitron'; color: var(--neon); margin: 0; font-size: 22px; letter-spacing: 2px; }
+        
+        .dash-cards { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 30px; }
+        .card { background: var(--glass); border: var(--border); padding: 15px; border-radius: 4px; text-align: center; position: relative; }
+        .card label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; display: block; }
+        .card div { font-family: 'Orbitron'; font-size: 16px; margin-top: 5px; color: var(--neon); }
 
         /* TABLE SYSTEM */
-        .panel { background: var(--glass); border: var(--border); border-radius: 8px; overflow: hidden; }
-        .table-tools { padding: 15px; display: flex; gap: 10px; background: rgba(0,0,0,0.3); border-bottom: var(--border); }
-        .search-bar { flex: 1; background: #000; border: 1px solid #1e293b; color: white; padding: 10px; border-radius: 4px; }
+        .control-panel { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: var(--border); display: flex; gap: 15px; margin-bottom: 20px; }
+        .search-box { flex: 1; background: #000; border: 1px solid #1e293b; color: white; padding: 10px 15px; border-radius: 4px; font-family: 'Roboto Mono'; font-size: 13px; }
+        .btn-core { padding: 10px 20px; background: transparent; border: 1px solid var(--neon); color: white; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; transition: 0.3s; }
+        .btn-core:hover { background: var(--neon); color: black; }
+
+        .table-wrap { background: var(--glass); border: var(--border); border-radius: 8px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { text-align: left; padding: 15px; color: #64748b; background: rgba(0,0,0,0.4); border-bottom: var(--border); }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        
-        .status-pill { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; }
-        .active { background: rgba(57,255,20,0.1); color: var(--green); }
-        .frozen { background: rgba(255,49,49,0.1); color: var(--red); }
+        th { background: rgba(0,0,0,0.4); padding: 15px; text-align: left; color: #64748b; font-weight: 500; border-bottom: var(--border); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); vertical-align: middle; }
+        .prof-img { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--neon); background: #1e293b; }
+        .status-tag { padding: 4px 8px; border-radius: 3px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+        .active-tag { background: rgba(57,255,20,0.1); color: var(--green); }
+        .frozen-tag { background: rgba(255,49,49,0.1); color: var(--red); }
+        .suspend-tag { background: rgba(255,204,0,0.1); color: var(--gold); }
 
-        /* ACTIONS DROPDOWN */
-        .actions-btn { background: transparent; border: 1px solid var(--neon); color: var(--neon); padding: 5px 10px; cursor: pointer; font-size: 10px; }
-        .actions-menu { display: none; position: absolute; background: #0f172a; border: var(--border); z-index: 100; min-width: 150px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .actions-menu button { width: 100%; text-align: left; padding: 10px; background: transparent; color: white; border: none; font-size: 11px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .actions-menu button:hover { background: var(--neon); color: black; }
-
-        /* ADVANCED PROFILE MODAL */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; align-items:center; justify-content:center; }
-        .profile-container { width: 900px; height: 80vh; background: var(--bg); border: 2px solid var(--neon); display: flex; flex-direction: column; }
-        .profile-header { padding: 20px; border-bottom: var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .profile-tabs { display: flex; background: rgba(0,0,0,0.5); }
-        .tab { padding: 15px 25px; cursor: pointer; font-size: 12px; border-right: 1px solid rgba(255,255,255,0.05); }
-        .tab.active-tab { border-bottom: 2px solid var(--neon); color: var(--neon); background: rgba(0,210,255,0.05); }
-        .profile-body { flex: 1; padding: 30px; overflow-y: auto; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; }
-        .info-group h4 { color: var(--gold); font-size: 10px; letter-spacing: 2px; margin-bottom: 15px; }
-        .info-item { margin-bottom: 15px; }
-        .info-item label { display: block; font-size: 10px; color: #64748b; margin-bottom: 4px; }
-        .info-item span { font-weight: 600; font-size: 13px; }
+        /* MODAL SYSTEM */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; }
+        .dossier-card { width: 850px; background: var(--bg); border: 1px solid var(--neon); padding: 0; border-radius: 12px; overflow: hidden; }
+        .dossier-header { padding: 25px; border-bottom: var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,210,255,0.05); }
+        .tabs { display: flex; border-bottom: var(--border); }
+        .tab-btn { padding: 15px 30px; background: transparent; color: #64748b; border: none; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
+        .tab-btn.active { color: var(--neon); border-bottom: 2px solid var(--neon); background: rgba(255,255,255,0.02); }
+        .dossier-body { padding: 30px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; }
+        .info-sec h4 { font-family: 'Orbitron'; color: var(--gold); font-size: 11px; margin-bottom: 20px; border-left: 3px solid var(--gold); padding-left: 10px; }
+        .data-row { margin-bottom: 15px; }
+        .data-row label { display: block; font-size: 10px; color: #475569; margin-bottom: 4px; }
+        .data-row span { font-size: 13px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <div class="dashboard-header">
-        <div class="card"><label>Total Clients</label><div id="total-clients">1,284</div></div>
-        <div class="card"><label>Active</label><div style="color:var(--green)">1,150</div></div>
-        <div class="card"><label>Suspended</label><div style="color:var(--gold)">120</div></div>
-        <div class="card"><label>Frozen</label><div style="color:var(--red)">14</div></div>
-        <div class="card"><label>New Today</label><div>+8</div></div>
-        <div class="card"><label>Bank Balance</label><div style="font-size:12px">KES 2.43B</div></div>
+    <div class="header-strip">
+        <div class="title-group">
+            <h1>CLIENT ARCHITECTURE</h1>
+            <div style="font-size:10px; color:#64748b">GLOBAL LEDGER ACCESS: NODE 04</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-core" onclick="play(15)">+ PROVISION CLIENT</button>
+            <button class="btn-core" onclick="window.location.href='/'">RETURN TO COMMAND</button>
+        </div>
     </div>
 
-    <div class="panel">
-        <div class="table-tools">
-            <input type="text" class="search-bar" id="searchClient" placeholder="Search Name, Account, Phone or Email..." onkeyup="searchEngine()">
-            <button class="actions-btn" style="background:var(--neon); color:black" onclick="play(15)">+ ADD NEW CLIENT</button>
-            <button class="actions-btn" onclick="fetchData()">REFRESH ENGINE</button>
-        </div>
+    <div class="dash-cards">
+        <div class="card"><label>Total Clients</label><div id="total-val">3,142</div></div>
+        <div class="card"><label>Active</label><div style="color:var(--green)">2,904</div></div>
+        <div class="card"><label>Suspended</label><div style="color:var(--gold)">118</div></div>
+        <div class="card"><label>Frozen</label><div style="color:var(--red)">120</div></div>
+        <div class="card"><label>New Today</label><div>+14</div></div>
+        <div class="card"><label>Total Balances</label><div style="font-size:12px">KES 4.28B</div></div>
+    </div>
+
+    <div class="control-panel">
+        <input type="text" class="search-box" id="smartSearch" placeholder="SEARCH SYSTEM BY NAME, ACCOUNT, PHONE, OR EMAIL..." onkeyup="engineSearch()">
+        <button class="btn-core" onclick="loadClients()">SYNC LEDGER</button>
+    </div>
+
+    <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>CLIENT IDENTITY</th>
-                    <th>ACCOUNT NO.</th>
-                    <th>PHONE</th>
+                    <th>CLIENT PROFILE</th>
+                    <th>ACCOUNT NUMBER</th>
+                    <th>PHONE / EMAIL</th>
                     <th>BALANCE</th>
                     <th>STATUS</th>
                     <th>RISK</th>
-                    <th>ACTIONS</th>
+                    <th>ACTION</th>
                 </tr>
             </thead>
-            <tbody id="client-list"></tbody>
+            <tbody id="clientRows"></tbody>
         </table>
     </div>
 
-    <div id="profile-modal" class="modal">
-        <div class="profile-container">
-            <div class="profile-header">
-                <h2 style="font-family:Orbitron; margin:0; font-size:18px;">CLIENT DOSSIER: <span id="p-acc-title" style="color:var(--neon)"></span></h2>
-                <button class="actions-btn" onclick="closeProfile()">TERMINAL EXIT</button>
-            </div>
-            <div class="profile-tabs">
-                <div class="tab active-tab" onclick="switchTab('info')">INFO</div>
-                <div class="tab" onclick="switchTab('history')">TRANSACTIONS</div>
-                <div class="tab" onclick="switchTab('history')">TRANSFERS</div>
-                <div class="tab" onclick="switchTab('history')">LOGINS</div>
-            </div>
-            <div class="profile-body" id="profile-content">
-                <div class="info-grid">
-                    <div class="info-group">
-                        <h4>PERSONAL DATA</h4>
-                        <div class="info-item"><label>Full Name</label><span id="p-name"></span></div>
-                        <div class="info-item"><label>National ID / Passport</label><span id="p-id"></span></div>
-                        <div class="info-item"><label>Registered</label><span id="p-date"></span></div>
-                        <div class="info-item"><label>Last Login</label><span id="p-login"></span></div>
-                    </div>
-                    <div class="info-group">
-                        <h4>ACCOUNT STATUS</h4>
-                        <div class="info-item"><label>Status</label><span id="p-status"></span></div>
-                        <div class="info-item"><label>Account Type</label><span>Enterprise Premium</span></div>
-                        <div class="info-item"><label>Risk Level</label><span id="p-risk"></span></div>
-                    </div>
-                    <div class="info-group">
-                        <h4>FINANCIALS</h4>
-                        <div class="info-item"><label>Current Balance</label><span id="p-balance" style="color:var(--neon)"></span></div>
-                        <div class="info-item"><label>Total Deposits</label><span>KES 4,500,000</span></div>
-                        <div class="info-item"><label>Total Withdrawals</label><span>KES 1,200,000</span></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div id="dossierModal" class="modal">
+        <div class="dossier-card" id="dossierContent"></div>
     </div>
 
     <script>
@@ -126,52 +103,93 @@
             sfx.play().catch(e => {});
         };
 
-        async function fetchData(query = '') {
-            const res = await fetch(`/api/clients/data?search=${query}`);
+        async function loadClients(search = '') {
+            const res = await fetch(`/api/clients/data?search=${search}`);
             const data = await res.json();
-            const list = document.getElementById('client-list');
-            list.innerHTML = '';
+            const container = document.getElementById('clientRows');
+            container.innerHTML = '';
             
             data.forEach(c => {
-                list.innerHTML += `
+                container.innerHTML += `
                     <tr>
-                        <td><b>${c.name}</b><br><small style="color:#64748b">${c.email}</small></td>
-                        <td style="font-family:monospace">${c.acc}</td>
-                        <td>${c.phone}</td>
-                        <td style="color:var(--neon)">KES ${c.balance.toLocaleString()}</td>
-                        <td><span class="status-pill ${c.status.toLowerCase()}">${c.status}</span></td>
-                        <td style="color:${c.risk === 'High' ? 'var(--red)' : 'var(--green)'}">${c.risk}</td>
-                        <td>
-                            <button class="actions-btn" onclick="openProfile('${c.acc}')">VIEW</button>
-                            <button class="actions-btn" onclick="updateStatus('${c.id}', 'Freeze')">FREEZE</button>
-                        </td>
+                        <td><div style="display:flex; align-items:center; gap:12px;">
+                            <div class="prof-img"></div>
+                            <b>${c.name}</b>
+                        </div></td>
+                        <td style="font-family:'Roboto Mono'">${c.acc}</td>
+                        <td><small>${c.phone}</small><br><small style="color:var(--neon)">${c.email}</small></td>
+                        <td style="font-weight:600; color:var(--neon)">KES ${c.balance.toLocaleString()}</td>
+                        <td><span class="status-tag ${c.status.toLowerCase()}-tag">${c.status}</span></td>
+                        <td style="color:${c.risk==='High'?'var(--red)':'var(--green)'}">${c.risk}</td>
+                        <td><button class="btn-core" style="padding:5px 10px" onclick="viewDossier('${c.id}')">ACTION</button></td>
                     </tr>
                 `;
             });
         }
 
-        function openProfile(acc) {
+        async function viewDossier(id) {
             play(4);
-            document.getElementById('profile-modal').style.display = 'flex';
-            document.getElementById('p-acc-title').innerText = acc;
-            // Simulated deep fetch
-            document.getElementById('p-name').innerText = "Alexander Wright";
-            document.getElementById('p-id').innerText = "ID-992834";
-            document.getElementById('p-date').innerText = "2026-01-10";
-            document.getElementById('p-login').innerText = "2026-03-01 14:20";
-            document.getElementById('p-status').innerText = "ACTIVE";
-            document.getElementById('p-risk').innerText = "LOW RISK";
-            document.getElementById('p-balance').innerText = "KES 1,450,000";
+            const res = await fetch('/api/clients/data');
+            const data = await res.json();
+            const c = data.find(i => i.id === id);
+            
+            document.getElementById('dossierModal').style.display = 'flex';
+            document.getElementById('dossierContent').innerHTML = `
+                <div class="dossier-header">
+                    <h2 style="font-family:Orbitron; margin:0">CLIENT DOSSIER: ${c.name}</h2>
+                    <button class="btn-core" onclick="closeDossier()">CLOSE</button>
+                </div>
+                <div class="tabs">
+                    <div class="tab-btn active">IDENTITY</div>
+                    <div class="tab-btn">TRANSACTIONS</div>
+                    <div class="tab-btn">TRANSFERS</div>
+                    <div class="tab-btn">LOGINS</div>
+                </div>
+                <div class="dossier-body">
+                    <div class="info-sec">
+                        <h4>PERSONAL INFO</h4>
+                        <div class="data-row"><label>Full Name</label><span>${c.name}</span></div>
+                        <div class="data-row"><label>Account No</label><span>${c.acc}</span></div>
+                        <div class="data-row"><label>Identity Ref</label><span>${c.idNumber}</span></div>
+                        <div class="data-row"><label>Home Address</label><span>${c.address}</span></div>
+                    </div>
+                    <div class="info-sec">
+                        <h4>ACCOUNT DATA</h4>
+                        <div class="data-row"><label>Live Balance</label><span style="color:var(--neon)">KES ${c.balance.toLocaleString()}</span></div>
+                        <div class="data-row"><label>Account Status</label><span>${c.status}</span></div>
+                        <div class="data-row"><label>Risk Assessment</label><span>${c.risk} Level</span></div>
+                        <div class="data-row"><label>Last Sync</label><span>${c.lastLogin}</span></div>
+                    </div>
+                    <div class="info-sec">
+                        <h4>SECURITY CONTROL</h4>
+                        <button class="btn-core" style="width:100%; margin-bottom:10px;" onclick="updateStatus('${c.id}', 'Activate')">ACTIVATE ACCOUNT</button>
+                        <button class="btn-core" style="width:100%; margin-bottom:10px; border-color:var(--gold); color:var(--gold)" onclick="updateStatus('${c.id}', 'Suspend')">SUSPEND ACCESS</button>
+                        <button class="btn-core" style="width:100%; margin-bottom:10px; border-color:var(--red); color:var(--red)" onclick="updateStatus('${c.id}', 'Freeze')">FREEZE ASSETS</button>
+                        <button class="btn-core" style="width:100%; border-color:#64748b; color:#64748b">RESET SECURITY KEY</button>
+                    </div>
+                </div>
+            `;
         }
 
-        function closeProfile() { play(10); document.getElementById('profile-modal').style.display = 'none'; }
-        
-        function searchEngine() {
-            const val = document.getElementById('searchClient').value;
-            fetchData(val);
+        async function updateStatus(id, type) {
+            play(11);
+            await fetch('/api/clients/action', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({id, type})
+            });
+            alert('System: Client status updated to ' + type);
+            closeDossier();
+            loadClients();
         }
 
-        fetchData();
+        function engineSearch() {
+            const q = document.getElementById('smartSearch').value;
+            loadClients(q);
+        }
+
+        function closeDossier() { play(10); document.getElementById('dossierModal').style.display='none'; }
+        loadClients();
     </script>
 </body>
 </html>
