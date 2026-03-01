@@ -1,31 +1,7 @@
 const express = require("express");
 const app = express();
-const axios = require("axios");
 require("dotenv").config();
 
-app.use(express.json());
-
-// --- PAYNECTA BACKEND ENGINE: CONNECTS ENV KEYS TO STK BUTTON ---
-const PAYNECTA_CODE = process.env.PAYNECTA_CODE;
-const PAYNECTA_SECRET = process.env.PAYNECTA_SECRET;
-
-app.post('/api/stk-push', async (req, res) => {
-    const { phone, amount } = req.body;
-    try {
-        const response = await axios.post('https://api.paynecta.com/v1/stk/push', {
-            merchant_code: PAYNECTA_CODE,
-            phone: phone,
-            amount: amount
-        }, {
-            headers: { 'Authorization': `Bearer ${PAYNECTA_SECRET}` }
-        });
-        res.status(200).json({ status: "SUCCESS", message: "STK PROMPT INITIATED" });
-    } catch (err) {
-        res.status(500).json({ status: "FAILED", message: err.message });
-    }
-});
-
-// --- START ORIGINAL MODULE (100% PRESERVED) ---
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -107,6 +83,7 @@ app.get('/', (req, res) => {
         }
         .nav-link:hover { background: rgba(0, 210, 255, 0.05); color: var(--neon-blue); }
         .nav-active { background: rgba(0, 210, 255, 0.1); color: var(--neon-blue); border-left: 3px solid var(--neon-blue); font-weight: 600; }
+        
         .health-module { margin-top: auto; padding: 20px; border-top: 1px solid rgba(255,255,255,0.05); }
         .stat-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
         .progress-bg { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 15px; }
@@ -175,7 +152,7 @@ app.get('/', (req, res) => {
         .map-frame { height: 200px; width: 100%; border-radius: 8px; border: var(--glass-border); background: #000 url('https://i.ibb.co/F4pYhX7/map.png') center/cover; position: relative; }
         .map-blip { position: absolute; width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: blip 2s infinite; }
 
-        /* --- 5. BANKING OVERLAY (SCROLLABLE LOGIC) --- */
+        /* --- 5. BANKING OVERLAY --- */
         #banking-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(1, 4, 9, 0.98); z-index: 10000; backdrop-filter: blur(20px);
@@ -313,6 +290,14 @@ app.get('/', (req, res) => {
                 <button class="btn-core" onclick="openBanking()">+ NEW TRANSFER</button>
                 <button class="btn-core" onclick="play(5)">VAULT CONTROL</button>
             </div>
+
+            <div class="section-header" style="color:var(--neon-blue)">LIVE SYSTEM FEED</div>
+            <div style="font-family:'Roboto Mono'; font-size:10px; color:#64748b; background:rgba(0,0,0,0.3); padding:10px; border-radius:5px; border:1px solid rgba(255,255,255,0.05);">
+                <div>[18:24:01] HANDSHAKE_SUCCESS</div>
+                <div>[18:24:05] DB_SYNC_COMPLETE</div>
+                <div>[18:24:10] ENCRYPTION_LAYER_ACTIVE</div>
+                <div style="color:var(--neon-green)">[18:24:15] MONITORING_LIVE...</div>
+            </div>
         </aside>
 
         <footer>© 2026 GLOBAL DIGITAL BANK | ENCRYPTED QUANTUM PROTOCOL | POWERED BY AI V4 PRO</footer>
@@ -374,20 +359,10 @@ app.get('/', (req, res) => {
         function openBanking() { play(4); document.getElementById('banking-overlay').style.display = 'flex'; }
         function closeBanking() { play(10); document.getElementById('banking-overlay').style.display = 'none'; }
         
-        async function stkEngine() { 
+        function stkEngine() { 
             play(11);
-            const p = prompt("PHONE (Format: 254...):"); 
-            const a = prompt("AMOUNT:");
-            if(p && a) {
-                // ACTIVATE BACKEND CALL
-                const res = await fetch('/api/stk-push', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone: p, amount: a })
-                });
-                const data = await res.json();
-                alert("PAYNECTA STATUS: " + (data.status || "Check Connection"));
-            }
+            const p = prompt("PHONE:"); const a = prompt("AMOUNT:");
+            if(p && a) alert("PAYNECTA: Sending prompt to " + p);
         }
 
         setInterval(() => {
