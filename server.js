@@ -201,7 +201,7 @@ app.get('/', (req, res) => {
         <aside class="sidebar">
             <div class="menu-label">Main Navigation</div>
             <div class="nav-link nav-active" onclick="play(1)">Dashboard</div>
-            <div class="nav-link" onclick="play(2); location.href='/clients-management'">Clients Management</div>
+            <div class="nav-link" onclick="play(2)">Clients Management</div>
             <div class="nav-link" onclick="play(3)">Banking Accounts</div>
             <div class="nav-link" onclick="openBanking()" style="color:var(--neon-blue); font-weight:bold; border-left:3px solid var(--neon-blue);">Transfers & Wire</div>
             <div class="nav-link" onclick="play(5)">Vault Storage</div>
@@ -380,25 +380,5 @@ app.get('/', (req, res) => {
 </html>
 `);
 });
-
-// --- CLIENTS MANAGEMENT ENGINE ---
-app.use(express.json());
-const clientsRouter = require("./routes/clients");
-app.use("/api/clients", clientsRouter);
-
-app.get('/clients-management', (req, res) => {
-    res.sendFile(__dirname + '/public/clients.html');
-});
-
-// --- PLUG IN START: ENTERPRISE CONNECTOR ---
-app.use(express.json());
-const clientsRouter = require("./routes/clients");
-app.use("/api/clients", clientsRouter);
-
-app.get('/clients-management', (req, res) => {
-    res.sendFile(__dirname + '/public/clients.html');
-});
-// --- PLUG IN END ---
-
 
 app.listen(3000, () => console.log("System Engine V4 Pro Online"));
