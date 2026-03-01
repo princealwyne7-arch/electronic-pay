@@ -1,6 +1,16 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const app = express();
 require("dotenv").config();
+
+// --- INJECTED MONGOOSE LOGIC (KEEPING SYSTEM SECRETS) ---
+const MONGO_URI = process.env.MONGO_URI;
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("--- MONGODB CLUSTER0: ACTIVATED ---"))
+    .catch(err => console.error("--- MONGODB ERROR: DEPLOYMENT FAILED ---", err));
+
+// Function to check DB status for the UI dot
+const getDbColor = () => mongoose.connection.readyState === 1 ? '#39ff14' : '#ff3131';
 
 app.get('/', (req, res) => {
     res.send(`
@@ -266,7 +276,7 @@ app.get('/', (req, res) => {
                 <span><span class="conn-dot" style="background:var(--neon-green)"></span>System Engine</span>
                 <span><span class="conn-dot" style="background:var(--neon-green)"></span>Security Engine</span>
                 <span><span class="conn-dot" style="background:var(--neon-blue)"></span>AI Neural Engine</span>
-                <span><span class="conn-dot" style="background:var(--neon-green)"></span>DB Connected</span>
+                <span><span class="conn-dot" style="background:${getDbColor()}"></span>DB Connected</span>
                 <span style="color:var(--neon-green); margin-left:auto">● LIVE DATA STREAM ACTIVE</span>
             </div>
 
@@ -404,7 +414,7 @@ app.get('/', (req, res) => {
     </div>
 
     <script>
-        // 15+ SOUND ENGINE
+        // 15+ SOUND ENGINE (INTEGRITY MAINTAINED)
         const play = (id) => {
             const sfx = new Audio(\`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_\${id}.mp3\`);
             sfx.volume = 0.4;
@@ -420,9 +430,11 @@ app.get('/', (req, res) => {
         // LIVE COUNTER SIMULATION
         setInterval(() => {
             const el = document.getElementById('user-sync');
-            let val = parseInt(el.innerText.replace(',',''));
-            val += Math.floor(Math.random() * 3) - 1;
-            el.innerText = val.toLocaleString();
+            if(el) {
+                let val = parseInt(el.innerText.replace(',',''));
+                val += Math.floor(Math.random() * 3) - 1;
+                el.innerText = val.toLocaleString();
+            }
         }, 3000);
     </script>
 </body>
@@ -430,4 +442,4 @@ app.get('/', (req, res) => {
 `);
 });
 
-app.listen(3000, () => console.log("System Engine V4 Pro Online"));
+app.listen(3000, () => console.log("System Engine V4 Pro Online | MongoDB Activation Complete"));
