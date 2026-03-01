@@ -11,6 +11,7 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI COMMAND CENTER V4 - FULL SYSTEM ENGINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --bg-deep: #020617;
@@ -149,8 +150,18 @@ app.get('/', (req, res) => {
             padding: 25px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; z-index: 500;
         }
         .alert-card { background: rgba(255, 49, 49, 0.05); border: 1px solid var(--neon-red); padding: 15px; border-radius: 8px; margin-bottom: 15px; position: relative; }
-        .map-frame { height: 200px; width: 100%; border-radius: 8px; border: var(--glass-border); background: #000 url('https://i.ibb.co/F4pYhX7/map.png') center/cover; position: relative; }
-        .map-blip { position: absolute; width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: blip 2s infinite; }
+        
+        /* LIVE MAP STYLING */
+        .map-frame { 
+            height: 220px; width: 100%; border-radius: 8px; border: var(--glass-border); 
+            background: #000; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(0, 210, 255, 0.3);
+        }
+        #world-map { width: 100%; height: 100%; filter: grayscale(1) invert(0.9) brightness(0.8) contrast(1.2) hue-rotate(180deg); }
+        .map-overlay-text { 
+            position: absolute; bottom: 5px; right: 8px; z-index: 1000; 
+            font-size: 8px; color: var(--neon-blue); font-family: 'Roboto Mono'; pointer-events: none;
+        }
 
         /* --- 5. BANKING OVERLAY --- */
         #banking-overlay {
@@ -176,6 +187,12 @@ app.get('/', (req, res) => {
         .btn-core { padding: 10px 20px; background: transparent; border: 1px solid var(--neon-blue); color: white; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; transition: 0.3s; }
         .btn-core:hover { background: var(--neon-blue); color: black; }
         .btn-danger { border-color: var(--neon-red); color: var(--neon-red); }
+        
+        /* Pulse Animation for Map Blips */
+        @keyframes pulse-ring { 
+            0% { transform: scale(0.33); opacity: 1; } 
+            100% { transform: scale(3); opacity: 0; } 
+        }
     </style>
 </head>
 <body>
@@ -283,7 +300,12 @@ app.get('/', (req, res) => {
         <aside class="security-side">
             <div class="section-header" style="color:var(--neon-red)">SECURITY ALERTS</div>
             <div class="alert-card"><b style="color:var(--neon-red)">Suspicious Login</b><br><small>John Doe - Nairobi Hub</small></div>
-            <div class="map-frame"><div class="map-blip" style="top:40%; left:20%;"></div><div class="map-blip" style="top:30%; left:75%;"></div></div>
+            
+            <div class="map-frame">
+                <div id="world-map"></div>
+                <div class="map-overlay-text">ACTIVE NODES: 82 | ENCRYPTED</div>
+            </div>
+
             <div class="section-header" style="color:var(--neon-gold)">QUICK ACTIONS</div>
             <div style="display:grid; gap:10px;">
                 <button class="btn-core" onclick="play(15)">+ NEW CLIENT</button>
@@ -349,6 +371,7 @@ app.get('/', (req, res) => {
         </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const play = (id) => {
             const sfx = new Audio(\`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_\${id}.mp3\`);
@@ -364,6 +387,49 @@ app.get('/', (req, res) => {
             const p = prompt("PHONE:"); const a = prompt("AMOUNT:");
             if(p && a) alert("PAYNECTA: Sending prompt to " + p);
         }
+
+        /* --- LIVE MAP ENGINE --- */
+        let map = L.map('world-map', {
+            center: [15, 20],
+            zoom: 1,
+            zoomControl: false,
+            attributionControl: false
+        });
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
+
+        const nodes = [
+            { name: "Nairobi", coords: [-1.2921, 36.8219], color: '#39ff14' },
+            { name: "New York", coords: [40.7128, -74.0060], color: '#00d2ff' },
+            { name: "London", coords: [51.5074, -0.1278], color: '#ffcc00' },
+            { name: "Tokyo", coords: [35.6762, 139.6503], color: '#00d2ff' },
+            { name: "Frankfurt", coords: [50.1109, 8.6821], color: '#39ff14' }
+        ];
+
+        nodes.forEach(node => {
+            L.circleMarker(node.coords, {
+                radius: 4,
+                fillColor: node.color,
+                color: "#fff",
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+        });
+
+        // Simulating Live Data Movement on Map
+        setInterval(() => {
+            let start = nodes[Math.floor(Math.random()*nodes.length)];
+            let end = nodes[Math.floor(Math.random()*nodes.length)];
+            if(start !== end) {
+                let polyline = L.polyline([start.coords, end.coords], {
+                    color: 'rgba(0, 210, 255, 0.4)',
+                    weight: 1,
+                    dashArray: '5, 10'
+                }).addTo(map);
+                setTimeout(() => map.removeLayer(polyline), 3000);
+            }
+        }, 5000);
 
         setInterval(() => {
             document.getElementById('main-timer').innerText = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
@@ -381,4 +447,4 @@ app.get('/', (req, res) => {
 `);
 });
 
-app.listen(3000, () => console.log("System Engine V4 Pro Online"));
+app.listen(3000, () => console.log("System Engine V4 Pro Online with Live Map"));
