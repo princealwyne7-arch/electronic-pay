@@ -437,6 +437,35 @@ app.get('/', (req, res) => {
             }
         }, 3000);
     </script>
+    
+    <div id="transfer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; backdrop-filter:blur(10px); align-items:center; justify-content:center;"> 
+        <div style="width:600px; background:#0f172a; border:1px solid #00d2ff; border-radius:15px; padding:30px; position:relative; box-shadow:0 0 50px rgba(0,210,255,0.3);"> 
+            <span onclick="closeTransferModal()" style="position:absolute; top:15px; right:20px; cursor:pointer; color:#ff3131; font-family:Orbitron;">[X] EXIT</span> 
+            <h2 style="font-family:Orbitron; color:#00d2ff; margin-bottom:25px; text-align:center;">TRANSFER & WIRE ENGINE</h2> 
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"> 
+                <button class="btn-core" onclick="play(4); alert("Send Money Engine Active")">SEND MONEY</button> 
+                <button class="btn-core" onclick="play(5); alert("Receive Engine Active")">RECEIVE</button> 
+                <button class="btn-core" style="background:#39ff14; color:#000; font-weight:bold;" onclick="play(11); triggerPaynectaSTK()">STK PUSH</button> 
+                <button class="btn-core" onclick="play(1); alert("Internal Engine Active")">INTERNAL TRANSFER</button> 
+                <button class="btn-core" onclick="play(2); alert("External Engine Active")" style="grid-column: span 2;">EXTERNAL WIRE TRANSFER</button> 
+            </div> 
+        </div> 
+    </div> 
+    <script> 
+        function openTransferEngine() { play(4); document.getElementById("transfer-modal").style.display = "flex"; } 
+        function closeTransferModal() { document.getElementById("transfer-modal").style.display = "none"; } 
+        function triggerPaynectaSTK() { 
+            const p = prompt("Enter Phone (254...):"); 
+            const a = prompt("Enter Amount:"); 
+            if(p && a) alert("STK PUSH INITIATED VIA PAYNECTA"); 
+        } 
+        /* Activate the existing sidebar button */ 
+        document.querySelectorAll(".nav-link").forEach(link => { 
+            if(link.innerText.includes("Transfers & Wire")) { 
+                link.setAttribute("onclick", "openTransferEngine()"); 
+            } 
+        }); 
+    </script>
 </body>
 </html>
 `);
