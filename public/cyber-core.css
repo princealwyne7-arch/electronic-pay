@@ -1,0 +1,16 @@
+:root {
+    --neon-blue: #38bdf8;
+    --panel-bg: rgba(2, 6, 23, 0.9);
+    --glow: 0 0 20px rgba(56, 189, 248, 0.2);
+}
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr 300px;
+    background: #020617;
+    height: 100vh;
+}
+.ai-panel {
+    border: 1px solid var(--neon-blue);
+    box-shadow: var(--glow);
+    backdrop-filter: blur(10px);
+}
