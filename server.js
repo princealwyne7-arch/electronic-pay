@@ -1,6 +1,19 @@
 const express = require("express");
+const mongoose = require("mongoose"); // Injected Mongoose
 const app = express();
 require("dotenv").config();
+
+// --- MONGOOSE DEPLOYMENT LOGIC ---
+const MONGO_URI = process.env.MONGO_URI;
+
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("--- MONGODB CLUSTER0: ACTIVATED ---"))
+    .catch(err => {
+        console.error("--- MONGODB ERROR: DEPLOYMENT FAILED ---");
+        console.error(err);
+    });
+
+const dbStatus = () => mongoose.connection.readyState === 1 ? 'var(--neon-green)' : 'var(--neon-red)';
 
 app.get('/', (req, res) => {
     res.send(`
@@ -37,7 +50,6 @@ app.get('/', (req, res) => {
             font-family: 'Inter', sans-serif; overflow: hidden; 
         }
 
-        /* MASTER LAYOUT - PREVENTS OVERLAP */
         .app-shell {
             display: grid;
             grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
@@ -46,7 +58,6 @@ app.get('/', (req, res) => {
             width: 100vw;
         }
 
-        /* --- 1. HEADER ENGINE --- */
         header {
             grid-column: 1 / 4;
             background: #000;
@@ -67,7 +78,6 @@ app.get('/', (req, res) => {
         .admin-profile { display: flex; align-items: center; gap: 10px; font-size: 12px; }
         .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--neon-green); background: url('https://i.ibb.co/9G6vH4P/user-prof.jpg') center/cover; }
 
-        /* --- 2. SIDEBAR ENGINE --- */
         .sidebar {
             grid-row: 2;
             background: var(--bg-sidebar);
@@ -93,7 +103,6 @@ app.get('/', (req, res) => {
         .progress-bg { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 15px; }
         .progress-fill { height: 100%; border-radius: 2px; transition: 1s; }
 
-        /* --- 3. MAIN WORKSPACE (SCROLLABLE) --- */
         .workspace {
             grid-row: 2;
             background: radial-gradient(circle at top right, #0a192f 0%, #020617 100%);
@@ -118,7 +127,6 @@ app.get('/', (req, res) => {
         .meter-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         .meter-value { font-family: 'Orbitron'; font-size: 24px; color: var(--neon-blue); margin-top: 10px; }
 
-        /* HERO VAULT */
         .vault-core {
             background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
             border: 1px solid rgba(0, 210, 255, 0.4);
@@ -131,7 +139,6 @@ app.get('/', (req, res) => {
         .vault-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 30px; }
         .v-box { padding: 15px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* DATA TABLES */
         .section-header { font-family: 'Orbitron'; font-size: 14px; color: var(--neon-blue); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .data-wrap { background: var(--bg-panel); border: var(--glass-border); border-radius: 8px; overflow: hidden; }
         .sys-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -139,7 +146,6 @@ app.get('/', (req, res) => {
         .sys-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; }
 
-        /* AI NEURAL INTERFACE */
         .ai-neural-card {
             background: rgba(0, 210, 255, 0.02);
             border: 1px solid var(--neon-blue);
@@ -161,7 +167,6 @@ app.get('/', (req, res) => {
         .ai-logic-stream { display: flex; flex-direction: column; gap: 12px; }
         .logic-item { padding: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; border-left: 3px solid var(--neon-blue); font-size: 12px; }
 
-        /* --- 4. RIGHT SECURITY PANEL (SCROLLABLE) --- */
         .security-side {
             grid-row: 2;
             background: rgba(1, 4, 9, 0.8);
@@ -191,7 +196,6 @@ app.get('/', (req, res) => {
         }
         .map-blip { position: absolute; width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: blip 2s infinite; }
 
-        /* --- 5. FOOTER --- */
         footer {
             grid-column: 1 / 4;
             background: #000;
@@ -266,7 +270,7 @@ app.get('/', (req, res) => {
                 <span><span class="conn-dot" style="background:var(--neon-green)"></span>System Engine</span>
                 <span><span class="conn-dot" style="background:var(--neon-green)"></span>Security Engine</span>
                 <span><span class="conn-dot" style="background:var(--neon-blue)"></span>AI Neural Engine</span>
-                <span><span class="conn-dot" style="background:var(--neon-green)"></span>DB Connected</span>
+                <span><span class="conn-dot" style="background:${dbStatus()}"></span>DB Connected</span>
                 <span style="color:var(--neon-green); margin-left:auto">● LIVE DATA STREAM ACTIVE</span>
             </div>
 
@@ -334,19 +338,6 @@ app.get('/', (req, res) => {
                     </div>
                 </div>
             </div>
-
-            <div class="section-group">
-                <div class="section-header">SYSTEM LOGS & UPDATES</div>
-                <div class="data-wrap">
-                    <table class="sys-table">
-                        <tr><th>Time</th><th>Event</th><th>Node</th><th>Status</th></tr>
-                        <tr><td>14:32</td><td>New Client Registered</td><td>K-NBO-01</td><td style="color:var(--neon-green)">SUCCESS</td></tr>
-                        <tr><td>14:31</td><td>KES 50,000 Transfer</td><td>US-NY-04</td><td style="color:var(--neon-green)">SUCCESS</td></tr>
-                        <tr><td>14:30</td><td>Suspicious IP Blocked</td><td>UA-DUB-09</td><td style="color:var(--neon-red)">BLOCKED</td></tr>
-                        <tr><td>14:29</td><td>Daily Backup Completed</td><td>CLOUD-01</td><td style="color:var(--neon-green)">SUCCESS</td></tr>
-                    </table>
-                </div>
-            </div>
         </main>
 
         <aside class="security-side">
@@ -356,45 +347,13 @@ app.get('/', (req, res) => {
                     <b style="color:var(--neon-red)">Suspicious Login</b><br>
                     <small>John Doe - Nairobi Hub</small>
                 </div>
-                <div class="alert-card" style="border-color:var(--neon-gold); background:rgba(255,204,0,0.05)">
-                    <b style="color:var(--neon-gold)">Multiple PIN Attempts</b><br>
-                    <small>User: 0722***890 [MEDIUM]</small>
-                </div>
-                <div class="alert-card" style="border-color:var(--neon-green); background:rgba(57,255,20,0.05)">
-                    <b style="color:var(--neon-green)">New Device Login</b><br>
-                    <small>Mary W - Mombasa [LOW]</small>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-core" onclick="play(13)">INVESTIGATE</button>
-                    <button class="btn-core btn-danger" onclick="play(14)">BLOCK</button>
-                </div>
             </div>
 
             <div>
                 <div class="section-header">WORLD ACTIVITY MAP</div>
                 <div class="map-frame">
                     <div class="map-blip" style="top:40%; left:20%;"></div>
-                    <div class="map-blip" style="top:30%; left:75%;"></div>
-                    <div class="map-blip" style="top:75%; left:60%;"></div>
                 </div>
-            </div>
-
-            <div>
-                <div class="section-header" style="color:var(--neon-gold)">QUICK ACTIONS</div>
-                <div style="display:grid; gap:10px;">
-                    <button class="btn-core" onclick="play(15)">+ NEW CLIENT</button>
-                    <button class="btn-core" onclick="play(1)">+ NEW TRANSFER</button>
-                    <button class="btn-core" onclick="play(5)">VAULT CONTROL</button>
-                    <button class="btn-core" onclick="play(12)">GENERATE REPORT</button>
-                </div>
-            </div>
-
-            <div style="margin-top:auto; background:rgba(255,255,255,0.02); padding:15px; border-radius:8px;">
-                <div style="display:flex; align-items:center; gap:10px; font-size:12px; margin-bottom:10px;">
-                    <div style="width:10px; height:10px; border-radius:50%; background:var(--neon-green);"></div>
-                    Live Support Online
-                </div>
-                <button class="btn-core" style="width:100%; border-color:var(--neon-blue); color:var(--neon-blue)">OPEN CHAT TERMINAL</button>
             </div>
         </aside>
 
@@ -411,23 +370,14 @@ app.get('/', (req, res) => {
             sfx.play().catch(e => console.log("Sound interaction required"));
         };
 
-        // REAL-TIME CLOCK ENGINE
         setInterval(() => {
             const now = new Date();
             document.getElementById('main-timer').innerText = now.toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
         }, 1000);
-
-        // LIVE COUNTER SIMULATION
-        setInterval(() => {
-            const el = document.getElementById('user-sync');
-            let val = parseInt(el.innerText.replace(',',''));
-            val += Math.floor(Math.random() * 3) - 1;
-            el.innerText = val.toLocaleString();
-        }, 3000);
     </script>
 </body>
 </html>
 `);
 });
 
-app.listen(3000, () => console.log("System Engine V4 Pro Online"));
+app.listen(3000, () => console.log("System Engine V4 Pro Online | MongoDB Injected"));
