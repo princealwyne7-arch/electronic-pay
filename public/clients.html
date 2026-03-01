@@ -185,27 +185,33 @@
             `;
         }
 
-        function openAddModal() {
-            play(15);
-            document.getElementById('mainModal').style.display = 'flex';
-            document.getElementById('modalUI').innerHTML = `
-                <div class="modal-header">
-                    <h2 style="font-family:Orbitron; margin:0">PROVISION NEW CLIENT</h2>
-                    <button class="btn-core" onclick="closeModal()">CANCEL</button>
-                </div>
-                <div class="modal-body" style="grid-template-columns: 1fr;">
-                    <div class="form-grid">
-                        <div class="field"><label>FULL NAME</label><input type="text" id="add-name"></div>
-                        <div class="field"><label>PHONE NUMBER</label><input type="text" id="add-phone"></div>
-                        <div class="field"><label>EMAIL ADDRESS</label><input type="email" id="add-email"></div>
-                        <div class="field"><label>NATIONAL ID</label><input type="text" id="add-id"></div>
-                        <div class="field"><label>PASSWORD</label><input type="password" id="add-pass"></div>
-                        <div class="field"><label>INITIAL BALANCE</label><input type="number" id="add-bal"></div>
-                    </div>
-                    <button class="btn-core" style="background:var(--neon); color:#000; margin-top:30px; font-weight:bold" onclick="submitNewClient()">EXECUTE PROVISIONING</button>
-                </div>
-            `;
-        }
+function openAddModal() {
+    play(15);
+    document.getElementById("mainModal").style.display = "flex";
+    document.getElementById("modalUI").innerHTML = `
+        <div class="modal-header">
+            <div style="display:flex; align-items:center; gap:15px;">
+                <div style="width:10px; height:10px; background:var(--neon); border-radius:50%; box-shadow: 0 0 10px var(--neon);"></div>
+                <h2 style="font-family:Orbitron; margin:0; font-size:18px; letter-spacing:2px;">PROVISION NEW CLIENT</h2>
+            </div>
+            <button class="btn-core" style="border-color:var(--red); color:var(--red)" onclick="closeModal()">ABORT MISSION</button>
+        </div>
+        <div class="modal-body" style="grid-template-columns: 1fr; max-width: 800px; margin: 0 auto; padding-top: 20px;">
+            <div class="sec-title">CLIENT AUTHENTICATION PROTOCOL</div>
+            <div class="form-grid">
+                <div class="field"><label>FULL LEGAL NAME</label><input type="text" id="add-name" placeholder="Johnathan Doe"></div>
+                <div class="field"><label>PHONE NUMBER (GLOBAL)</label><input type="text" id="add-phone" placeholder="+254..."></div>
+                <div class="field"><label>EMAIL ADDRESS</label><input type="email" id="add-email" placeholder="client@vault.com"></div>
+                <div class="field"><label>NATIONAL ID / PASSPORT</label><input type="text" id="add-id" placeholder="ID-00000000"></div>
+                <div class="field"><label>SYSTEM PASSWORD</label><input type="password" id="add-pass" placeholder="••••••••"></div>
+                <div class="field"><label>INITIAL DEPOSIT (KES)</label><input type="number" id="add-bal" placeholder="0.00"></div>
+            </div>
+            <div style="margin-top: 40px; padding: 20px; border: 1px dashed var(--neon); background: rgba(0,210,255,0.02); text-align: center;">
+                <p style="font-size:10px; color:#64748b; margin-bottom:15px;">BY CLICKING BELOW, YOU ARE AUTHORIZING THE CREATION OF A SECURE LEDGER FOR THIS CLIENT IN THE GLOBAL BANKING ENGINE.</p>
+                <button class="btn-core" style="width:100%; height:50px; background:var(--neon); color:#000; font-weight:bold; font-size:13px;" onclick="submitNewClient()">EXECUTE SYSTEM PROVISIONING</button>
+            </div>
+        </div>`;
+}
 
         async function runAction(id, type) {
             play(11);
