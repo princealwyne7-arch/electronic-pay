@@ -1,7 +1,11 @@
 const express = require("express");
 const app = express();
+const clientsRoute = require('./routes/clients');
 require("dotenv").config();
 
+app.use(express.json());
+app.use(express.static('public'));
+app.use('/api/clients', clientsRoute);
 app.get('/', (req, res) => {
     res.send(`
 <!DOCTYPE html>
@@ -201,7 +205,7 @@ app.get('/', (req, res) => {
         <aside class="sidebar">
             <div class="menu-label">Main Navigation</div>
             <div class="nav-link nav-active" onclick="play(1)">Dashboard</div>
-            <div class="nav-link" onclick="play(2)">Clients Management</div>
+            <div class="nav-link" onclick="play(2); window.location.href='/clients.html'">Clients Management</div>
             <div class="nav-link" onclick="play(3)">Banking Accounts</div>
             <div class="nav-link" onclick="openBanking()" style="color:var(--neon-blue); font-weight:bold; border-left:3px solid var(--neon-blue);">Transfers & Wire</div>
             <div class="nav-link" onclick="play(5)">Vault Storage</div>
@@ -333,7 +337,7 @@ app.get('/', (req, res) => {
                 <div class="bank-feature-row">
                     <div><div style="font-family:Orbitron; color:var(--neon-red);">EXTERNAL WIRE</div><small>SWIFT</small></div>
                     <div style="font-size:11px; color:#64748b;">RTGS Global Node Asset Tunnel</div>
-                    <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2)">WIRE</button>
+                    <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2); window.location.href='/clients.html'">WIRE</button>
                 </div>
                 <div class="bank-feature-row">
                     <div><div style="font-family:Orbitron;">CRYPTO BRIDGE</div><small>Web3</small></div>
