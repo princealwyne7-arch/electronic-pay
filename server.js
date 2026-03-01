@@ -1,16 +1,6 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const app = express();
 require("dotenv").config();
-
-// --- INJECTED MONGOOSE LOGIC (KEEPING SYSTEM SECRETS) ---
-const MONGO_URI = process.env.MONGO_URI;
-mongoose.connect(MONGO_URI)
-    .then(() => console.log("--- MONGODB CLUSTER0: ACTIVATED ---"))
-    .catch(err => console.error("--- MONGODB ERROR: DEPLOYMENT FAILED ---", err));
-
-// Function to check DB status for the UI dot
-const getDbColor = () => mongoose.connection.readyState === 1 ? '#39ff14' : '#ff3131';
 
 app.get('/', (req, res) => {
     res.send(`
@@ -47,7 +37,6 @@ app.get('/', (req, res) => {
             font-family: 'Inter', sans-serif; overflow: hidden; 
         }
 
-        /* MASTER LAYOUT - PREVENTS OVERLAP */
         .app-shell {
             display: grid;
             grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
@@ -56,7 +45,6 @@ app.get('/', (req, res) => {
             width: 100vw;
         }
 
-        /* --- 1. HEADER ENGINE --- */
         header {
             grid-column: 1 / 4;
             background: #000;
@@ -77,7 +65,6 @@ app.get('/', (req, res) => {
         .admin-profile { display: flex; align-items: center; gap: 10px; font-size: 12px; }
         .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--neon-green); background: url('https://i.ibb.co/9G6vH4P/user-prof.jpg') center/cover; }
 
-        /* --- 2. SIDEBAR ENGINE --- */
         .sidebar {
             grid-row: 2;
             background: var(--bg-sidebar);
@@ -103,7 +90,6 @@ app.get('/', (req, res) => {
         .progress-bg { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 15px; }
         .progress-fill { height: 100%; border-radius: 2px; transition: 1s; }
 
-        /* --- 3. MAIN WORKSPACE (SCROLLABLE) --- */
         .workspace {
             grid-row: 2;
             background: radial-gradient(circle at top right, #0a192f 0%, #020617 100%);
@@ -128,7 +114,6 @@ app.get('/', (req, res) => {
         .meter-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         .meter-value { font-family: 'Orbitron'; font-size: 24px; color: var(--neon-blue); margin-top: 10px; }
 
-        /* HERO VAULT */
         .vault-core {
             background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
             border: 1px solid rgba(0, 210, 255, 0.4);
@@ -141,7 +126,6 @@ app.get('/', (req, res) => {
         .vault-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 30px; }
         .v-box { padding: 15px; background: rgba(0,0,0,0.4); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); }
 
-        /* DATA TABLES */
         .section-header { font-family: 'Orbitron'; font-size: 14px; color: var(--neon-blue); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
         .data-wrap { background: var(--bg-panel); border: var(--glass-border); border-radius: 8px; overflow: hidden; }
         .sys-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -149,7 +133,6 @@ app.get('/', (req, res) => {
         .sys-table td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
         .status-pill { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; }
 
-        /* AI NEURAL INTERFACE */
         .ai-neural-card {
             background: rgba(0, 210, 255, 0.02);
             border: 1px solid var(--neon-blue);
@@ -171,7 +154,6 @@ app.get('/', (req, res) => {
         .ai-logic-stream { display: flex; flex-direction: column; gap: 12px; }
         .logic-item { padding: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; border-left: 3px solid var(--neon-blue); font-size: 12px; }
 
-        /* --- 4. RIGHT SECURITY PANEL (SCROLLABLE) --- */
         .security-side {
             grid-row: 2;
             background: rgba(1, 4, 9, 0.8);
@@ -192,16 +174,30 @@ app.get('/', (req, res) => {
             margin-bottom: 15px;
             position: relative;
         }
-        .alert-card::before { content: 'HIGH RISK'; position: absolute; top: -10px; right: 10px; background: var(--neon-red); color: white; font-size: 8px; padding: 2px 6px; border-radius: 4px; }
 
         .map-frame { 
             height: 200px; width: 100%; border-radius: 8px; border: var(--glass-border);
             background: #000 url('https://i.ibb.co/F4pYhX7/map.png') center/cover;
             position: relative;
         }
-        .map-blip { position: absolute; width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: blip 2s infinite; }
 
-        /* --- 5. FOOTER --- */
+        /* --- BANKING LOGIC OVERLAY --- */
+        #banking-engine {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(1, 4, 9, 0.98); z-index: 10000; backdrop-filter: blur(20px);
+            align-items: center; justify-content: center;
+        }
+        .engine-content {
+            width: 850px; background: var(--bg-panel); border: 1px solid var(--neon-blue);
+            border-radius: 12px; padding: 45px; box-shadow: 0 0 100px rgba(0,0,0,1);
+        }
+        .logic-row {
+            display: grid; grid-template-columns: 220px 1fr 150px; align-items: center;
+            padding: 22px; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 15px;
+        }
+        .logic-row:hover { background: rgba(0, 210, 255, 0.03); }
+        .logic-title { font-family: 'Orbitron'; font-size: 14px; color: #fff; letter-spacing: 1px; }
+
         footer {
             grid-column: 1 / 4;
             background: #000;
@@ -220,7 +216,6 @@ app.get('/', (req, res) => {
         }
         .btn-core:hover { background: var(--neon-blue); color: black; }
         .btn-danger { border-color: var(--neon-red); color: var(--neon-red); }
-        .btn-danger:hover { background: var(--neon-red); color: white; }
 
     </style>
 </head>
@@ -249,7 +244,7 @@ app.get('/', (req, res) => {
             <div class="nav-link nav-active" onclick="play(1)">Dashboard</div>
             <div class="nav-link" onclick="play(2)">Clients Management</div>
             <div class="nav-link" onclick="play(3)">Banking Accounts</div>
-            <div class="nav-link" onclick="play(4)">Transfers & Wire</div>
+            <div class="nav-link" onclick="openBankingEngine()" style="color:var(--neon-blue); font-weight:bold; border-left:3px solid var(--neon-blue);">Transfers & Wire</div>
             <div class="nav-link" onclick="play(5)">Vault Storage</div>
             <div class="nav-link" onclick="play(6)">Digital Assets</div>
             <div class="nav-link" onclick="play(7)">Transaction History</div>
@@ -266,8 +261,6 @@ app.get('/', (req, res) => {
                 <div class="progress-bg"><div class="progress-fill" style="width:43%; background:var(--neon-green)"></div></div>
                 <div class="stat-row"><span>Memory Load</span><span>62%</span></div>
                 <div class="progress-bg"><div class="progress-fill" style="width:62%; background:var(--neon-gold)"></div></div>
-                <div class="stat-row" style="color:var(--neon-green)"><span>Network</span><span>FAST</span></div>
-                <div class="stat-row"><span>Ping</span><span>120ms</span></div>
             </div>
         </aside>
 
@@ -275,39 +268,13 @@ app.get('/', (req, res) => {
             <div class="conn-bar">
                 <span><span class="conn-dot" style="background:var(--neon-green)"></span>System Engine</span>
                 <span><span class="conn-dot" style="background:var(--neon-green)"></span>Security Engine</span>
-                <span><span class="conn-dot" style="background:var(--neon-blue)"></span>AI Neural Engine</span>
-                <span><span class="conn-dot" style="background:${getDbColor()}"></span>DB Connected</span>
                 <span style="color:var(--neon-green); margin-left:auto">● LIVE DATA STREAM ACTIVE</span>
-            </div>
-
-            <div class="grid-meters">
-                <div class="meter-card">
-                    <div class="meter-label">Users Online</div>
-                    <div class="meter-value" id="user-sync">1,284</div>
-                </div>
-                <div class="meter-card">
-                    <div class="meter-label">Transactions/Sec</div>
-                    <div class="meter-value">38 TPS</div>
-                </div>
-                <div class="meter-card">
-                    <div class="meter-label">Active Transfers</div>
-                    <div class="meter-value">142</div>
-                </div>
-                <div class="meter-card" style="border-color:var(--neon-red)">
-                    <div class="meter-label" style="color:var(--neon-red)">Fraud Alerts</div>
-                    <div class="meter-value" style="color:var(--neon-red)">3</div>
-                </div>
             </div>
 
             <section class="vault-core">
                 <div style="font-size:12px; color:#94a3b8; letter-spacing:2px;">TOTAL BANK LIQUIDITY (Main Center)</div>
                 <div class="vault-total">KES 2,438,920,440</div>
-                <div class="vault-grid">
-                    <div class="v-box"><div style="color:var(--neon-green); font-size:16px;">1.90B</div><small>Available</small></div>
-                    <div class="v-box"><div style="color:var(--neon-gold); font-size:16px;">200M</div><small>Reserved</small></div>
-                    <div class="v-box"><div style="color:var(--neon-red); font-size:16px;">80M</div><small>Frozen</small></div>
-                    <div class="v-box"><div style="color:var(--neon-blue); font-size:16px;">258.9M</div><small>Moving</small></div>
-                </div>
+                <button class="btn-core" onclick="openBankingEngine()">ACTIVATE BANKING LOGIC</button>
             </section>
 
             <div class="section-group">
@@ -317,10 +284,6 @@ app.get('/', (req, res) => {
                         <thead><tr><th>Time</th><th>User</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
                         <tbody id="tx-stream">
                             <tr><td>14:35</td><td>Alex T</td><td>Deposit</td><td>KES 20,000</td><td><span class="status-pill" style="background:rgba(57, 255, 20, 0.1); color:var(--neon-green)">SUCCESS</span></td></tr>
-                            <tr><td>14:34</td><td>Susan M</td><td>Transfer</td><td>KES 8,300</td><td><span class="status-pill" style="background:rgba(57, 255, 20, 0.1); color:var(--neon-green)">SUCCESS</span></td></tr>
-                            <tr><td>14:34</td><td>David O</td><td>Withdraw</td><td>KES 15,000</td><td><span class="status-pill" style="background:rgba(255, 49, 49, 0.1); color:var(--neon-red)">FAILED</span></td></tr>
-                            <tr><td>14:33</td><td>Mary W</td><td>Deposit</td><td>KES 2,000</td><td><span class="status-pill" style="background:rgba(57, 255, 20, 0.1); color:var(--neon-green)">SUCCESS</span></td></tr>
-                            <tr><td>14:33</td><td>John K</td><td>Transfer</td><td>KES 5,000</td><td><span class="status-pill" style="background:rgba(57, 255, 20, 0.1); color:var(--neon-green)">SUCCESS</span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -333,211 +296,80 @@ app.get('/', (req, res) => {
                     <div>
                         <div class="ai-logic-stream">
                             <div class="logic-item" style="border-color:var(--neon-red)">Fraud risk rising in <b style="color:var(--neon-red)">mobile transfers</b>. Neural check initiated.</div>
-                            <div class="logic-item" style="border-color:var(--neon-gold)">Server load at 65%. Dynamic resource allocation suggested.</div>
-                            <div class="logic-item" style="border-color:var(--neon-blue)">Transaction volume +20% from baseline.</div>
-                        </div>
-                        <div style="display:flex; gap:15px; margin-top:25px;">
-                            <button class="btn-core" style="background:var(--neon-green); color:black; border:none; font-weight:bold" onclick="play(11)">APPLY FIX</button>
-                            <button class="btn-core" onclick="play(9)">IGNORE</button>
-                            <button class="btn-core" onclick="play(10)">ANALYZE</button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <div class="section-group">
-                <div class="section-header">SYSTEM LOGS & UPDATES</div>
-                <div class="data-wrap">
-                    <table class="sys-table">
-                        <tr><th>Time</th><th>Event</th><th>Node</th><th>Status</th></tr>
-                        <tr><td>14:32</td><td>New Client Registered</td><td>K-NBO-01</td><td style="color:var(--neon-green)">SUCCESS</td></tr>
-                        <tr><td>14:31</td><td>KES 50,000 Transfer</td><td>US-NY-04</td><td style="color:var(--neon-green)">SUCCESS</td></tr>
-                        <tr><td>14:30</td><td>Suspicious IP Blocked</td><td>UA-DUB-09</td><td style="color:var(--neon-red)">BLOCKED</td></tr>
-                        <tr><td>14:29</td><td>Daily Backup Completed</td><td>CLOUD-01</td><td style="color:var(--neon-green)">SUCCESS</td></tr>
-                    </table>
                 </div>
             </div>
         </main>
 
         <aside class="security-side">
-            <div>
-                <div class="section-header" style="color:var(--neon-red)">SECURITY ALERTS</div>
-                <div class="alert-card">
-                    <b style="color:var(--neon-red)">Suspicious Login</b><br>
-                    <small>John Doe - Nairobi Hub</small>
-                </div>
-                <div class="alert-card" style="border-color:var(--neon-gold); background:rgba(255,204,0,0.05)">
-                    <b style="color:var(--neon-gold)">Multiple PIN Attempts</b><br>
-                    <small>User: 0722***890 [MEDIUM]</small>
-                </div>
-                <div class="alert-card" style="border-color:var(--neon-green); background:rgba(57,255,20,0.05)">
-                    <b style="color:var(--neon-green)">New Device Login</b><br>
-                    <small>Mary W - Mombasa [LOW]</small>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-core" onclick="play(13)">INVESTIGATE</button>
-                    <button class="btn-core btn-danger" onclick="play(14)">BLOCK</button>
-                </div>
-            </div>
-
-            <div>
-                <div class="section-header">WORLD ACTIVITY MAP</div>
-                <div class="map-frame">
-                    <div class="map-blip" style="top:40%; left:20%;"></div>
-                    <div class="map-blip" style="top:30%; left:75%;"></div>
-                    <div class="map-blip" style="top:75%; left:60%;"></div>
-                </div>
-            </div>
-
-            <div>
-                <div class="section-header" style="color:var(--neon-gold)">QUICK ACTIONS</div>
-                <div style="display:grid; gap:10px;">
-                    <button class="btn-core" onclick="play(15)">+ NEW CLIENT</button>
-                    <button class="btn-core" onclick="play(1)">+ NEW TRANSFER</button>
-                    <button class="btn-core" onclick="play(5)">VAULT CONTROL</button>
-                    <button class="btn-core" onclick="play(12)">GENERATE REPORT</button>
-                </div>
-            </div>
-
-            <div style="margin-top:auto; background:rgba(255,255,255,0.02); padding:15px; border-radius:8px;">
-                <div style="display:flex; align-items:center; gap:10px; font-size:12px; margin-bottom:10px;">
-                    <div style="width:10px; height:10px; border-radius:50%; background:var(--neon-green);"></div>
-                    Live Support Online
-                </div>
-                <button class="btn-core" style="width:100%; border-color:var(--neon-blue); color:var(--neon-blue)">OPEN CHAT TERMINAL</button>
-            </div>
+            <div class="section-header" style="color:var(--neon-red)">SECURITY ALERTS</div>
+            <div class="alert-card"><b style="color:var(--neon-red)">Suspicious Login</b><br><small>John Doe - Nairobi Hub</small></div>
+            <button class="btn-core btn-danger" style="width:100%" onclick="openBankingEngine()">EMERGENCY WIRE GATE</button>
         </aside>
 
-        <footer>
-            © 2026 GLOBAL DIGITAL BANK | ENCRYPTED QUANTUM PROTOCOL | POWERED BY AI V4 PRO
-        </footer>
+        <footer>© 2026 GLOBAL DIGITAL BANK | ENCRYPTED QUANTUM PROTOCOL | POWERED BY AI V4 PRO</footer>
+    </div>
+
+    <div id="banking-engine">
+        <div class="engine-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
+                <h2 style="font-family:'Orbitron'; color:var(--neon-blue); margin:0;">SOCIETY BANKING GATEWAY</h2>
+                <div onclick="closeBankingEngine()" style="cursor:pointer; color:var(--neon-red); border:1px solid var(--neon-red); padding:5px 15px; font-size:10px; font-family:Orbitron;">EXIT</div>
+            </div>
+            <div class="logic-row">
+                <div class="logic-title">SEND MONEY</div>
+                <div style="font-size:11px; color:#64748b;">Global Society-to-Bank Instant Remittance</div>
+                <button class="btn-core" onclick="play(4); alert('Send Engine Activating...')">ACTIVATE</button>
+            </div>
+            <div class="logic-row">
+                <div class="logic-title">RECEIVE</div>
+                <div style="font-size:11px; color:#64748b;">Merchant Data Inbound Protocol</div>
+                <button class="btn-core" onclick="play(5); alert('Receiving Node Open')">OPEN</button>
+            </div>
+            <div class="logic-row" style="background:rgba(57, 255, 20, 0.05); border-left:3px solid var(--neon-green);">
+                <div class="logic-title" style="color:var(--neon-green);">STK PUSH</div>
+                <div style="font-size:11px; color:#64748b;">Paynecta Direct Mobile Prompt Trigger</div>
+                <button class="btn-core" style="background:var(--neon-green); color:black; border:none; font-weight:bold;" onclick="stkEngine()">EXECUTE</button>
+            </div>
+            <div class="logic-row">
+                <div class="logic-title">INTERNAL</div>
+                <div style="font-size:11px; color:#64748b;">System Cross-Vault Asset Synchronization</div>
+                <button class="btn-core" onclick="play(1); alert('Internal Sync Active')">TRANSFER</button>
+            </div>
+            <div class="logic-row" style="border:none;">
+                <div class="logic-title" style="color:var(--neon-red);">EXTERNAL WIRE</div>
+                <div style="font-size:11px; color:#64748b;">SWIFT / RTGS Global Banking Tunnel</div>
+                <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2); alert('Wire Node Connected')">WIRE</button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 15+ SOUND ENGINE (INTEGRITY MAINTAINED)
         const play = (id) => {
             const sfx = new Audio(\`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_\${id}.mp3\`);
             sfx.volume = 0.4;
-            sfx.play().catch(e => console.log("Sound interaction required"));
+            sfx.play().catch(e => {});
         };
 
-        // REAL-TIME CLOCK ENGINE
+        function openBankingEngine() { play(4); document.getElementById('banking-engine').style.display = 'flex'; }
+        function closeBankingEngine() { document.getElementById('banking-engine').style.display = 'none'; }
+        
+        function stkEngine() {
+            play(11);
+            const p = prompt("PHONE NUMBER:");
+            const a = prompt("AMOUNT (KES):");
+            if(p && a) alert("PAYNECTA: Sending prompt to " + p + " for KES " + a);
+        }
+
         setInterval(() => {
             const now = new Date();
             document.getElementById('main-timer').innerText = now.toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
         }, 1000);
-
-        // LIVE COUNTER SIMULATION
-        setInterval(() => {
-            const el = document.getElementById('user-sync');
-            if(el) {
-                let val = parseInt(el.innerText.replace(',',''));
-                val += Math.floor(Math.random() * 3) - 1;
-                el.innerText = val.toLocaleString();
-            }
-        }, 3000);
-    </script>
-    
-    <div id="transfer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:10000; backdrop-filter:blur(10px); align-items:center; justify-content:center;"> 
-        <div style="width:600px; background:#0f172a; border:1px solid #00d2ff; border-radius:15px; padding:30px; position:relative; box-shadow:0 0 50px rgba(0,210,255,0.3);"> 
-            <span onclick="closeTransferModal()" style="position:absolute; top:15px; right:20px; cursor:pointer; color:#ff3131; font-family:Orbitron;">[X] EXIT</span> 
-            <h2 style="font-family:Orbitron; color:#00d2ff; margin-bottom:25px; text-align:center;">TRANSFER & WIRE ENGINE</h2> 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px;"> 
-                <button class="btn-core" onclick="play(4); alert("Send Money Engine Active")">SEND MONEY</button> 
-                <button class="btn-core" onclick="play(5); alert("Receive Engine Active")">RECEIVE</button> 
-                <button class="btn-core" style="background:#39ff14; color:#000; font-weight:bold;" onclick="play(11); triggerPaynectaSTK()">STK PUSH</button> 
-                <button class="btn-core" onclick="play(1); alert("Internal Engine Active")">INTERNAL TRANSFER</button> 
-                <button class="btn-core" onclick="play(2); alert("External Engine Active")" style="grid-column: span 2;">EXTERNAL WIRE TRANSFER</button> 
-            </div> 
-        </div> 
-    </div> 
-    <script> 
-        function openTransferEngine() { play(4); document.getElementById("transfer-modal").style.display = "flex"; } 
-        function closeTransferModal() { document.getElementById("transfer-modal").style.display = "none"; } 
-        function triggerPaynectaSTK() { 
-            const p = prompt("Enter Phone (254...):"); 
-            const a = prompt("Enter Amount:"); 
-            if(p && a) alert("STK PUSH INITIATED VIA PAYNECTA"); 
-        } 
-        /* Activate the existing sidebar button */ 
-        document.querySelectorAll(".nav-link").forEach(link => { 
-            if(link.innerText.includes("Transfers & Wire")) { 
-                link.setAttribute("onclick", "openTransferEngine()"); 
-            } 
-        }); 
-    </script>
-    
-    <div id="transfer-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(1, 4, 9, 0.98); z-index:10000; backdrop-filter:blur(15px); align-items:center; justify-content:center; overflow-y:auto; padding:40px 0;"> 
-        <div style="width:850px; background:rgba(15, 23, 42, 0.9); border:1px solid rgba(0, 210, 255, 0.3); border-radius:12px; padding:50px; position:relative; box-shadow:0 0 100px rgba(0,0,0,1);"> 
-            <div onclick="closeTransferModal()" style="position:absolute; top:25px; right:30px; cursor:pointer; color:var(--neon-red); font-family:Orbitron; font-size:12px; letter-spacing:2px; border:1px solid var(--neon-red); padding:5px 15px;">[ TERMINATE SESSION ]</div> 
-            
-            <div style="margin-bottom:40px; border-bottom:1px solid rgba(0,210,255,0.1); padding-bottom:20px;"> 
-                <h1 style="font-family:Orbitron; color:var(--neon-blue); margin:0; font-size:24px; letter-spacing:3px;">CENTRAL TRANSFER GATEWAY</h1> 
-                <p style="color:#64748b; font-size:11px; margin-top:10px;">AUTHORIZED ACCESS ONLY | ENCRYPTED QUANTUM TUNNEL ACTIVE</p> 
-            </div> 
-            
-            <div style="display:flex; flex-direction:column; gap:20px;"> 
-                
-                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(0,0,0,0.3); padding:20px; border-left:4px solid var(--neon-blue); border-radius:4px;" onmouseover="this.style.background="rgba(0,210,255,0.05)"" onmouseout="this.style.background="rgba(0,0,0,0.3)""> 
-                    <div style="font-family:Orbitron; font-size:14px; color:#fff;">SEND MONEY</div> 
-                    <div style="color:#64748b; font-size:11px;">P2P Global Instant Remittance (KES/USD/EUR)</div> 
-                    <button class="btn-core" onclick="play(4); alert("Launching P2P Engine...")">ACTIVATE</button> 
-                </div> 
-                
-                
-                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(0,0,0,0.3); padding:20px; border-left:4px solid var(--neon-gold); border-radius:4px;"> 
-                    <div style="font-family:Orbitron; font-size:14px; color:#fff;">RECEIVE FUNDS</div> 
-                    <div style="color:#64748b; font-size:11px;">Generate Dynamic QR & Merchant Payment Links</div> 
-                    <button class="btn-core" onclick="play(5); alert("Awaiting Inbound Data...")">OPEN GATE</button> 
-                </div> 
-                
-                
-                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(57, 255, 20, 0.05); padding:20px; border-left:4px solid var(--neon-green); border-radius:4px;"> 
-                    <div style="font-family:Orbitron; font-size:14px; color:var(--neon-green);">STK PUSH (MPESA)</div> 
-                    <div style="color:#64748b; font-size:11px;">Direct Paynecta Gateway Integration - Immediate Prompt</div> 
-                    <button class="btn-core" style="background:var(--neon-green); color:#000; font-weight:bold; border:none;" onclick="play(11); triggerSTKEngine()">EXECUTE</button> 
-                </div> 
-                
-                
-                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(0,0,0,0.3); padding:20px; border-left:4px solid #fff; border-radius:4px;"> 
-                    <div style="font-family:Orbitron; font-size:14px; color:#fff;">INTERNAL TRANSFER</div> 
-                    <div style="color:#64748b; font-size:11px;">Zero-Fee Asset Movement Between System Vaults</div> 
-                    <button class="btn-core" onclick="play(1); alert("Scanning Vault Nodes...")">TRANSFER</button> 
-                </div> 
-                
-                
-                <div style="display:grid; grid-template-columns: 200px 1fr 150px; align-items:center; background:rgba(255, 49, 49, 0.05); padding:20px; border-left:4px solid var(--neon-red); border-radius:4px;"> 
-                    <div style="font-family:Orbitron; font-size:14px; color:var(--neon-red);">EXTERNAL WIRE</div> 
-                    <div style="color:#64748b; font-size:11px;">SWIFT / RTGS / SEPA Outbound Banking Protocols</div> 
-                    <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2); alert("Connecting to World Bank API...")">INITIATE WIRE</button> 
-                </div> 
-            </div> 
-        </div> 
-    </div> 
-    <script> 
-        function openTransferEngine() { play(4); document.getElementById("transfer-modal").style.display = "flex"; } 
-        function closeTransferModal() { document.getElementById("transfer-modal").style.display = "none"; } 
-        function triggerSTKEngine() { 
-            const p = prompt("TARGET PHONE (e.g. 254712345678):"); 
-            const a = prompt("TRANSACTION AMOUNT (KES):"); 
-            if(p && a) { 
-                play(11); 
-                alert("PAYNECTA PROTOCOL: Sending KES " + a + " STK Prompt to " + p); 
-            } 
-        } 
-        /* Auto-Binding to existing sidebar */ 
-        setInterval(() => { 
-            document.querySelectorAll(".nav-link").forEach(link => { 
-                if(link.innerText.includes("Transfers & Wire")) { 
-                    link.onclick = openTransferEngine; 
-                    link.style.color = "var(--neon-blue)"; 
-                } 
-            }); 
-        }, 1000); 
     </script>
 </body>
 </html>
 `);
 });
 
-app.listen(3000, () => console.log("System Engine V4 Pro Online | MongoDB Activation Complete"));
+app.listen(3000, () => console.log("System Engine V4 Pro Online"));
