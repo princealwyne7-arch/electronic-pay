@@ -11,7 +11,6 @@ app.get('/', (req, res) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI COMMAND CENTER V4 - FULL SYSTEM ENGINE</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
             --bg-deep: #020617;
@@ -38,7 +37,6 @@ app.get('/', (req, res) => {
             font-family: 'Inter', sans-serif; overflow: hidden; 
         }
 
-        /* MASTER LAYOUT */
         .app-shell {
             display: grid;
             grid-template-columns: var(--sidebar-width) 1fr var(--right-panel-width);
@@ -47,7 +45,6 @@ app.get('/', (req, res) => {
             width: 100vw;
         }
 
-        /* --- 1. HEADER ENGINE --- */
         header {
             grid-column: 1 / 4;
             background: #000;
@@ -65,7 +62,6 @@ app.get('/', (req, res) => {
         .admin-profile { display: flex; align-items: center; gap: 10px; font-size: 12px; }
         .avatar { width: 35px; height: 35px; border-radius: 50%; border: 2px solid var(--neon-green); background: url('https://i.ibb.co/9G6vH4P/user-prof.jpg') center/cover; }
 
-        /* --- 2. SIDEBAR ENGINE --- */
         .sidebar {
             grid-row: 2;
             background: var(--bg-sidebar);
@@ -90,7 +86,6 @@ app.get('/', (req, res) => {
         .progress-bg { width: 100%; height: 4px; background: #1e293b; border-radius: 2px; margin-bottom: 15px; }
         .progress-fill { height: 100%; border-radius: 2px; transition: 1s; }
 
-        /* --- 3. MAIN WORKSPACE --- */
         .workspace {
             grid-row: 2;
             background: radial-gradient(circle at top right, #0a192f 0%, #020617 100%);
@@ -113,20 +108,6 @@ app.get('/', (req, res) => {
         }
         .meter-label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         .meter-value { font-family: 'Orbitron'; font-size: 24px; color: var(--neon-blue); margin-top: 10px; }
-
-        /* LIVE BANKING MAP - PRIMARY POSITION */
-        .banking-map-core {
-            height: 400px; width: 100%; border-radius: 12px; 
-            border: 1px solid var(--neon-blue); background: #000;
-            position: relative; overflow: hidden;
-            box-shadow: 0 0 30px rgba(0, 210, 255, 0.1);
-        }
-        #live-earth-map { width: 100%; height: 100%; filter: contrast(1.2) brightness(0.8) hue-rotate(180deg) invert(0.9); }
-        .map-ui-overlay {
-            position: absolute; top: 15px; left: 15px; z-index: 1000;
-            background: rgba(0,0,0,0.8); padding: 12px; border: var(--glass-border);
-            font-family: 'Roboto Mono'; font-size: 10px; pointer-events: none;
-        }
 
         .vault-core {
             background: linear-gradient(135deg, #0f172a 0%, #020617 100%);
@@ -158,7 +139,6 @@ app.get('/', (req, res) => {
         .ai-logic-stream { display: flex; flex-direction: column; gap: 12px; }
         .logic-item { padding: 12px; background: rgba(0,0,0,0.4); border-radius: 6px; border-left: 3px solid var(--neon-blue); font-size: 12px; }
 
-        /* --- 4. RIGHT SECURITY PANEL --- */
         .security-side {
             grid-row: 2; background: rgba(1, 4, 9, 0.8); border-left: var(--glass-border);
             padding: 25px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; z-index: 500;
@@ -167,8 +147,8 @@ app.get('/', (req, res) => {
         .map-frame { height: 200px; width: 100%; border-radius: 8px; border: var(--glass-border); background: #000 url('https://i.ibb.co/F4pYhX7/map.png') center/cover; position: relative; }
         .map-blip { position: absolute; width: 6px; height: 6px; background: var(--neon-green); border-radius: 50%; box-shadow: 0 0 10px var(--neon-green); animation: blip 2s infinite; }
 
-        /* --- 5. BANKING OVERLAY --- */
-        #banking-overlay {
+        /* OVERLAYS */
+        #banking-overlay, #assets-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(1, 4, 9, 0.98); z-index: 10000; backdrop-filter: blur(20px);
             align-items: center; justify-content: center;
@@ -220,12 +200,12 @@ app.get('/', (req, res) => {
             <div class="nav-link" onclick="play(3)">Banking Accounts</div>
             <div class="nav-link" onclick="openBanking()" style="color:var(--neon-blue); font-weight:bold; border-left:3px solid var(--neon-blue);">Transfers & Wire</div>
             <div class="nav-link" onclick="play(5)">Vault Storage</div>
-            <div class="nav-link" onclick="play(6)">Digital Assets</div>
+            <div class="nav-link" onclick="openAssets()" style="color:var(--neon-gold); font-weight:bold; border-left:3px solid var(--neon-gold);">Digital Assets</div>
             <div class="nav-link" onclick="play(7)">Transaction History</div>
             <div class="nav-link" onclick="play(8)">AI Neural Center</div>
             <div class="nav-link" onclick="play(10)">Security Gateway</div>
             <div class="nav-link" onclick="play(12)">System Reports</div>
-            <div class="nav-link" onclick="triggerMapScan()" style="color:var(--neon-gold)">World Map Activity</div>
+            <div class="nav-link" onclick="play(13)">World Map Activity</div>
             <div class="nav-link" onclick="play(14)">Automation Tasks</div>
             <div class="nav-link" onclick="play(15)">Master Settings</div>
 
@@ -251,16 +231,6 @@ app.get('/', (req, res) => {
                 <div class="meter-card"><div class="meter-label">TPS</div><div class="meter-value">38</div></div>
                 <div class="meter-card"><div class="meter-label">Active Transfers</div><div class="meter-value">142</div></div>
                 <div class="meter-card" style="border-color:var(--neon-red)"><div class="meter-label" style="color:var(--neon-red)">Fraud Alerts</div><div class="meter-value" style="color:var(--neon-red)">3</div></div>
-            </div>
-
-            <div class="banking-map-core">
-                <div id="live-earth-map"></div>
-                <div class="map-ui-overlay">
-                    <div style="color:var(--neon-blue); font-weight:bold; margin-bottom:5px;">GLOBAL SWIFT NODES</div>
-                    <div id="map-status">STATUS: MONITORING TRAFFIC</div>
-                    <div id="active-wires">ACTIVE WIRES: 12</div>
-                    <div id="lat-long" style="color:var(--neon-gold); margin-top:5px;">COORDS: SCANNING...</div>
-                </div>
             </div>
 
             <section class="vault-core">
@@ -345,36 +315,41 @@ app.get('/', (req, res) => {
                     <div style="font-size:11px; color:#64748b;">Merchant Inbound Data Protocol Gateway</div>
                     <button class="btn-core" onclick="play(5)">OPEN</button>
                 </div>
-                <div class="bank-feature-row" style="background:rgba(57, 255, 20, 0.05); border-left:3px solid var(--neon-green);">
-                    <div><div style="font-family:Orbitron; color:var(--neon-green);">STK PUSH</div><small>Paynecta</small></div>
-                    <div style="font-size:11px; color:#64748b;">Direct Mobile Society Prompt Trigger</div>
-                    <button class="btn-core" style="background:var(--neon-green); color:black; border:none;" onclick="stkEngine()">EXECUTE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="assets-overlay">
+        <div class="engine-modal" style="border-color:var(--neon-gold)">
+            <div class="modal-header">
+                <h2 style="font-family:'Orbitron'; color:var(--neon-gold); margin:0;">DIGITAL ASSETS ECOSYSTEM</h2>
+                <button onclick="closeAssets()" class="btn-core btn-danger">RETURN TO CENTER</button>
+            </div>
+            <div class="modal-body">
+                <div class="bank-feature-row">
+                    <div><div style="font-family:Orbitron; color:var(--neon-gold)">COLD STORAGE</div><small>Vault Node 09</small></div>
+                    <div style="font-size:11px; color:#64748b;">Manage Air-Gapped High-Value Crypto Custody</div>
+                    <button class="btn-core" onclick="play(5)">MANAGE</button>
                 </div>
                 <div class="bank-feature-row">
-                    <div><div style="font-family:Orbitron;">INTERNAL</div><small>Vault Sync</small></div>
-                    <div style="font-size:11px; color:#64748b;">Cross-Vault Internal Asset Migration</div>
-                    <button class="btn-core" onclick="play(1)">TRANSFER</button>
+                    <div><div style="font-family:Orbitron; color:var(--neon-gold)">STABLECOIN ISSUANCE</div><small>Mint Logic</small></div>
+                    <div style="font-size:11px; color:#64748b;">Authorize New KES-Pegged Digital Liquidity</div>
+                    <button class="btn-core" onclick="play(6)">EXECUTE</button>
                 </div>
                 <div class="bank-feature-row">
-                    <div><div style="font-family:Orbitron; color:var(--neon-red);">EXTERNAL WIRE</div><small>SWIFT</small></div>
-                    <div style="font-size:11px; color:#64748b;">RTGS Global Node Asset Tunnel</div>
-                    <button class="btn-core" style="border-color:var(--neon-red); color:var(--neon-red);" onclick="play(2)">WIRE</button>
+                    <div><div style="font-family:Orbitron; color:var(--neon-gold)">TOKENIZED DEBT</div><small>Bond Protocol</small></div>
+                    <div style="font-size:11px; color:#64748b;">Issue Digital Bond Assets for Enterprise Clients</div>
+                    <button class="btn-core" onclick="play(13)">DEPLOY</button>
                 </div>
                 <div class="bank-feature-row">
-                    <div><div style="font-family:Orbitron;">CRYPTO BRIDGE</div><small>Web3</small></div>
-                    <div style="font-size:11px; color:#64748b;">Blockchain Ledger Asset Migration</div>
-                    <button class="btn-core" onclick="play(6)">BRIDGE</button>
-                </div>
-                <div class="bank-feature-row">
-                    <div><div style="font-family:Orbitron;">MASS PAYOUT</div><small>Bulk</small></div>
-                    <div style="font-size:11px; color:#64748b;">Automated Multi-Node Remittance</div>
-                    <button class="btn-core" onclick="play(14)">GENERATE</button>
+                    <div><div style="font-family:Orbitron; color:var(--neon-gold)">BLOCK EXPLORER</div><small>Live Feed</small></div>
+                    <div style="font-size:11px; color:#64748b;">Trace Cross-Chain Asset Migration Paths</div>
+                    <button class="btn-core" onclick="play(8)">SYNC</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const play = (id) => {
             const sfx = new Audio(\`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_\${id}.mp3\`);
@@ -385,49 +360,14 @@ app.get('/', (req, res) => {
         function openBanking() { play(4); document.getElementById('banking-overlay').style.display = 'flex'; }
         function closeBanking() { play(10); document.getElementById('banking-overlay').style.display = 'none'; }
         
+        function openAssets() { play(6); document.getElementById('assets-overlay').style.display = 'flex'; }
+        function closeAssets() { play(10); document.getElementById('assets-overlay').style.display = 'none'; }
+
         function stkEngine() { 
             play(11);
             const p = prompt("PHONE:"); const a = prompt("AMOUNT:");
             if(p && a) alert("PAYNECTA: Sending prompt to " + p);
         }
-
-        /* --- LIVE MAP ENGINE --- */
-        let map = L.map('live-earth-map', {
-            center: [1.2921, 36.8219], zoom: 2, zoomControl: false, attributionControl: false
-        });
-
-        // Dark-Themed Banking Tile Set
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
-
-        const nodes = [
-            { name: "Nairobi Hub", lat: -1.2921, lng: 36.8219 },
-            { name: "New York Node", lat: 40.7128, lng: -74.0060 },
-            { name: "London Swift", lat: 51.5074, lng: -0.1278 },
-            { name: "Tokyo Node", lat: 35.6762, lng: 139.6503 }
-        ];
-
-        nodes.forEach(n => {
-            L.circleMarker([n.lat, n.lng], { radius: 5, color: 'var(--neon-blue)', fillOpacity: 0.8 }).addTo(map).bindTooltip(n.name);
-        });
-
-        function triggerMapScan() {
-            play(13);
-            document.getElementById('map-status').innerText = "STATUS: SCANNING GLOBAL THREATS...";
-            document.getElementById('map-status').style.color = "var(--neon-red)";
-            
-            // Draw a simulated money transfer path (SWIFT Path)
-            let path = L.polyline([[nodes[0].lat, nodes[0].lng], [nodes[2].lat, nodes[2].lng]], {color: 'var(--neon-gold)', weight: 2, dashArray: '10, 10'}).addTo(map);
-            
-            setTimeout(() => {
-                map.removeLayer(path);
-                document.getElementById('map-status').innerText = "STATUS: SECURE";
-                document.getElementById('map-status').style.color = "var(--neon-green)";
-            }, 3000);
-        }
-
-        map.on('mousemove', function(e) {
-            document.getElementById('lat-long').innerText = "COORDS: " + e.latlng.lat.toFixed(4) + " / " + e.latlng.lng.toFixed(4);
-        });
 
         setInterval(() => {
             document.getElementById('main-timer').innerText = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
