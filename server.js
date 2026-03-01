@@ -1,10 +1,14 @@
 const express = require("express");
 const app = express();
+const clientsRoute = require('./routes/clients');
 app.use(express.static('public')); app.get('/clients.html', (req, res) => { res.sendFile(__dirname + '/public/clients.html'); });
 const clientsRoute = require('./routes/clients');
 require("dotenv").config();
 
 app.use(express.json());
+app.use('/api/clients', clientsRoute);
+app.use(express.json());
+app.use(express.static('public'));
 app.use('/api/clients', clientsRoute);
 app.get('/', (req, res) => {
     res.send(`

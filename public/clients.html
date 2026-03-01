@@ -3,157 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CLIENT CONTROL | GLOBAL BANK</title>
+    <title>CLIENTS ENGINE | GLOBAL DIGITAL BANK</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-deep: #020617;
-            --neon-blue: #00d2ff;
-            --neon-green: #39ff14;
-            --neon-red: #ff3131;
-            --neon-gold: #ffcc00;
-            --glass: rgba(15, 23, 42, 0.9);
-            --border: 1px solid rgba(0, 210, 255, 0.2);
-        }
-        body { background: var(--bg-deep); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        :root { --bg: #020617; --neon: #00d2ff; --green: #39ff14; --red: #ff3131; --gold: #ffcc00; --glass: rgba(15, 23, 42, 0.95); --border: 1px solid rgba(0, 210, 255, 0.2); }
+        body { background: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; overflow-x: hidden; }
         
-        .header-strip { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .title-box h1 { font-family: 'Orbitron'; color: var(--neon-blue); margin: 0; font-size: 24px; }
-
         /* DASHBOARD CARDS */
-        .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .stat-card { background: var(--glass); border: var(--border); padding: 20px; border-radius: 8px; position: relative; }
-        .stat-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-value { font-family: 'Orbitron'; font-size: 20px; margin-top: 5px; }
+        .dashboard-header { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 25px; }
+        .card { background: var(--glass); border: var(--border); padding: 15px; border-radius: 4px; text-align: center; }
+        .card label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .card div { font-family: 'Orbitron'; font-size: 16px; color: var(--neon); margin-top: 5px; }
 
-        /* CONTROL BAR */
-        .control-bar { display: flex; gap: 15px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: var(--border); }
-        .search-input { flex: 1; background: #000; border: 1px solid #1e293b; color: white; padding: 10px 15px; border-radius: 4px; }
-        .btn { padding: 10px 20px; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; border: 1px solid var(--neon-blue); background: transparent; color: white; transition: 0.3s; }
-        .btn:hover { background: var(--neon-blue); color: black; }
-        .btn-add { background: var(--neon-blue); color: black; }
+        /* TABLE SYSTEM */
+        .panel { background: var(--glass); border: var(--border); border-radius: 8px; overflow: hidden; }
+        .table-tools { padding: 15px; display: flex; gap: 10px; background: rgba(0,0,0,0.3); border-bottom: var(--border); }
+        .search-bar { flex: 1; background: #000; border: 1px solid #1e293b; color: white; padding: 10px; border-radius: 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; padding: 15px; color: #64748b; background: rgba(0,0,0,0.4); border-bottom: var(--border); }
+        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        
+        .status-pill { padding: 3px 8px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        .active { background: rgba(57,255,20,0.1); color: var(--green); }
+        .frozen { background: rgba(255,49,49,0.1); color: var(--red); }
 
-        /* DATA TABLE */
-        .table-wrap { background: var(--glass); border: var(--border); border-radius: 10px; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th { background: rgba(0,0,0,0.5); padding: 15px; text-align: left; color: #64748b; font-weight: 500; }
-        td { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .prof-circle { width: 32px; height: 32px; border-radius: 50%; background: #1e293b; display: inline-block; vertical-align: middle; margin-right: 10px; border: 1px solid var(--neon-blue); }
-        .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
-        .risk-low { color: var(--neon-green); }
-        .risk-high { color: var(--neon-red); }
+        /* ACTIONS DROPDOWN */
+        .actions-btn { background: transparent; border: 1px solid var(--neon); color: var(--neon); padding: 5px 10px; cursor: pointer; font-size: 10px; }
+        .actions-menu { display: none; position: absolute; background: #0f172a; border: var(--border); z-index: 100; min-width: 150px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .actions-menu button { width: 100%; text-align: left; padding: 10px; background: transparent; color: white; border: none; font-size: 11px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .actions-menu button:hover { background: var(--neon); color: black; }
 
-        /* MODAL (PROFILE VIEW) */
-        #profile-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; }
-        .profile-card { width: 700px; background: var(--bg-deep); border: 1px solid var(--neon-blue); padding: 30px; border-radius: 12px; max-height: 80vh; overflow-y: auto; }
-        .tab-menu { display: flex; gap: 20px; border-bottom: 1px solid #1e293b; margin: 20px 0; padding-bottom: 10px; }
-        .tab-link { cursor: pointer; color: #64748b; font-size: 12px; font-weight: bold; }
-        .tab-active { color: var(--neon-blue); border-bottom: 2px solid var(--neon-blue); }
+        /* ADVANCED PROFILE MODAL */
+        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; align-items:center; justify-content:center; }
+        .profile-container { width: 900px; height: 80vh; background: var(--bg); border: 2px solid var(--neon); display: flex; flex-direction: column; }
+        .profile-header { padding: 20px; border-bottom: var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .profile-tabs { display: flex; background: rgba(0,0,0,0.5); }
+        .tab { padding: 15px 25px; cursor: pointer; font-size: 12px; border-right: 1px solid rgba(255,255,255,0.05); }
+        .tab.active-tab { border-bottom: 2px solid var(--neon); color: var(--neon); background: rgba(0,210,255,0.05); }
+        .profile-body { flex: 1; padding: 30px; overflow-y: auto; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 30px; }
+        .info-group h4 { color: var(--gold); font-size: 10px; letter-spacing: 2px; margin-bottom: 15px; }
+        .info-item { margin-bottom: 15px; }
+        .info-item label { display: block; font-size: 10px; color: #64748b; margin-bottom: 4px; }
+        .info-item span { font-weight: 600; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div class="header-strip">
-        <div class="title-box">
-            <h1>CLIENT ARCHITECTURE</h1>
-            <small style="color:#64748b">GLOBAL ADMINISTRATION PANEL V4.0</small>
+    <div class="dashboard-header">
+        <div class="card"><label>Total Clients</label><div id="total-clients">1,284</div></div>
+        <div class="card"><label>Active</label><div style="color:var(--green)">1,150</div></div>
+        <div class="card"><label>Suspended</label><div style="color:var(--gold)">120</div></div>
+        <div class="card"><label>Frozen</label><div style="color:var(--red)">14</div></div>
+        <div class="card"><label>New Today</label><div>+8</div></div>
+        <div class="card"><label>Bank Balance</label><div style="font-size:12px">KES 2.43B</div></div>
+    </div>
+
+    <div class="panel">
+        <div class="table-tools">
+            <input type="text" class="search-bar" id="searchClient" placeholder="Search Name, Account, Phone or Email..." onkeyup="searchEngine()">
+            <button class="actions-btn" style="background:var(--neon); color:black" onclick="play(15)">+ ADD NEW CLIENT</button>
+            <button class="actions-btn" onclick="fetchData()">REFRESH ENGINE</button>
         </div>
-        <button class="btn btn-add" onclick="alert('Launch Add Client UI')">+ PROVISION NEW CLIENT</button>
-    </div>
-
-    <div class="dash-grid">
-        <div class="stat-card"><div class="stat-label">Total Assets</div><div class="stat-value">KES 4.2B</div></div>
-        <div class="stat-card"><div class="stat-label">Active Users</div><div class="stat-value" style="color:var(--neon-green)">12,402</div></div>
-        <div class="stat-card"><div class="stat-label">Frozen</div><div class="stat-value" style="color:var(--neon-red)">14</div></div>
-        <div class="stat-card"><div class="stat-label">Risk Alerts</div><div class="stat-value" style="color:var(--neon-gold)">3</div></div>
-    </div>
-
-    <div class="control-bar">
-        <input type="text" class="search-input" placeholder="Search by Name, Account, Email or Phone..." id="searchBox">
-        <button class="btn" onclick="fetchClients()">REFRESH LEDGER</button>
-    </div>
-
-    <div class="table-wrap">
-        <table id="clientsTable">
+        <table>
             <thead>
                 <tr>
                     <th>CLIENT IDENTITY</th>
                     <th>ACCOUNT NO.</th>
+                    <th>PHONE</th>
                     <th>BALANCE</th>
                     <th>STATUS</th>
                     <th>RISK</th>
                     <th>ACTIONS</th>
                 </tr>
             </thead>
-            <tbody id="clientRows">
-                </tbody>
+            <tbody id="client-list"></tbody>
         </table>
     </div>
 
-    <div id="profile-modal">
-        <div class="profile-card" id="profileContent">
+    <div id="profile-modal" class="modal">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h2 style="font-family:Orbitron; margin:0; font-size:18px;">CLIENT DOSSIER: <span id="p-acc-title" style="color:var(--neon)"></span></h2>
+                <button class="actions-btn" onclick="closeProfile()">TERMINAL EXIT</button>
             </div>
+            <div class="profile-tabs">
+                <div class="tab active-tab" onclick="switchTab('info')">INFO</div>
+                <div class="tab" onclick="switchTab('history')">TRANSACTIONS</div>
+                <div class="tab" onclick="switchTab('history')">TRANSFERS</div>
+                <div class="tab" onclick="switchTab('history')">LOGINS</div>
+            </div>
+            <div class="profile-body" id="profile-content">
+                <div class="info-grid">
+                    <div class="info-group">
+                        <h4>PERSONAL DATA</h4>
+                        <div class="info-item"><label>Full Name</label><span id="p-name"></span></div>
+                        <div class="info-item"><label>National ID / Passport</label><span id="p-id"></span></div>
+                        <div class="info-item"><label>Registered</label><span id="p-date"></span></div>
+                        <div class="info-item"><label>Last Login</label><span id="p-login"></span></div>
+                    </div>
+                    <div class="info-group">
+                        <h4>ACCOUNT STATUS</h4>
+                        <div class="info-item"><label>Status</label><span id="p-status"></span></div>
+                        <div class="info-item"><label>Account Type</label><span>Enterprise Premium</span></div>
+                        <div class="info-item"><label>Risk Level</label><span id="p-risk"></span></div>
+                    </div>
+                    <div class="info-group">
+                        <h4>FINANCIALS</h4>
+                        <div class="info-item"><label>Current Balance</label><span id="p-balance" style="color:var(--neon)"></span></div>
+                        <div class="info-item"><label>Total Deposits</label><span>KES 4,500,000</span></div>
+                        <div class="info-item"><label>Total Withdrawals</label><span>KES 1,200,000</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        async function fetchClients() {
-            const query = document.getElementById('searchBox').value;
+        const play = (id) => {
+            const sfx = new Audio(`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_${id}.mp3`);
+            sfx.volume = 0.4;
+            sfx.play().catch(e => {});
+        };
+
+        async function fetchData(query = '') {
             const res = await fetch(`/api/clients/data?search=${query}`);
             const data = await res.json();
-            const container = document.getElementById('clientRows');
-            container.innerHTML = '';
-
+            const list = document.getElementById('client-list');
+            list.innerHTML = '';
+            
             data.forEach(c => {
-                container.innerHTML += `
+                list.innerHTML += `
                     <tr>
-                        <td><div class="prof-circle"></div> <b>${c.name}</b><br><small style="color:#64748b">${c.email}</small></td>
-                        <td style="font-family:monospace">${c.account}</td>
-                        <td style="color:var(--neon-blue)">KES ${c.balance.toLocaleString()}</td>
-                        <td><span class="status-tag" style="background:rgba(255,255,255,0.05)">${c.status}</span></td>
-                        <td class="risk-${c.risk.toLowerCase()}">${c.risk}</td>
-                        <td><button class="btn" style="padding:5px 10px; font-size:9px" onclick="viewProfile('${c.account}')">VIEW</button></td>
+                        <td><b>${c.name}</b><br><small style="color:#64748b">${c.email}</small></td>
+                        <td style="font-family:monospace">${c.acc}</td>
+                        <td>${c.phone}</td>
+                        <td style="color:var(--neon)">KES ${c.balance.toLocaleString()}</td>
+                        <td><span class="status-pill ${c.status.toLowerCase()}">${c.status}</span></td>
+                        <td style="color:${c.risk === 'High' ? 'var(--red)' : 'var(--green)'}">${c.risk}</td>
+                        <td>
+                            <button class="actions-btn" onclick="openProfile('${c.acc}')">VIEW</button>
+                            <button class="actions-btn" onclick="updateStatus('${c.id}', 'Freeze')">FREEZE</button>
+                        </td>
                     </tr>
                 `;
             });
         }
 
-        function viewProfile(acc) {
+        function openProfile(acc) {
+            play(4);
             document.getElementById('profile-modal').style.display = 'flex';
-            document.getElementById('profileContent').innerHTML = `
-                <div style="display:flex; justify-content:space-between">
-                    <h2 style="font-family:Orbitron; color:var(--neon-blue)">CLIENT DOSSIER</h2>
-                    <button class="btn" onclick="document.getElementById('profile-modal').style.display='none'">CLOSE</button>
-                </div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-top:20px;">
-                    <div>
-                        <h3 style="font-size:12px; color:var(--neon-gold)">PERSONAL INFO</h3>
-                        <p><small>Full Name:</small><br><b>Client Name Here</b></p>
-                        <p><small>Account:</small><br><b>${acc}</b></p>
-                    </div>
-                    <div>
-                        <h3 style="font-size:12px; color:var(--neon-gold)">FINANCIAL SUMMARY</h3>
-                        <p><small>Current Balance:</small><br><b style="color:var(--neon-green)">KES 1,200,000</b></p>
-                        <p><small>Risk Factor:</small><br><b class="risk-low">MINIMAL</b></p>
-                    </div>
-                </div>
-                <div class="tab-menu">
-                    <span class="tab-link tab-active">TRANSACTIONS</span>
-                    <span class="tab-link">TRANSFERS</span>
-                    <span class="tab-link">LOGINS</span>
-                </div>
-                <div style="height:100px; background:rgba(0,0,0,0.3); border-radius:5px; padding:10px; font-size:11px; color:#64748b">
-                    Fetching encrypted ledger logs...
-                </div>
-                <div style="margin-top:25px; display:flex; gap:10px;">
-                    <button class="btn" style="border-color:var(--neon-gold); color:var(--neon-gold)">SUSPEND</button>
-                    <button class="btn" style="border-color:var(--neon-red); color:var(--neon-red)">FREEZE ASSETS</button>
-                    <button class="btn">RESET SECURE KEY</button>
-                </div>
-            `;
+            document.getElementById('p-acc-title').innerText = acc;
+            // Simulated deep fetch
+            document.getElementById('p-name').innerText = "Alexander Wright";
+            document.getElementById('p-id').innerText = "ID-992834";
+            document.getElementById('p-date').innerText = "2026-01-10";
+            document.getElementById('p-login').innerText = "2026-03-01 14:20";
+            document.getElementById('p-status').innerText = "ACTIVE";
+            document.getElementById('p-risk').innerText = "LOW RISK";
+            document.getElementById('p-balance').innerText = "KES 1,450,000";
         }
 
-        fetchClients();
-        document.getElementById('searchBox').oninput = fetchClients;
+        function closeProfile() { play(10); document.getElementById('profile-modal').style.display = 'none'; }
+        
+        function searchEngine() {
+            const val = document.getElementById('searchClient').value;
+            fetchData(val);
+        }
+
+        fetchData();
     </script>
 </body>
 </html>
