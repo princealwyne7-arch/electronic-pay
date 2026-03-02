@@ -1,28 +1,39 @@
 {
-  "name": "electronic-pay-elite",
-  "version": "15.1.0",
-  "description": "Elite Banking Command Center",
-  "main": "server.js",
+  "name": "my-electronic-shop",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "build": "react-scripts build",
-    "start": "node server.js"
+    "dev": "vite", "start": "node server.js",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "animejs": "^4.3.6",
-    "axios": "^1.13.6",
-    "canvas-confetti": "^1.9.4",
-    "chart.js": "^4.5.1",
-    "compression": "^1.8.1",
-    "dotenv": "^16.6.1",
-    "express": "^4.22.1",
-    "framer-motion": "^12.34.3",
-    "helmet": "^8.1.0",
-    "howler": "^2.2.4",
-    "lucide-react": "^0.575.0",
-    "lucide-static": "^0.575.0",
-    "mongoose": "^7.8.9",
-    "pm2": "^6.0.14",
-    "systeminformation": "^5.31.1",
-    "web-vitals": "^5.1.0"
+    "clsx": "^2.1.1",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "framer-motion": "^12.34.4",
+    "lightweight-charts": "^5.1.0",
+    "lucide-react": "^0.576.0",
+    "mongoose": "^9.2.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.2.1",
+    "vite": "^7.3.1"
   }
 }

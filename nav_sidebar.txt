@@ -1,8 +1,0 @@
-+------------------+---------------------------+
-|    NAVIGATION    |      DASHBOARD VIEW       |
-+------------------+                           |
-| [1] Dashboard    |  Status: Online           |
-| [2] Sound Board  |  Sounds Loaded: $SOUND_COUNT       |
-| [3] Settings     |                           |
-| [4] Logs         |                           |
-+------------------+---------------------------+
