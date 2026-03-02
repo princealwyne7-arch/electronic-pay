@@ -195,7 +195,7 @@
         <aside class="sidebar">
             <div class="menu-label">Main Navigation</div>
             <div class="nav-link nav-active" onclick="play(1)">Dashboard</div>
-            <div class="nav-link" onclick="play(2)">Clients Management</div>
+            <div class="nav-link" onclick="openClients()">Clients Management</div>
             <div class="nav-link" onclick="play(3)">Banking Accounts</div>
             <div class="nav-link" onclick="openBanking()" style="color:var(--neon-blue); font-weight:bold; border-left:3px solid var(--neon-blue);">Transfers & Wire</div>
             <div class="nav-link" onclick="play(5)">Vault Storage</div>
@@ -344,31 +344,67 @@
     </div>
 
     <script>
-        const play = (id) => {
-            const sfx = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + id + ".mp3");
-            sfx.volume = 0.4;
-            sfx.play().catch(e => {});
-        };
+        <script>
+    // --- SOUND EFFECT FUNCTION ---
+    const play = (id) => {
+        const sfx = new Audio(`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_${id}.mp3`);
+        sfx.volume = 0.4;
+        sfx.play().catch(e => {});
+    };
 
-        function openBanking() { play(4); document.getElementById('banking-overlay').style.display = 'flex'; }
-        function closeBanking() { play(10); document.getElementById('banking-overlay').style.display = 'none'; }
-        
-        function stkEngine() { 
-            play(11);
-            const p = prompt("PHONE:"); const a = prompt("AMOUNT:");
-            if(p && a) alert("PAYNECTA: Sending prompt to " + p);
-        }
+    // --- CLIENTS MANAGEMENT ---
+    function openClients() {
+        play(2); // optional sound
+        const workspace = document.querySelector('.workspace');
+        workspace.innerHTML = `
+            <h2 style="color:var(--neon-blue)">Clients Management</h2>
+            <div id="clients-list">Loading clients...</div>
+        `;
 
-        setInterval(() => {
-            document.getElementById('main-timer').innerText = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
-        }, 1000);
+        fetch("https://electronic-pay.onrender.com/api/clients")
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('clients-list');
+                if (!data || data.length === 0) {
+                    container.innerHTML = "<p>No clients found.</p>";
+                } else {
+                    container.innerHTML = "<ul>" + data.map(c => `<li>${c.fullName} (${c.accountNumber})</li>`).join('') + "</ul>";
+                }
+            })
+            .catch(err => {
+                document.getElementById('clients-list').innerHTML = "<p>Error loading clients.</p>";
+                console.error(err);
+            });
+    }
 
-        setInterval(() => {
-            const el = document.getElementById('user-sync');
-            let val = parseInt(el.innerText.replace(',',''));
-            val += Math.floor(Math.random() * 3) - 1;
-            el.innerText = val.toLocaleString();
-        }, 3000);
-    </script>
+    // --- BANKING GATEWAY ---
+    function openBanking() { 
+        play(4); 
+        document.getElementById('banking-overlay').style.display = 'flex'; 
+    }
+    function closeBanking() { 
+        play(10); 
+        document.getElementById('banking-overlay').style.display = 'none'; 
+    }
+
+    function stkEngine() {
+        play(11);
+        const p = prompt("PHONE:");
+        const a = prompt("AMOUNT:");
+        if(p && a) alert("PAYNECTA: Sending prompt to " + p);
+    }
+
+    // --- LIVE DASHBOARD UPDATES ---
+    setInterval(() => {
+        document.getElementById('main-timer').innerText = new Date().toLocaleString('en-GB', { timeZone: 'Africa/Nairobi' }) + ' (EAT)';
+    }, 1000);
+
+    setInterval(() => {
+        const el = document.getElementById('user-sync');
+        let val = parseInt(el.innerText.replace(',','')) || 0;
+        val += Math.floor(Math.random() * 3) - 1;
+        el.innerText = val.toLocaleString();
+    }, 3000);
+</script>
 </body>
 </html>
