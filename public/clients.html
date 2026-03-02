@@ -1,234 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BANKING ARCHITECTURE | CLIENTS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #020617; --neon: #00d2ff; --green: #39ff14; --red: #ff3131; --gold: #ffcc00; --glass: rgba(15, 23, 42, 0.98); --border: 1px solid rgba(0, 210, 255, 0.2); }
-        body { background: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 25px; overflow-x: hidden; }
-        
-        /* HUGE PROFESSIONAL DASHBOARD */
-        .dash-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px; margin-bottom: 30px; }
-        .card { background: var(--glass); border: var(--border); padding: 30px 15px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
-        .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--neon); opacity: 0.5; }
-        .card label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 12px; }
-        .card .val { font-family: 'Orbitron'; font-size: 24px; color: var(--neon); text-shadow: 0 0 10px rgba(0,210,255,0.3); }
-
-        /* TOOLS & SEARCH */
-        .tool-bar { background: rgba(0,0,0,0.4); padding: 20px; border-radius: 12px; border: var(--border); display: flex; gap: 15px; margin-bottom: 25px; align-items: center; }
-        .search-box { flex: 1; background: #000; border: 1px solid #1e293b; color: #fff; padding: 14px 20px; border-radius: 8px; font-family: 'Roboto Mono'; font-size: 14px; }
-        .btn-core { padding: 12px 25px; background: transparent; border: 1px solid var(--neon); color: #fff; font-family: 'Orbitron'; font-size: 11px; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
-        .btn-core:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); }
-
-        /* 10-COLUMN TABLE */
-        .table-wrap { background: var(--glass); border: var(--border); border-radius: 15px; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th { background: rgba(0,210,255,0.05); padding: 22px; text-align: left; color: #64748b; font-weight: 600; font-size: 10px; letter-spacing: 1px; }
-        td { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .prof-img { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--neon); background: url('https://i.ibb.co/9G6vH4P/user-prof.jpg') center/cover; }
-        .status-pill { padding: 5px 12px; border-radius: 4px; font-size: 9px; font-weight: bold; }
-        .active-tag { background: rgba(57,255,20,0.1); color: var(--green); }
-        .frozen-tag { background: rgba(255,49,49,0.1); color: var(--red); }
-        .suspended-tag { background: rgba(255,204,0,0.1); color: var(--gold); }
-
-        /* ADVANCED MODAL SYSTEM */
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:99999; align-items:center; justify-content:center; }
-        .modal-content { width: 1100px; max-height: 90vh; background: var(--bg); border: 2px solid var(--neon); border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
-        .modal-header { padding: 30px; border-bottom: var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(0,210,255,0.05); }
-        .modal-body { padding: 40px; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
-        
-        /* FORM & PROFILE SECTORS */
-        .sec-title { font-family: 'Orbitron'; color: var(--gold); font-size: 12px; margin-bottom: 25px; border-left: 4px solid var(--gold); padding-left: 15px; }
-        .data-row { margin-bottom: 22px; }
-        .data-row label { display: block; font-size: 9px; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
-        .data-row span { font-size: 15px; font-weight: 600; color: #fff; }
-        .field input { width: 100%; background: #000; border: 1px solid #1e293b; color: #fff; padding: 14px; border-radius: 8px; margin-top: 5px; }
-        
-        /* ACTIVITY TABS */
-        .tabs { display: flex; border-bottom: var(--border); background: #010409; }
-        .tab-btn { padding: 18px 30px; background: transparent; color: #475569; border: none; font-family: 'Orbitron'; font-size: 10px; cursor: pointer; }
-        .tab-btn.active { color: var(--neon); border-bottom: 2px solid var(--neon); background: rgba(0,210,255,0.05); }
-    </style>
+<title>Enterprise Clients Management</title>
+<style>
+body{background:#020617;color:white;font-family:Arial;padding:30px}
+.card{background:#0f172a;padding:20px;border-radius:8px;margin-bottom:20px}
+button{padding:8px 15px;margin:5px;background:#00d2ff;border:none;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #1e293b}
+.status-Active{color:#39ff14}
+.status-Suspended{color:#ffcc00}
+.status-Frozen{color:#ff3131}
+</style>
 </head>
 <body>
 
-    <div class="dash-grid">
-        <div class="card"><label>Total Clients</label><div class="val" id="stat-total">...</div></div>
-        <div class="card"><label>Active Status</label><div class="val" style="color:var(--green)" id="stat-active">...</div></div>
-        <div class="card"><label>Suspended</label><div class="val" style="color:var(--gold)" id="stat-suspended">...</div></div>
-        <div class="card"><label>Frozen</label><div class="val" style="color:var(--red)" id="stat-frozen">...</div></div>
-        <div class="card"><label>New Access</label><div class="val" id="stat-today">1</div></div>
-        <div class="card"><label>Global Liquidity</label><div class="val" style="font-size:16px" id="stat-balance">KES 0.00</div></div>
-    </div>
+<h1>Enterprise Clients Management</h1>
 
-    <div class="tool-bar">
-        <input type="text" class="search-box" id="smartSearch" placeholder="ENTER CLIENT NAME, ACCOUNT, EMAIL OR PHONE TO SEARCH..." onkeyup="runSearch()">
-        <button class="btn-core" onclick="openAddModal()">+ PROVISION CLIENT</button>
-        <button class="btn-core" onclick="sync()">REFRESH CORE</button>
-    </div>
+<div class="card">
+<h3>Add New Client</h3>
+<input id="name" placeholder="Full Name">
+<input id="phone" placeholder="Phone">
+<input id="email" placeholder="Email">
+<input id="id" placeholder="National ID">
+<input id="balance" placeholder="Initial Balance">
+<button onclick="createClient()">Create</button>
+</div>
 
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>Identity</th>
-                    <th>Full Name</th>
-                    <th>Account No.</th>
-                    <th>Phone</th>
-                    <th>Email</th>
-                    <th>Balance</th>
-                    <th>Status</th>
-                    <th>Risk</th>
-                    <th>Enrolled</th>
-                    <th>Operations</th>
-                </tr>
-            </thead>
-            <tbody id="clientTable"></tbody>
-        </table>
-    </div>
+<div class="card">
+<h3>Clients Table</h3>
+<table>
+<thead>
+<tr>
+<th>Name</th><th>Phone</th><th>Email</th><th>Balance</th><th>Status</th><th>Action</th>
+</tr>
+</thead>
+<tbody id="clientTable"></tbody>
+</table>
+</div>
 
-    <div id="mainModal" class="modal">
-        <div class="modal-content" id="modalUI"></div>
-    </div>
+<script>
+async function loadClients(){
+const res=await fetch('/api/clients');
+const data=await res.json();
+const table=document.getElementById("clientTable");
+table.innerHTML="";
+data.forEach(c=>{
+table.innerHTML+=`
+<tr>
+<td>${c.fullName}</td>
+<td>${c.phone}</td>
+<td>${c.email}</td>
+<td>KES ${c.balance}</td>
+<td class="status-${c.status}">${c.status}</td>
+<td>
+<button onclick="freeze('${c._id}')">Freeze</button>
+<button onclick="activate('${c._id}')">Activate</button>
+<button onclick="del('${c._id}')">Delete</button>
+</td>
+</tr>`;
+});
+}
 
-    <script>
-        const play = (id) => {
-            const sfx = new Audio(`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_${id}.mp3`);
-            sfx.volume = 0.4;
-            sfx.play().catch(e => {});
-        };
+async function createClient(){
+await fetch('/api/clients/create',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({
+fullName:name.value,
+phone:phone.value,
+email:email.value,
+nationalId:id.value,
+balance:balance.value
+})
+});
+loadClients();
+}
 
-        async function sync() {
-            const sRes = await fetch('/api/clients/stats');
-            const s = await sRes.json();
-            document.getElementById('stat-total').innerText = s.total;
-            document.getElementById('stat-active').innerText = s.active;
-            document.getElementById('stat-suspended').innerText = s.suspended;
-            document.getElementById('stat-frozen').innerText = s.frozen;
-            document.getElementById('stat-balance').innerText = 'KES ' + s.balance.toLocaleString();
+async function freeze(id){await fetch('/api/clients/freeze/'+id,{method:'PUT'});loadClients();}
+async function activate(id){await fetch('/api/clients/activate/'+id,{method:'PUT'});loadClients();}
+async function del(id){await fetch('/api/clients/'+id,{method:'DELETE'});loadClients();}
 
-            const dRes = await fetch('/api/clients/data');
-            renderTable(await dRes.json());
-        }
+loadClients();
+</script>
 
-        function renderTable(data) {
-            const body = document.getElementById('clientTable');
-            body.innerHTML = '';
-            data.forEach(c => {
-                body.innerHTML += `
-                    <tr>
-                        <td><div class="prof-img"></div></td>
-                        <td><b>${c.name}</b></td>
-                        <td style="font-family:'Roboto Mono'">${c.acc}</td>
-                        <td>${c.phone}</td>
-                        <td>${c.email}</td>
-                        <td style="color:var(--neon); font-weight:bold">KES ${c.balance.toLocaleString()}</td>
-                        <td><span class="status-pill ${c.status.toLowerCase()}-tag">${c.status}</span></td>
-                        <td><span style="color:${c.risk==='High'?'var(--red)':'var(--green)'}">${c.risk}</span></td>
-                        <td>${c.created}</td>
-                        <td><button class="btn-core" style="padding:6px 12px; font-size:9px" onclick="viewProfile('${c.id}')">MANAGE</button></td>
-                    </tr>
-                `;
-            });
-        }
-
-        async function viewProfile(id) {
-            play(4);
-            const res = await fetch('/api/clients/data');
-            const data = await res.json();
-            const c = data.find(i => i.id === id);
-            
-            document.getElementById('mainModal').style.display = 'flex';
-            document.getElementById('modalUI').innerHTML = `
-                <div class="modal-header">
-                    <h2 style="font-family:Orbitron; margin:0; color:var(--neon)">CLIENT DOSSIER ARCHIVE</h2>
-                    <button class="btn-core" style="border-color:var(--red); color:var(--red)" onclick="closeModal()">EXIT</button>
-                </div>
-                <div class="tabs">
-                    <div class="tab-btn active">DOSSIER</div>
-                    <div class="tab-btn">TRANSACTIONS</div>
-                    <div class="tab-btn">TRANSFERS</div>
-                    <div class="tab-btn">DEPOSITS</div>
-                    <div class="tab-btn">WITHDRAWALS</div>
-                    <div class="tab-btn">LOGS</div>
-                </div>
-                <div class="modal-body">
-                    <div class="info-sec">
-                        <div class="sec-title">PERSONAL IDENTITY</div>
-                        <div class="data-row"><label>Full Name</label><span>${c.name}</span></div>
-                        <div class="data-row"><label>Account Number</label><span>${c.acc}</span></div>
-                        <div class="data-row"><label>Global Phone</label><span>${c.phone}</span></div>
-                        <div class="data-row"><label>Email</label><span>${c.email}</span></div>
-                        <div class="data-row"><label>National ID</label><span>${c.idNumber}</span></div>
-                        <div class="data-row"><label>Last Login</label><span>${c.lastLogin}</span></div>
-                    </div>
-                    <div class="info-sec">
-                        <div class="sec-title">FINANCIAL STATUS</div>
-                        <div class="data-row"><label>Balance</label><span style="color:var(--neon)">KES ${c.balance.toLocaleString()}</span></div>
-                        <div class="data-row"><label>Type</label><span>${c.type}</span></div>
-                        <div class="data-row"><label>Risk Level</label><span>${c.risk}</span></div>
-                        <div class="data-row"><label>Total Deposits</label><span>KES ${c.deposits.toLocaleString()}</span></div>
-                        <div class="data-row"><label>Total Transfers</label><span>KES ${c.transfers.toLocaleString()}</span></div>
-                    </div>
-                    <div class="info-sec">
-                        <div class="sec-title">SECURITY CONTROLS</div>
-                        <button class="btn-core" style="width:100%; margin-bottom:10px; border-color:var(--green); color:var(--green)" onclick="runAction('${c.id}', 'Activate')">ACTIVATE ACCOUNT</button>
-                        <button class="btn-core" style="width:100%; margin-bottom:10px; border-color:var(--gold); color:var(--gold)" onclick="runAction('${c.id}', 'Suspend')">SUSPEND ACCESS</button>
-                        <button class="btn-core" style="width:100%; margin-bottom:10px; border-color:var(--red); color:var(--red)" onclick="runAction('${c.id}', 'Freeze')">FREEZE ACCOUNT</button>
-                        <button class="btn-core" style="width:100%; margin-bottom:10px" onclick="alert('Password Reset to Bank@2026')">RESET PASSWORD</button>
-                        <button class="btn-core" style="width:100%; border-color:#64748b; color:#64748b" onclick="runAction('${c.id}', 'Delete')">DELETE PERMANENTLY</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function openAddModal() {
-            play(15);
-            document.getElementById('mainModal').style.display = 'flex';
-            document.getElementById('modalUI').innerHTML = `
-                <div class="modal-header">
-                    <h2 style="font-family:Orbitron; margin:0">NEW CLIENT PROVISIONING</h2>
-                    <button class="btn-core" onclick="closeModal()">CANCEL</button>
-                </div>
-                <div class="modal-body" style="grid-template-columns: 1fr; max-width:800px; margin:0 auto;">
-                    <div class="sec-title">REGISTRATION PROTOCOL</div>
-                    <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-                        <div class="field"><label>FULL NAME</label><input type="text" id="add-name"></div>
-                        <div class="field"><label>PHONE</label><input type="text" id="add-phone"></div>
-                        <div class="field"><label>EMAIL</label><input type="email" id="add-email"></div>
-                        <div class="field"><label>NATIONAL ID</label><input type="text" id="add-id"></div>
-                        <div class="field"><label>PASSWORD</label><input type="password" id="add-pass"></div>
-                        <div class="field"><label>OPENING BALANCE</label><input type="number" id="add-bal"></div>
-                    </div>
-                    <button class="btn-core" style="width:100%; margin-top:30px; background:var(--neon); color:#000; font-weight:bold" onclick="submitClient()">EXECUTE SYSTEM ENROLLMENT</button>
-                </div>
-            `;
-        }
-
-        async function runAction(id, type) {
-            play(11);
-            await fetch('/api/clients/action', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id, type}) });
-            closeModal();
-            sync();
-        }
-
-        async function submitClient() {
-            const data = { name: document.getElementById('add-name').value, phone: document.getElementById('add-phone').value, email: document.getElementById('add-email').value, idNumber: document.getElementById('add-id').value, balance: document.getElementById('add-bal').value };
-            await fetch('/api/clients/action', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({type: 'Add', data}) });
-            closeModal();
-            sync();
-        }
-
-        async function runSearch() {
-            const q = document.getElementById('smartSearch').value;
-            const res = await fetch(`/api/clients/data?search=${q}`);
-            renderTable(await res.json());
-        }
-
-        function closeModal() { play(10); document.getElementById('mainModal').style.display = 'none'; }
-        sync();
-    </script>
 </body>
 </html>
