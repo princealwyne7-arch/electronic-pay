@@ -11,12 +11,11 @@ const distPath = path.resolve(__dirname, 'dist');
 // Serve static files
 app.use(express.static(distPath));
 
-// SIMPLE MUZZLE: Manual routing for the SPA
-// This avoids the "*" and "(.*)" characters entirely to prevent PathErrors
+// Manual SPA routing (avoids "*" and "(.*)")
 app.use((req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 app.listen(PORT, () => {
-    console.log(`--- AI COMMAND CENTER ONLINE ON PORT ${PORT} ---`);
+  console.log(`--- AI COMMAND CENTER ONLINE ON PORT ${PORT} ---`);
 });
