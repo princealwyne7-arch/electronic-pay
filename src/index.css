@@ -1,21 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  body {
-    @apply bg-[#020408] text-white;
-    -webkit-font-smoothing: antialiased;
-  }
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #0A0E14;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #0891b2;
-  border-radius: 10px;
-}

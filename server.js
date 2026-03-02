@@ -6,16 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
-const distPath = path.resolve(__dirname, 'dist');
 
-// Serve static files
-app.use(express.static(distPath));
+app.use(express.static(path.join(__dirname, 'dist')));
+app.use((req,res)=>res.sendFile(path.join(__dirname,'dist/index.html')));
 
-// Manual SPA routing (avoids "*" and "(.*)")
-app.use((req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
-});
-
-app.listen(PORT, () => {
-  console.log(`--- AI COMMAND CENTER ONLINE ON PORT ${PORT} ---`);
-});
+app.listen(PORT,()=>console.log(`--- AI COMMAND CENTER ONLINE ON PORT ${PORT} ---`));
