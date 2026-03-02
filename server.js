@@ -18,5 +18,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log('--- AI COMMAND CENTER ONLINE ---');
+    console.log(`--- AI COMMAND CENTER ONLINE ON PORT ${PORT} ---`);
 });
