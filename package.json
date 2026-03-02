@@ -2,7 +2,7 @@
   "name": "my-electronic-shop",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
+  
   "scripts": {
     "dev": "vite",
     "start": "node server.js",
