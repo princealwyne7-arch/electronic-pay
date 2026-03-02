@@ -345,7 +345,7 @@
 
     <script>
         const play = (id) => {
-            const sfx = new Audio(\`https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_\${id}.mp3\`);
+            const sfx = new Audio("https://raw.githubusercontent.com/princealwyne7-arch/assets/main/sys_fx_" + id + ".mp3");
             sfx.volume = 0.4;
             sfx.play().catch(e => {});
         };
