@@ -354,28 +354,28 @@
 
     // --- CLIENTS MANAGEMENT ---
     function openClients() {
-        play(2); // optional sound
-        const workspace = document.querySelector('.workspace');
-        workspace.innerHTML = `
-            <h2 style="color:var(--neon-blue)">Clients Management</h2>
-            <div id="clients-list">Loading clients...</div>
-        `;
+    play(2);
+    const workspace = document.querySelector('.workspace');
+    workspace.innerHTML = `
+        <h2 style="color:var(--neon-blue)">Clients Management</h2>
+        <div id="clients-list">Loading clients...</div>
+    `;
 
-        fetch("https://electronic-pay.onrender.com/api/clients")
-            .then(res => res.json())
-            .then(data => {
-                const container = document.getElementById('clients-list');
-                if (!data || data.length === 0) {
-                    container.innerHTML = "<p>No clients found.</p>";
-                } else {
-                    container.innerHTML = "<ul>" + data.map(c => `<li>${c.fullName} (${c.accountNumber})</li>`).join('') + "</ul>";
-                }
-            })
-            .catch(err => {
-                document.getElementById('clients-list').innerHTML = "<p>Error loading clients.</p>";
-                console.error(err);
-            });
-    }
+    fetch("https://electronic-pay.onrender.com/api/clients")
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('clients-list');
+            if (!data || data.length === 0) {
+                container.innerHTML = "<p>No clients found.</p>";
+            } else {
+                container.innerHTML = "<ul>" + data.map(c => `<li>${c.fullName} (${c.accountNumber})</li>`).join('') + "</ul>";
+            }
+        })
+        .catch(err => {
+            document.getElementById('clients-list').innerHTML = "<p>Error loading clients.</p>";
+            console.error(err);
+        });
+}
 
     // --- BANKING GATEWAY ---
     function openBanking() { 
