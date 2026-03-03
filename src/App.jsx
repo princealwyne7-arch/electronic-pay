@@ -5,8 +5,13 @@ import MainDashboard from "./components/MainDashboard";
 export default function App() {
   return (
     <div className="flex h-screen overflow-hidden bg-[#0f172a]">
+      {/* Sidebar */}
       <Sidebar />
-      <MainDashboard />
+
+      {/* Main Dashboard */}
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        <MainDashboard />
+      </div>
     </div>
   );
 }
