@@ -7,7 +7,7 @@ export default function App() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="flex h-screen bg-red-600">
+    <div className="flex h-screen bg-red-600 text-white">
       
       {/* Sidebar */}
       <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
