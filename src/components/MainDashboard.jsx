@@ -16,8 +16,7 @@ export default function MainDashboard() {
         ].map((item, i) => (
           <div key={i} className="bg-[#0b1220] rounded-lg p-4 flex flex-col justify-between border border-green-500/20">
             <div className="flex items-center gap-2 text-sm text-gray-400">
-              {item.icon}
-              {item.label}
+              {item.icon} {item.label}
             </div>
             <div className="text-green-400 font-bold">{item.status}</div>
           </div>
@@ -62,7 +61,7 @@ export default function MainDashboard() {
       {/* ================= LIVE USERS STREAM ================= */}
       <div className="bg-[#111827] rounded-xl p-6">
         <div className="text-lg font-semibold mb-4">Live Users Stream</div>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-auto">
           <thead className="text-gray-400 border-b border-gray-700">
             <tr>
               <th className="text-left py-2">Time</th>
@@ -101,7 +100,7 @@ export default function MainDashboard() {
       {/* ================= SYSTEM LOGS ================= */}
       <div className="bg-[#111827] rounded-xl p-6">
         <div className="text-lg font-semibold mb-4">System Logs & Updates</div>
-        <table className="w-full text-sm">
+        <table className="w-full text-sm table-auto">
           <thead className="text-gray-400 border-b border-gray-700">
             <tr>
               <th className="text-left py-2">Time</th>
@@ -125,5 +124,5 @@ export default function MainDashboard() {
       </div>
 
     </div>
-  );
+ );
 }

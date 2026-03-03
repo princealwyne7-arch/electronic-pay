@@ -1,16 +1,12 @@
-import React from 'react';
-import Sidebar from './components/Sidebar';
-import Header from './components/Header';
-import MainDashboard from './components/MainDashboard';
+import React from "react";
+import Sidebar from "./components/Sidebar";
+import MainDashboard from "./components/MainDashboard";
 
 export default function App() {
   return (
-    <div className="flex h-screen overflow-hidden bg-[#020617]">
+    <div className="flex h-screen overflow-hidden bg-[#0f172a]">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-y-auto">
-        <Header />
-        <MainDashboard />
-      </div>
+      <MainDashboard />
     </div>
   );
 }
