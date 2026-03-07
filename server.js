@@ -13,8 +13,9 @@ const getKenyaTime = () => {
 
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"') || data.includes('success')) return 'Successful ✅';
-    if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
+    // Logic to catch both Paynecta and Paystack success/failure strings
+    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"') || data.includes('successful')) return 'Successful ✅';
+    if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) return 'Cancelled ❌';
     if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
     if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
     if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
@@ -120,45 +121,44 @@ app.post('/paystack-push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     
-    // STRICT FORMATTING FOR PAYSTACK CHARGE
     let formattedPhone = phone.trim();
-    if (formattedPhone.startsWith('0')) {
-        formattedPhone = '+254' + formattedPhone.substring(1);
-    } else if (formattedPhone.startsWith('254')) {
-        formattedPhone = '+' + formattedPhone;
-    } else if (!formattedPhone.startsWith('+')) {
-        formattedPhone = '+254' + formattedPhone;
-    }
+    if (formattedPhone.startsWith('0')) { formattedPhone = '+254' + formattedPhone.substring(1); }
+    else if (formattedPhone.startsWith('254')) { formattedPhone = '+' + formattedPhone; }
+    else if (!formattedPhone.startsWith('+')) { formattedPhone = '+254' + formattedPhone; }
 
     try {
         const response = await axios.post('https://api.paystack.co/charge', {
             email: "princealwyne7@gmail.com",
             amount: amount * 100,
             currency: "KES",
-            mobile_money: {
-                phone: formattedPhone,
-                provider: "mpesa"
-            }
+            mobile_money: { phone: formattedPhone, provider: "mpesa" }
         }, {
-            headers: { 
-                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 
-                'Content-Type': 'application/json' 
-            }
+            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' }
         });
         
         const reference = response.data.data.reference;
         transactions.unshift({ id: reference, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
         res.redirect('/');
-    } catch (err) { 
-        // Showing clear error if it still fails
-        res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); 
-    }
+    } catch (err) { res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); }
 });
 
+// IMPROVED CALLBACK FOR DUAL PROVIDERS
 app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
-    let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
-    if (tx) { tx.status = translateStatus(req.body); }
+    const payload = req.body;
+    const bodyString = JSON.stringify(payload).toLowerCase();
+    
+    // 1. Find by Paystack Reference or Paynecta Tracking ID
+    let reference = payload.data?.reference || payload.reference || payload.merchant_request_id || "";
+    
+    let tx = transactions.find(t => 
+        (reference && String(t.id) === String(reference)) || 
+        (payload.data?.customer?.phone && bodyString.includes(String(t.phone)))
+    );
+
+    if (tx) {
+        tx.status = translateStatus(payload);
+    }
+    
     res.sendStatus(200);
 });
 
