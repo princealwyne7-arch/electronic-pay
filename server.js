@@ -97,7 +97,6 @@ app.get('/', (req, res) => {
     `);
 });
 
-// PAYNECTA LOGIC (STAYS THE SAME)
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
@@ -117,13 +116,19 @@ app.post('/push', async (req, res) => {
     } catch (err) { res.status(500).send(err.message); }
 });
 
-// UPDATED PAYSTACK CHARGE LOGIC (Direct M-Pesa Prompt)
 app.post('/paystack-push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     
-    // Ensure phone is in format 07... or 254... (Paystack likes 07...)
-    let formattedPhone = phone.startsWith('254') ? '0' + phone.substring(3) : phone;
+    // STRICT FORMATTING FOR PAYSTACK CHARGE
+    let formattedPhone = phone.trim();
+    if (formattedPhone.startsWith('0')) {
+        formattedPhone = '+254' + formattedPhone.substring(1);
+    } else if (formattedPhone.startsWith('254')) {
+        formattedPhone = '+' + formattedPhone;
+    } else if (!formattedPhone.startsWith('+')) {
+        formattedPhone = '+254' + formattedPhone;
+    }
 
     try {
         const response = await axios.post('https://api.paystack.co/charge', {
@@ -141,11 +146,11 @@ app.post('/paystack-push', async (req, res) => {
             }
         });
         
-        // Paystack returns 'data' which contains the 'reference'
         const reference = response.data.data.reference;
         transactions.unshift({ id: reference, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
         res.redirect('/');
     } catch (err) { 
+        // Showing clear error if it still fails
         res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); 
     }
 });
