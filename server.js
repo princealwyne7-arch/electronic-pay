@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
 
-// Configuration
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "5566";
 const JWT_SECRET = process.env.JWT_SECRET || "cyber-secure-key-77";
 
@@ -17,7 +16,6 @@ app.use(cookieParser());
 let transactions = []; 
 let serverLogs = [];
 
-// PROTECTOR: This stops anyone from seeing the dashboard without logging in
 const protect = (req, res, next) => {
     const token = req.cookies.session_token;
     if (!token) return res.redirect('/login');
@@ -44,7 +42,6 @@ const translateStatus = (body) => {
     return 'Signal Active 📡'; 
 };
 
-// --- LOGIN INTERFACE ---
 app.get('/login', (req, res) => {
     res.send(`
         <html>
@@ -81,7 +78,6 @@ app.post('/login', (req, res) => {
     }
 });
 
-// --- PROTECTED DASHBOARD ROUTES ---
 app.get('/api/status', protect, (req, res) => {
     const todayTotal = transactions
         .filter(t => t.status.includes('Successful'))
@@ -90,7 +86,6 @@ app.get('/api/status', protect, (req, res) => {
 });
 
 app.get('/', protect, (req, res) => {
-    // YOUR ORIGINAL UI UNTOUCHED
     res.send(\`
         <!DOCTYPE html>
         <html>
