@@ -13,7 +13,7 @@ const getKenyaTime = () => {
 
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"')) return 'Successful ✅';
+    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"') || data.includes('success')) return 'Successful ✅';
     if (data.includes('cancel') || data.includes('1032')) return 'Cancelled ❌';
     if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
     if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
@@ -39,11 +39,13 @@ app.get('/', (req, res) => {
                 .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
                 .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
                 input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-                .btn-send { width: 100%; padding: 18px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; }
+                .btn-paynecta { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+                .btn-paystack { width: 100%; padding: 15px; background: #00bbff; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
                 .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
                 .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
                 .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
+                .provider-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; background: #eee; color: #666; margin-left: 5px; vertical-align: middle; }
             </style>
         </head>
         <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
@@ -51,13 +53,17 @@ app.get('/', (req, res) => {
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
-                <form action="/push" method="POST">
+                
+                <form id="payForm" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
                     <input type="number" name="phone" placeholder="2547..." required>
                     <input type="number" name="amount" placeholder="Amount" required>
-                    <button type="submit" class="btn-send">SEND STK PUSH</button>
+                    
+                    <button type="submit" formaction="/push" class="btn-paynecta">PAYNECTA PUSH</button>
+                    <button type="submit" formaction="/paystack-push" class="btn-paystack">PAYSTACK PUSH</button>
                 </form>
             </div>
+
             <div class="history-card">
                 <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
                 <div id="history-list">Loading...</div>
@@ -79,7 +85,7 @@ app.get('/', (req, res) => {
                                 document.getElementById('successSound').play().catch(() => {});
                                 localStorage.setItem('ding_' + t.id, 'true');
                             }
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
+                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><span class="provider-tag">'+t.provider+'</span><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
                         });
                         list.innerHTML = html || 'No activity';
                     } catch(e) {}
@@ -98,6 +104,7 @@ app.get('/', (req, res) => {
     `);
 });
 
+// ORIGINAL PAYNECTA LOGIC (Untouched)
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
@@ -112,14 +119,39 @@ app.post('/push', async (req, res) => {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
         const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
-        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime() });
+        transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paynecta' });
         if (transactions.length > 20) transactions.pop();
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
+// NEW PAYSTACK LOGIC
+app.post('/paystack-push', async (req, res) => {
+    const { phone, amount, password } = req.body;
+    if (password !== "5566") return res.send("Invalid PIN");
+    try {
+        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+            email: "princealwyne7@gmail.com",
+            amount: amount * 100, // Paystack uses Kobo/Cents
+            currency: "KES",
+            mobile_money: { phone: phone, provider: "mpesa" },
+            callback_url: "https://electronic-pay.onrender.com/callback"
+        }, {
+            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' }
+        });
+        
+        const reference = response.data.data.reference;
+        transactions.unshift({ id: reference, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
+        if (transactions.length > 20) transactions.pop();
+        res.redirect('/');
+    } catch (err) { 
+        res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); 
+    }
+});
+
 app.post('/callback', (req, res) => {
     const bodyText = JSON.stringify(req.body);
+    // Finds transaction by ID (Paynecta) or Reference (Paystack)
     let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
     if (tx) { tx.status = translateStatus(req.body); }
     res.sendStatus(200);
