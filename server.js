@@ -13,8 +13,8 @@ const getKenyaTime = () => {
 
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    // Logic to catch both Paynecta and Paystack success/failure strings
-    if (data.includes('"success"') || data.includes('"completed"') || data.includes('"0"') || data.includes('successful')) return 'Successful ✅';
+    // Broad check for any success indicators from either provider
+    if (data.includes('success') || data.includes('completed') || data.includes('"0"') || data.includes('00')) return 'Successful ✅';
     if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) return 'Cancelled ❌';
     if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
     if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
@@ -137,26 +137,23 @@ app.post('/paystack-push', async (req, res) => {
         });
         
         const reference = response.data.data.reference;
-        transactions.unshift({ id: reference, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
+        transactions.unshift({ id: reference, phone: formattedPhone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
         res.redirect('/');
     } catch (err) { res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); }
 });
 
-// IMPROVED CALLBACK FOR DUAL PROVIDERS
+// ROBUST CALLBACK FOR BOTH
 app.post('/callback', (req, res) => {
-    const payload = req.body;
-    const bodyString = JSON.stringify(payload).toLowerCase();
+    const bodyText = JSON.stringify(req.body);
     
-    // 1. Find by Paystack Reference or Paynecta Tracking ID
-    let reference = payload.data?.reference || payload.reference || payload.merchant_request_id || "";
-    
+    // Search for a transaction whose ID or Phone appears anywhere in the callback data
     let tx = transactions.find(t => 
-        (reference && String(t.id) === String(reference)) || 
-        (payload.data?.customer?.phone && bodyString.includes(String(t.phone)))
+        bodyText.includes(String(t.id)) || 
+        bodyText.includes(String(t.phone).replace('+', ''))
     );
 
     if (tx) {
-        tx.status = translateStatus(payload);
+        tx.status = translateStatus(req.body);
     }
     
     res.sendStatus(200);
