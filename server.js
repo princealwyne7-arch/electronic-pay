@@ -40,7 +40,7 @@ app.get('/', (req, res) => {
                 .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
                 input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
                 .btn-paynecta { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-                .btn-paystack { width: 100%; padding: 15px; background: #00bbff; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
+                .btn-paystack { width: 100%; padding: 15px; background: #011b33; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
                 .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
                 .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
                 .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
@@ -53,24 +53,19 @@ app.get('/', (req, res) => {
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
-                
                 <form id="payForm" method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
                     <input type="number" name="phone" placeholder="2547..." required>
                     <input type="number" name="amount" placeholder="Amount" required>
-                    
                     <button type="submit" formaction="/push" class="btn-paynecta">PAYNECTA PUSH</button>
                     <button type="submit" formaction="/paystack-push" class="btn-paystack">PAYSTACK PUSH</button>
                 </form>
             </div>
-
             <div class="history-card">
                 <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
                 <div id="history-list">Loading...</div>
             </div>
-
             <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
             <script>
                 async function updateStatus() {
                     try {
@@ -90,12 +85,10 @@ app.get('/', (req, res) => {
                         list.innerHTML = html || 'No activity';
                     } catch(e) {}
                 }
-
                 function shareReceipt(phone, amt, time) {
                     const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
                     window.open("https://wa.me/?text=" + encodeURIComponent(text));
                 }
-
                 setInterval(updateStatus, 3000);
                 updateStatus();
             </script>
@@ -104,7 +97,7 @@ app.get('/', (req, res) => {
     `);
 });
 
-// ORIGINAL PAYNECTA LOGIC (Untouched)
+// PAYNECTA LOGIC (STAYS THE SAME)
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
@@ -120,29 +113,37 @@ app.post('/push', async (req, res) => {
         });
         const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
         transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paynecta' });
-        if (transactions.length > 20) transactions.pop();
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
-// NEW PAYSTACK LOGIC
+// UPDATED PAYSTACK CHARGE LOGIC (Direct M-Pesa Prompt)
 app.post('/paystack-push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
+    
+    // Ensure phone is in format 07... or 254... (Paystack likes 07...)
+    let formattedPhone = phone.startsWith('254') ? '0' + phone.substring(3) : phone;
+
     try {
-        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+        const response = await axios.post('https://api.paystack.co/charge', {
             email: "princealwyne7@gmail.com",
-            amount: amount * 100, // Paystack uses Kobo/Cents
+            amount: amount * 100,
             currency: "KES",
-            mobile_money: { phone: phone, provider: "mpesa" },
-            callback_url: "https://electronic-pay.onrender.com/callback"
+            mobile_money: {
+                phone: formattedPhone,
+                provider: "mpesa"
+            }
         }, {
-            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' }
+            headers: { 
+                Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 
+                'Content-Type': 'application/json' 
+            }
         });
         
+        // Paystack returns 'data' which contains the 'reference'
         const reference = response.data.data.reference;
         transactions.unshift({ id: reference, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
-        if (transactions.length > 20) transactions.pop();
         res.redirect('/');
     } catch (err) { 
         res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); 
@@ -151,7 +152,6 @@ app.post('/paystack-push', async (req, res) => {
 
 app.post('/callback', (req, res) => {
     const bodyText = JSON.stringify(req.body);
-    // Finds transaction by ID (Paynecta) or Reference (Paystack)
     let tx = transactions.find(t => bodyText.includes(String(t.id)) || bodyText.includes(String(t.phone)));
     if (tx) { tx.status = translateStatus(req.body); }
     res.sendStatus(200);
