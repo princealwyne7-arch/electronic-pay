@@ -14,16 +14,14 @@ const getKenyaTime = () => {
     return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 };
 
-// PRECISE TRANSLATOR: Fixed to catch Paystack & Paynecta signals from your logs
+// UNIFIED TRANSLATOR: Captures Paystack's specific "Approved" and "Insufficient" messages
 const translateStatus = (body) => {
     const data = JSON.stringify(body).toLowerCase();
-    // Patterns from your successful/failed screenshots
     if (data.includes('success') || data.includes('approved') || data.includes('charge.success')) return 'Successful ✅';
     if (data.includes('insufficient') || data.includes('balance')) return 'Low Balance 💸';
     if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
-    if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) return 'Cancelled ❌';
-    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
-    return 'Signal Active 📡'; 
+    if (data.includes('cancel') || data.includes('abandoned') || data.includes('1032')) return 'Cancelled ❌';
+    return 'Active Signal 📡'; 
 };
 
 app.get('/api/status', (req, res) => {
@@ -41,20 +39,21 @@ app.get('/', (req, res) => {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
                 body { font-family: 'Courier New', monospace; background: #050505; color: #00f2ff; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
-                .card { background: #111; border: 1px solid #00f2ff; padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 0 20px #00f2ff33; text-align: center; }
-                input { width: 100%; padding: 15px; margin: 8px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-                .btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; text-transform: uppercase; }
+                .card { background: #111; border: 2px solid #00f2ff; padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; box-shadow: 0 0 20px #00f2ff55; text-align: center; }
+                input { width: 100%; padding: 15px; margin: 8px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+                input:focus { border-color: #ffd700; }
+                .btn { width: 100%; padding: 16px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 15px; text-transform: uppercase; transition: 0.3s; }
                 .btn-necta { background: #00ff88; color: #000; }
                 .btn-stack { background: #ffd700; color: #000; }
-                .tx-list { width: 100%; max-width: 400px; margin-top: 25px; border: 1px solid #333; border-radius: 15px; background: #111; padding: 15px; box-sizing: border-box; }
+                .tx-list { width: 100%; max-width: 420px; margin-top: 25px; border: 1px solid #333; border-radius: 15px; background: #111; padding: 10px; box-sizing: border-box; }
                 .tx-row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #222; font-size: 12px; align-items: center; }
-                .log-console { width: 100%; max-width: 400px; margin-top: 15px; background: #000; color: #ff004c; font-size: 10px; padding: 12px; border: 1px solid #ff004c; border-radius: 8px; min-height: 50px; }
+                .log-console { width: 100%; max-width: 420px; margin-top: 15px; background: #000; color: #ff004c; font-size: 10px; padding: 12px; border: 1px solid #ff004c; border-radius: 8px; min-height: 50px; }
             </style>
         </head>
         <body onclick="document.getElementById('beep').play().catch(() => {})">
             <div class="card">
-                <h2 style="color:#ffd700; margin-bottom:5px; letter-spacing: 2px;">AI COMMAND CENTER</h2>
-                <div id="total" style="font-size:26px; font-weight:bold; margin-bottom:15px; color:#00f2ff;">KES 0</div>
+                <h2 style="color:#ffd700; margin:0; letter-spacing: 2px;">AI COMMAND CENTER</h2>
+                <div id="total" style="font-size:26px; font-weight:bold; margin:10px 0; color:#00f2ff;">KES 0</div>
                 <form action="/push" method="POST">
                     <input type="password" name="password" placeholder="SYSTEM ACCESS KEY" required>
                     <input type="number" name="phone" placeholder="2547..." required>
@@ -63,7 +62,7 @@ app.get('/', (req, res) => {
                     <button type="submit" name="provider" value="paystack" class="btn btn-stack">PAYSTACK PUSH</button>
                 </form>
             </div>
-            <div class="tx-list" id="list">CONNECTING TO STREAM...</div>
+            <div class="tx-list" id="list">SCANNING DATA STREAM...</div>
             <div class="log-console" id="logs">LOGS: STANDBY</div>
             <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
             <script>
@@ -75,7 +74,6 @@ app.get('/', (req, res) => {
                         let html = '';
                         data.transactions.forEach((t, i) => {
                             const isSuccess = t.status.includes('Successful');
-                            // Sound logic from original code
                             if (i === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
                                 document.getElementById('beep').play().catch(() => {});
                                 localStorage.setItem('ding_' + t.id, 'true');
@@ -98,7 +96,7 @@ app.get('/', (req, res) => {
 
 app.post('/push', async (req, res) => {
     const { phone, amount, password, provider } = req.body;
-    if (password !== "5566") return res.send("ACCESS DENIED: INVALID KEY");
+    if (password !== "5566") return res.send("ACCESS DENIED");
 
     let fPhone = phone.trim();
     if (fPhone.startsWith('0')) fPhone = '+254' + fPhone.substring(1);
@@ -122,21 +120,21 @@ app.post('/push', async (req, res) => {
                 currency: "KES",
                 mobile_money: { phone: fPhone, provider: "mpesa" }
             }, { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` } });
-            trackingId = resp.data.data.reference;
+            trackingId = resp.data.data.reference; // Paystack unique reference
         }
         
         transactions.unshift({ id: trackingId, phone: fPhone, amount, status: 'Processing... 🔄', provider: provider.toUpperCase(), time: getKenyaTime() });
-        if (transactions.length > 20) transactions.pop();
+        if (transactions.length > 25) transactions.pop();
         res.redirect('/');
     } catch (e) { res.status(500).send("Push Failed: " + e.message); }
 });
 
 app.post('/callback', (req, res) => {
     const bodyStr = JSON.stringify(req.body);
-    serverLogs.unshift({ msg: "Inbound Signal: " + bodyStr.substring(0, 35) + "..." });
-    if (serverLogs.length > 3) serverLogs.pop();
+    serverLogs.unshift({ msg: "Signal In: " + (req.body.event || "webhook hit") });
+    if (serverLogs.length > 4) serverLogs.pop();
 
-    // The FIX: Deep searching for Paystack references vs Paynecta IDs
+    // CRITICAL FIX: Identifies Paystack nested data and maps it to your transaction list
     const ref = req.body.data?.reference || req.body.merchant_request_id || req.body.transaction_id || req.body.reference;
     
     const tx = transactions.find(t => 
