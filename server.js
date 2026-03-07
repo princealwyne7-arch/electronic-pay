@@ -1,23 +1,43 @@
 const express = require('express');
 const axios = require('axios');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const app = express();
+
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "5566"; 
+const JWT_SECRET = process.env.JWT_SECRET || "cyberpunk_secret_99"; 
 
 app.set('trust proxy', 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 let transactions = []; 
 let serverLogs = [];
+
+const authenticate = (req, res, next) => {
+    const token = req.cookies.admin_token;
+    if (!token) {
+        return req.path.startsWith('/api') 
+            ? res.status(401).json({ error: 'Unauthorized' }) 
+            : res.redirect('/admin/login');
+    }
+    try {
+        jwt.verify(token, JWT_SECRET);
+        next();
+    } catch (err) {
+        res.clearCookie('admin_token');
+        res.redirect('/admin/login');
+    }
+};
 
 const getKenyaTime = () => {
     return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 };
 
-// PRECISE TRANSLATOR: Fixed to catch Paystack & Paynecta signals from your logs
 const translateStatus = (body) => {
     const data = JSON.stringify(body).toLowerCase();
-    // Patterns from your successful/failed screenshots
     if (data.includes('success') || data.includes('approved') || data.includes('charge.success')) return 'Successful ✅';
     if (data.includes('insufficient') || data.includes('balance')) return 'Low Balance 💸';
     if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
@@ -26,15 +46,55 @@ const translateStatus = (body) => {
     return 'Signal Active 📡'; 
 };
 
-app.get('/api/status', (req, res) => {
+app.get('/admin/login', (req, res) => {
+    res.send(`
+        <html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body { font-family: 'Courier New', monospace; background: #050505; color: #ffd700; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+                .login-box { border: 1px solid #ffd700; padding: 30px; border-radius: 15px; background: #111; box-shadow: 0 0 15px #ffd70033; text-align: center; width: 90%; max-width: 350px; }
+                input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #333; color: #fff; border-radius: 8px; box-sizing: border-box; }
+                button { width: 100%; padding: 15px; background: #ffd700; color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 8px; text-transform: uppercase; }
+            </style>
+        </head>
+        <body>
+            <div class="login-box">
+                <h2 style="letter-spacing:2px;">GATEWAY ACCESS</h2>
+                <form action="/admin/login" method="POST">
+                    <input type="password" name="password" placeholder="SYSTEM KEY" required autofocus>
+                    <button type="submit">AUTHORIZE</button>
+                </form>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
+app.post('/admin/login', (req, res) => {
+    if (req.body.password === ADMIN_PASSWORD) {
+        const token = jwt.sign({ user: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
+        res.cookie('admin_token', token, { httpOnly: true, secure: true, sameSite: 'strict' });
+        res.redirect('/');
+    } else {
+        res.send("<body style='background:#000;color:red;font-family:monospace;text-align:center;padding:50px;'>ACCESS DENIED: INVALID KEY<br><br><a href='/admin/login' style='color:#fff;'>Retry</a></body>");
+    }
+});
+
+app.get('/admin/logout', (req, res) => {
+    res.clearCookie('admin_token');
+    res.redirect('/admin/login');
+});
+
+app.get('/api/status', authenticate, (req, res) => {
     const todayTotal = transactions
         .filter(t => t.status.includes('Successful'))
         .reduce((sum, t) => sum + parseInt(t.amount || 0), 0);
     res.json({ transactions, todayTotal, serverLogs });
 });
 
-app.get('/', (req, res) => {
-    res.send(`
+app.get('/', authenticate, (req, res) => {
+    res.send(\`
         <!DOCTYPE html>
         <html>
         <head>
@@ -56,26 +116,26 @@ app.get('/', (req, res) => {
                 <h2 style="color:#ffd700; margin-bottom:5px; letter-spacing: 2px;">AI COMMAND CENTER</h2>
                 <div id="total" style="font-size:26px; font-weight:bold; margin-bottom:15px; color:#00f2ff;">KES 0</div>
                 <form action="/push" method="POST">
-                    <input type="password" name="password" placeholder="SYSTEM ACCESS KEY" required>
                     <input type="number" name="phone" placeholder="2547..." required>
                     <input type="number" name="amount" placeholder="AMOUNT (KES)" required>
                     <button type="submit" name="provider" value="paynecta" class="btn btn-necta">PAYNECTA PUSH</button>
                     <button type="submit" name="provider" value="paystack" class="btn btn-stack">PAYSTACK PUSH</button>
                 </form>
+                <div style="margin-top:15px;"><a href="/admin/logout" style="color:#666; font-size:11px; text-decoration:none;">[ TERMINATE SESSION ]</a></div>
             </div>
-            <div class="tx-list" id="list">CONNECTING TO STREAM...</div>
+            <div class="tx-list" id="list">CONNECTING...</div>
             <div class="log-console" id="logs">LOGS: STANDBY</div>
             <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
             <script>
                 async function sync() {
                     try {
                         const res = await fetch('/api/status');
+                        if (res.status === 401) window.location.href = '/admin/login';
                         const data = await res.json();
                         document.getElementById('total').innerText = 'KES ' + data.todayTotal.toLocaleString();
                         let html = '';
                         data.transactions.forEach((t, i) => {
                             const isSuccess = t.status.includes('Successful');
-                            // Sound logic from original code
                             if (i === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
                                 document.getElementById('beep').play().catch(() => {});
                                 localStorage.setItem('ding_' + t.id, 'true');
@@ -93,13 +153,11 @@ app.get('/', (req, res) => {
             </script>
         </body>
         </html>
-    `);
+    \`);
 });
 
-app.post('/push', async (req, res) => {
-    const { phone, amount, password, provider } = req.body;
-    if (password !== "5566") return res.send("ACCESS DENIED: INVALID KEY");
-
+app.post('/push', authenticate, async (req, res) => {
+    const { phone, amount, provider } = req.body;
     let fPhone = phone.trim();
     if (fPhone.startsWith('0')) fPhone = '+254' + fPhone.substring(1);
     else if (fPhone.startsWith('254')) fPhone = '+' + fPhone;
@@ -121,7 +179,7 @@ app.post('/push', async (req, res) => {
                 amount: amount * 100,
                 currency: "KES",
                 mobile_money: { phone: fPhone, provider: "mpesa" }
-            }, { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` } });
+            }, { headers: { Authorization: \`Bearer \${process.env.PAYSTACK_SECRET_KEY}\` } });
             trackingId = resp.data.data.reference;
         }
         
@@ -135,18 +193,9 @@ app.post('/callback', (req, res) => {
     const bodyStr = JSON.stringify(req.body);
     serverLogs.unshift({ msg: "Inbound Signal: " + bodyStr.substring(0, 35) + "..." });
     if (serverLogs.length > 3) serverLogs.pop();
-
-    // The FIX: Deep searching for Paystack references vs Paynecta IDs
     const ref = req.body.data?.reference || req.body.merchant_request_id || req.body.transaction_id || req.body.reference;
-    
-    const tx = transactions.find(t => 
-        (ref && String(t.id) === String(ref)) || 
-        bodyStr.includes(String(t.phone).replace('+', ''))
-    );
-    
-    if (tx) {
-        tx.status = translateStatus(req.body);
-    }
+    const tx = transactions.find(t => (ref && String(t.id) === String(ref)) || bodyStr.includes(String(t.phone).replace('+', '')));
+    if (tx) tx.status = translateStatus(req.body);
     res.sendStatus(200);
 });
 
