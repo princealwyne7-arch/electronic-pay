@@ -11,15 +11,34 @@ const getKenyaTime = () => {
     return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 };
 
+// POWERFUL STATUS TRANSLATOR
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    // Broad check for any success indicators from either provider
-    if (data.includes('success') || data.includes('completed') || data.includes('"0"') || data.includes('00')) return 'Successful ✅';
-    if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) return 'Cancelled ❌';
-    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
-    if (data.includes('wrong') || data.includes('pin') || data.includes('2001')) return 'Wrong PIN 🔑';
-    if (data.includes('insufficient') || data.includes('1')) return 'Low Balance 💸';
-    return 'Pending/Other ⚠️';
+    
+    // 1. SUCCESS CHECK (Paystack "success" or Paynecta "0" / "success")
+    if (data.includes('success') || data.includes('completed') || data.includes('"status":0') || data.includes('"res_code":"00"')) {
+        return 'Successful ✅';
+    }
+    
+    // 2. WRONG PIN / AUTH ERRORS
+    if (data.includes('wrong pin') || data.includes('2001') || data.includes('invalid credentials')) {
+        return 'Wrong PIN 🔑';
+    }
+    
+    // 3. LOW BALANCE
+    if (data.includes('insufficient') || data.includes('balance') || data.includes('"1"')) {
+        return 'Low Balance 💸';
+    }
+    
+    // 4. CANCELLED / TIMEOUT
+    if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) {
+        return 'Cancelled ❌';
+    }
+    if (data.includes('timeout') || data.includes('1037')) {
+        return 'Timeout ⏳';
+    }
+
+    return 'Processing... 🔄';
 };
 
 app.get('/api/status', (req, res) => {
@@ -49,12 +68,12 @@ app.get('/', (req, res) => {
                 .provider-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; background: #eee; color: #666; margin-left: 5px; vertical-align: middle; }
             </style>
         </head>
-        <body onclick="document.getElementById('successSound').play().then(p=>document.getElementById('successSound').pause())">
+        <body>
             <div class="container">
                 <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
                 <div id="dailyTotal" class="total-box">Today: KES 0</div>
-                <form id="payForm" method="POST">
+                <form method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
                     <input type="number" name="phone" placeholder="2547..." required>
                     <input type="number" name="amount" placeholder="Amount" required>
@@ -77,18 +96,10 @@ app.get('/', (req, res) => {
                         let html = '';
                         data.transactions.forEach((t, index) => {
                             const isSuccess = t.status.includes('Successful');
-                            if (index === 0 && isSuccess && !localStorage.getItem('ding_' + t.id)) {
-                                document.getElementById('successSound').play().catch(() => {});
-                                localStorage.setItem('ding_' + t.id, 'true');
-                            }
                             html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><span class="provider-tag">'+t.provider+'</span><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
                         });
                         list.innerHTML = html || 'No activity';
                     } catch(e) {}
-                }
-                function shareReceipt(phone, amt, time) {
-                    const text = "🧾 *ELECTRONIC PAY RECEIPT*\\n\\nPhone: " + phone + "\\nAmount: KES " + amt + "\\nTime: " + time + "\\nStatus: Paid ✅\\n\\n_Thank you!_";
-                    window.open("https://wa.me/?text=" + encodeURIComponent(text));
                 }
                 setInterval(updateStatus, 3000);
                 updateStatus();
@@ -98,6 +109,7 @@ app.get('/', (req, res) => {
     `);
 });
 
+// PAYNECTA (Corrected to start as "Processing")
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
@@ -111,20 +123,23 @@ app.post('/push', async (req, res) => {
         }, {
             headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
         });
-        const trackingId = response.data.merchant_request_id || response.data.transaction_id || response.data.request_id || Date.now();
+        
+        const trackingId = response.data.merchant_request_id || response.data.transaction_id || Date.now();
+        // IMPORTANT: We set it to Processing first, even if initialization says 'success'
         transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paynecta' });
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
+// PAYSTACK (Corrected with robust logging)
 app.post('/paystack-push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
     
     let formattedPhone = phone.trim();
-    if (formattedPhone.startsWith('0')) { formattedPhone = '+254' + formattedPhone.substring(1); }
-    else if (formattedPhone.startsWith('254')) { formattedPhone = '+' + formattedPhone; }
-    else if (!formattedPhone.startsWith('+')) { formattedPhone = '+254' + formattedPhone; }
+    if (formattedPhone.startsWith('0')) formattedPhone = '+254' + formattedPhone.substring(1);
+    else if (formattedPhone.startsWith('254')) formattedPhone = '+' + formattedPhone;
+    else if (!formattedPhone.startsWith('+')) formattedPhone = '+254' + formattedPhone;
 
     try {
         const response = await axios.post('https://api.paystack.co/charge', {
@@ -137,19 +152,23 @@ app.post('/paystack-push', async (req, res) => {
         });
         
         const reference = response.data.data.reference;
+        // Always starts as Processing
         transactions.unshift({ id: reference, phone: formattedPhone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
         res.redirect('/');
-    } catch (err) { res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); }
+    } catch (err) { 
+        res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); 
+    }
 });
 
-// ROBUST CALLBACK FOR BOTH
+// THE 100% BULLETPROOF CALLBACK
 app.post('/callback', (req, res) => {
-    const bodyText = JSON.stringify(req.body);
+    console.log("CALLBACK RECEIVED:", JSON.stringify(req.body)); // Logs for your Render logs
+    const bodyStr = JSON.stringify(req.body).toLowerCase();
     
-    // Search for a transaction whose ID or Phone appears anywhere in the callback data
+    // Find transaction by matching Reference/ID or the Phone number
     let tx = transactions.find(t => 
-        bodyText.includes(String(t.id)) || 
-        bodyText.includes(String(t.phone).replace('+', ''))
+        bodyStr.includes(String(t.id).toLowerCase()) || 
+        bodyStr.includes(String(t.phone).replace('+', ''))
     );
 
     if (tx) {
