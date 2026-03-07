@@ -6,46 +6,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 let transactions = []; 
+let serverLogs = []; // Stores the last 5 callback messages
 
 const getKenyaTime = () => {
     return new Date().toLocaleTimeString('en-GB', { timeZone: 'Africa/Nairobi', hour: '2-digit', minute: '2-digit' });
 };
 
-// POWERFUL STATUS TRANSLATOR
 const translateStatus = (rawBody) => {
     const data = JSON.stringify(rawBody).toLowerCase();
-    
-    // 1. SUCCESS CHECK (Paystack "success" or Paynecta "0" / "success")
-    if (data.includes('success') || data.includes('completed') || data.includes('"status":0') || data.includes('"res_code":"00"')) {
-        return 'Successful ✅';
-    }
-    
-    // 2. WRONG PIN / AUTH ERRORS
-    if (data.includes('wrong pin') || data.includes('2001') || data.includes('invalid credentials')) {
-        return 'Wrong PIN 🔑';
-    }
-    
-    // 3. LOW BALANCE
-    if (data.includes('insufficient') || data.includes('balance') || data.includes('"1"')) {
-        return 'Low Balance 💸';
-    }
-    
-    // 4. CANCELLED / TIMEOUT
-    if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) {
-        return 'Cancelled ❌';
-    }
-    if (data.includes('timeout') || data.includes('1037')) {
-        return 'Timeout ⏳';
-    }
-
-    return 'Processing... 🔄';
+    if (data.includes('success') || data.includes('completed') || data.includes('"status":0') || data.includes('"res_code":"00"')) return 'Successful ✅';
+    if (data.includes('wrong pin') || data.includes('2001')) return 'Wrong PIN 🔑';
+    if (data.includes('insufficient') || data.includes('balance') || data.includes('"1"')) return 'Low Balance 💸';
+    if (data.includes('cancel') || data.includes('1032') || data.includes('abandoned')) return 'Cancelled ❌';
+    if (data.includes('timeout') || data.includes('1037')) return 'Timeout ⏳';
+    return 'Pending/Other ⚠️';
 };
 
 app.get('/api/status', (req, res) => {
     const todayTotal = transactions
         .filter(t => t.status.includes('Successful'))
         .reduce((sum, t) => sum + parseInt(t.amount), 0);
-    res.json({ transactions, todayTotal });
+    res.json({ transactions, todayTotal, serverLogs });
 });
 
 app.get('/', (req, res) => {
@@ -57,22 +38,19 @@ app.get('/', (req, res) => {
             <style>
                 body { font-family: sans-serif; background: #f0f2f5; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
                 .container { background: white; padding: 25px; border-radius: 25px; width: 100%; max-width: 400px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); text-align: center; margin-bottom: 15px; }
-                .profile-pic { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #28a745; margin-bottom: 10px; object-fit: cover; }
                 input { width: 100%; padding: 15px; margin-bottom: 10px; border: 2px solid #f0f0f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
                 .btn-paynecta { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
                 .btn-paystack { width: 100%; padding: 15px; background: #011b33; color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; }
-                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; }
-                .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; align-items:center; }
-                .total-box { background: #e8f5e9; padding: 10px; border-radius: 12px; margin-bottom: 15px; color: #2e7d32; font-weight: bold; }
-                .receipt-btn { background: #f0f0f0; border: none; padding: 5px 8px; border-radius: 5px; font-size: 10px; cursor: pointer; margin-left: 5px; }
-                .provider-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; background: #eee; color: #666; margin-left: 5px; vertical-align: middle; }
+                .history-card { width: 100%; max-width: 400px; background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); box-sizing: border-box; margin-bottom:15px; }
+                .tx-row { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #f0f0f0; font-size:13px; }
+                .debug-box { width:100%; max-width:400px; background:#222; color:#0f0; font-family:monospace; padding:10px; border-radius:10px; font-size:10px; overflow:hidden; }
+                .provider-tag { font-size: 9px; padding: 2px 5px; border-radius: 4px; background: #eee; color: #666; margin-left: 5px; }
             </style>
         </head>
         <body>
             <div class="container">
-                <img src="https://i.ibb.co/TB5mfxRf/Screenshot-20260122-141635-Tik-Tok.png" class="profile-pic">
                 <h2 style="margin:5px 0;">Electronic Pay</h2>
-                <div id="dailyTotal" class="total-box">Today: KES 0</div>
+                <div id="dailyTotal" style="background:#e8f5e9; padding:10px; border-radius:12px; margin-bottom:15px; color:#2e7d32; font-weight:bold;">Today: KES 0</div>
                 <form method="POST">
                     <input type="password" name="password" placeholder="Manager PIN" required>
                     <input type="number" name="phone" placeholder="2547..." required>
@@ -85,20 +63,27 @@ app.get('/', (req, res) => {
                 <h3 style="margin:0 0 10px 0; font-size:16px;">Live Activity</h3>
                 <div id="history-list">Loading...</div>
             </div>
-            <audio id="successSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+            <div class="debug-box">
+                <b>SERVER LOGS (Webhook Traffic):</b>
+                <div id="log-list">No traffic yet...</div>
+            </div>
             <script>
                 async function updateStatus() {
                     try {
                         const res = await fetch('/api/status');
                         const data = await res.json();
                         document.getElementById('dailyTotal').innerText = 'Today: KES ' + data.todayTotal;
-                        const list = document.getElementById('history-list');
+                        
                         let html = '';
-                        data.transactions.forEach((t, index) => {
+                        data.transactions.forEach(t => {
                             const isSuccess = t.status.includes('Successful');
-                            html += '<div class="tx-row"><div style="text-align:left;"><b>'+t.phone+'</b><span class="provider-tag">'+t.provider+'</span><div style="font-size:10px; color:#999;">'+t.time+'</div></div><div style="text-align:right;"><b style="color:#28a745;">KES '+t.amount+'</b><div style="font-size:11px; font-weight:bold; color:'+(isSuccess ? '#28a745' : t.status.includes('Processing') ? '#f0ad4e' : '#d9534f')+'">'+t.status+(isSuccess ? ' <button class="receipt-btn" onclick="shareReceipt(\\''+t.phone+'\\',\\''+t.amount+'\\',\\''+t.time+'\\')">RECEIPT</button>' : '')+'</div></div></div>';
+                            html += '<div class="tx-row"><div><b>'+t.phone+'</b><span class="provider-tag">'+t.provider+'</span><br><small>'+t.time+'</small></div><div style="text-align:right;"><b>KES '+t.amount+'</b><br><span style="color:'+(isSuccess ? '#28a745' : '#d9534f')+'">'+t.status+'</span></div></div>';
                         });
-                        list.innerHTML = html || 'No activity';
+                        document.getElementById('history-list').innerHTML = html || 'No activity';
+                        
+                        let logHtml = '';
+                        data.serverLogs.forEach(l => { logHtml += '<div>['+l.time+'] '+l.msg+'</div><hr style="border:0.1px solid #333;">'; });
+                        document.getElementById('log-list').innerHTML = logHtml || 'Waiting for Webhook...';
                     } catch(e) {}
                 }
                 setInterval(updateStatus, 3000);
@@ -109,7 +94,6 @@ app.get('/', (req, res) => {
     `);
 });
 
-// PAYNECTA (Corrected to start as "Processing")
 app.post('/push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
@@ -120,22 +104,16 @@ app.post('/push', async (req, res) => {
             amount: amount,
             email: "princealwyne7@gmail.com",
             callback_url: "https://electronic-pay.onrender.com/callback"
-        }, {
-            headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' }
-        });
-        
+        }, { headers: { 'X-API-Key': process.env.PAYNECTA_KEY, 'Content-Type': 'application/json' } });
         const trackingId = response.data.merchant_request_id || response.data.transaction_id || Date.now();
-        // IMPORTANT: We set it to Processing first, even if initialization says 'success'
         transactions.unshift({ id: trackingId, phone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paynecta' });
         res.redirect('/');
     } catch (err) { res.status(500).send(err.message); }
 });
 
-// PAYSTACK (Corrected with robust logging)
 app.post('/paystack-push', async (req, res) => {
     const { phone, amount, password } = req.body;
     if (password !== "5566") return res.send("Invalid PIN");
-    
     let formattedPhone = phone.trim();
     if (formattedPhone.startsWith('0')) formattedPhone = '+254' + formattedPhone.substring(1);
     else if (formattedPhone.startsWith('254')) formattedPhone = '+' + formattedPhone;
@@ -147,34 +125,26 @@ app.post('/paystack-push', async (req, res) => {
             amount: amount * 100,
             currency: "KES",
             mobile_money: { phone: formattedPhone, provider: "mpesa" }
-        }, {
-            headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' }
-        });
-        
+        }, { headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' } });
         const reference = response.data.data.reference;
-        // Always starts as Processing
         transactions.unshift({ id: reference, phone: formattedPhone, amount, status: 'Processing... 🔄', time: getKenyaTime(), provider: 'Paystack' });
         res.redirect('/');
-    } catch (err) { 
-        res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); 
-    }
+    } catch (err) { res.status(500).send("Paystack Error: " + (err.response?.data?.message || err.message)); }
 });
 
-// THE 100% BULLETPROOF CALLBACK
 app.post('/callback', (req, res) => {
-    console.log("CALLBACK RECEIVED:", JSON.stringify(req.body)); // Logs for your Render logs
-    const bodyStr = JSON.stringify(req.body).toLowerCase();
+    const bodyStr = JSON.stringify(req.body);
     
-    // Find transaction by matching Reference/ID or the Phone number
+    // Log the incoming message so we can see it on the website
+    serverLogs.unshift({ time: getKenyaTime(), msg: bodyStr.substring(0, 100) + "..." });
+    if (serverLogs.length > 5) serverLogs.pop();
+
     let tx = transactions.find(t => 
-        bodyStr.includes(String(t.id).toLowerCase()) || 
+        bodyStr.toLowerCase().includes(String(t.id).toLowerCase()) || 
         bodyStr.includes(String(t.phone).replace('+', ''))
     );
 
-    if (tx) {
-        tx.status = translateStatus(req.body);
-    }
-    
+    if (tx) { tx.status = translateStatus(req.body); }
     res.sendStatus(200);
 });
 
