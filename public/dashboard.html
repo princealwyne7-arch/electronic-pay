@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard</title>
+
+<style>
+
+body{margin:0;font-family:Arial;background:#f4f6f9}
+
+header{
+background:#0d6efd;
+color:white;
+padding:15px;
+font-size:20px;
+}
+
+nav{
+display:flex;
+background:#343a40;
+}
+
+nav button{
+flex:1;
+padding:12px;
+border:none;
+background:#343a40;
+color:white;
+font-weight:bold;
+}
+
+nav button:hover{
+background:#0d6efd;
+}
+
+.section{
+display:none;
+padding:20px;
+}
+
+.active{
+display:block;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
+margin-bottom:20px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+Secure Dashboard
+<button onclick="logout()" style="float:right">Logout</button>
+</header>
+
+<nav>
+<button onclick="show('home')">Home</button>
+<button onclick="show('accounts')">Accounts</button>
+<button onclick="show('payments')">Payments</button>
+<button onclick="show('assets')">Digital Assets</button>
+</nav>
+
+<div id="home" class="section active">
+<div class="card">
+<h3>Welcome</h3>
+<p>Your secure financial system.</p>
+</div>
+</div>
+
+<div id="accounts" class="section">
+<div class="card">
+<h3>Accounts</h3>
+<p>Checking balance: $1200</p>
+<p>Savings balance: $5000</p>
+</div>
+</div>
+
+<div id="payments" class="section">
+<div class="card">
+<h3>Payments</h3>
+<p>Send money or pay bills.</p>
+</div>
+</div>
+
+<div id="assets" class="section">
+<div class="card">
+<h3>Digital Assets</h3>
+<p>BTC: 0.04</p>
+<p>ETH: 1.2</p>
+</div>
+</div>
+
+<script>
+
+function show(id){
+
+document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"))
+
+document.getElementById(id).classList.add("active")
+
+}
+
+function logout(){
+
+localStorage.clear()
+
+window.location="index.html"
+
+}
+
+</script>
+
+</body>
+</html>

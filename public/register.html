@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - Secure System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Register</title>
 <style>
 body{margin:0;font-family:Arial;background:#f4f6f9;display:flex;align-items:center;justify-content:center;height:100vh}
 .box{background:white;padding:30px;border-radius:10px;box-shadow:0 5px 20px rgba(0,0,0,0.1);width:350px}
@@ -16,41 +15,37 @@ a{display:block;text-align:center;margin-top:10px;color:#0d6efd;text-decoration:
 <body>
 
 <div class="box">
-<h2>Login</h2>
+<h2>Create Account</h2>
 
+<input id="name" placeholder="Full name">
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
+<button onclick="register()">Register</button>
 
 <div id="msg"></div>
 
-<a href="register.html">Create account</a>
+<a href="index.html">Back to login</a>
 </div>
 
 <script>
-const baseURL = window.location.origin;
+const baseURL=window.location.origin;
 
-async function login(){
+async function register(){
 
+const name=document.getElementById("name").value;
 const email=document.getElementById("email").value;
 const password=document.getElementById("password").value;
 
-const res=await fetch(baseURL+"/api/auth/login",{
+const res=await fetch(baseURL+"/api/auth/register",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
-body:JSON.stringify({email,password})
+body:JSON.stringify({name,email,password})
 });
 
 const data=await res.json();
 
-if(data.token){
-localStorage.setItem("jwt",data.token);
-localStorage.setItem("user",JSON.stringify(data.user));
-window.location="dashboard.html";
-}else{
-document.getElementById("msg").innerText=data.message||"Login failed";
-}
+document.getElementById("msg").innerText=data.message||JSON.stringify(data);
 
 }
 </script>
