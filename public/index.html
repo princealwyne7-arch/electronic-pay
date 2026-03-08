@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Secure Auth System</title>
+<style>
+body { font-family:sans-serif; padding:20px; }
+input, button { padding:8px; margin:5px; }
+#dashboard { margin-top:20px; background:#f0f0f0; padding:10px; }
+</style>
+</head>
+<body>
+
+<h2>Register</h2>
+<input id="regName" placeholder="Name"><br>
+<input id="regEmail" placeholder="Email"><br>
+<input id="regPass" placeholder="Password" type="password"><br>
+<button onclick="register()">Register</button>
+<div id="regResult"></div>
+
+<h2>Login</h2>
+<input id="loginEmail" placeholder="Email"><br>
+<input id="loginPass" placeholder="Password" type="password"><br>
+<button onclick="login()">Login</button>
+<div id="loginResult"></div>
+
+<div id="dashboard"></div>
+
+<script>
+let token = '';
+const baseURL = window.location.origin;
+
+async function register(){
+  const res = await fetch(baseURL + '/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: document.getElementById('regName').value,
+      email: document.getElementById('regEmail').value,
+      password: document.getElementById('regPass').value
+    })
+  });
+  const data = await res.json();
+  document.getElementById('regResult').innerText = JSON.stringify(data, null, 2);
+}
+
+async function login(){
+  const res = await fetch(baseURL + '/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: document.getElementById('loginEmail').value,
+      password: document.getElementById('loginPass').value
+    })
+  });
+  const data = await res.json();
+  if(data.token){
+    token = data.token;
+    document.getElementById('loginResult').innerText = "Login successful!";
+    loadDashboard();
+  } else {
+    document.getElementById('loginResult').innerText = JSON.stringify(data, null, 2);
+  }
+}
+
+async function loadDashboard(){
+  if(!token) return;
+  const res = await fetch(baseURL + '/api/dashboard', {
+    headers: { 'Authorization': token }
+  });
+  const data = await res.json();
+  document.getElementById('dashboard').innerText = JSON.stringify(data, null, 2);
+}
+</script>
+
+</body>
+</html>
