@@ -1,16 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Secure Auth System</title>
+<title>Secure Auth System - Dashboard</title>
 <style>
-body { font-family:sans-serif; padding:20px; }
+body { font-family:sans-serif; margin:0; padding:0; background:#f8f9fa; }
+header { background:#0d6efd; color:white; padding:15px; text-align:center; }
+nav { display:flex; background:#343a40; }
+nav button { flex:1; padding:10px; color:white; background:#343a40; border:none; cursor:pointer; }
+nav button.active { background:#0d6efd; }
+section { display:none; padding:20px; }
+section.active { display:block; }
 input, button { padding:8px; margin:5px; }
-#dashboard { margin-top:20px; background:#f0f0f0; padding:10px; }
+#regLoginContainer { max-width:400px; margin:20px auto; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+#dashboardContent { background:white; padding:20px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
 </style>
 </head>
 <body>
 
+<header>
+<h1>Secure Auth System</h1>
+</header>
+
+<div id="regLoginContainer">
 <h2>Register</h2>
 <input id="regName" placeholder="Name"><br>
 <input id="regEmail" placeholder="Email"><br>
@@ -23,17 +35,47 @@ input, button { padding:8px; margin:5px; }
 <input id="loginPass" placeholder="Password" type="password"><br>
 <button onclick="login()">Login</button>
 <div id="loginResult"></div>
+</div>
 
-<div id="dashboard"></div>
+<!-- Dashboard tabs -->
+<nav id="dashboardNav" style="display:none;">
+  <button onclick="openTab('home')" class="active">Home</button>
+  <button onclick="openTab('accounts')">Accounts</button>
+  <button onclick="openTab('assets')">Digital Assets</button>
+  <button onclick="openTab('payments')">Payments</button>
+</nav>
+
+<section id="home" class="active">
+  <div id="dashboardContent">Welcome! Your info will appear here after login.</div>
+</section>
+
+<section id="accounts">
+  <div id="accountsContent">Accounts info will appear here.</div>
+</section>
+
+<section id="assets">
+  <div id="assetsContent">Digital assets info will appear here.</div>
+</section>
+
+<section id="payments">
+  <div id="paymentsContent">Payments functionality will appear here.</div>
+</section>
 
 <script>
 let token = '';
 const baseURL = window.location.origin;
 
+function openTab(tabId){
+  document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector(`nav button[onclick="openTab('${tabId}')"]`).classList.add('active');
+}
+
 async function register(){
   const res = await fetch(baseURL + '/api/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       name: document.getElementById('regName').value,
       email: document.getElementById('regEmail').value,
@@ -46,8 +88,8 @@ async function register(){
 
 async function login(){
   const res = await fetch(baseURL + '/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       email: document.getElementById('loginEmail').value,
       password: document.getElementById('loginPass').value
@@ -57,6 +99,8 @@ async function login(){
   if(data.token){
     token = data.token;
     document.getElementById('loginResult').innerText = "Login successful!";
+    document.getElementById('regLoginContainer').style.display = 'none';
+    document.getElementById('dashboardNav').style.display = 'flex';
     loadDashboard();
   } else {
     document.getElementById('loginResult').innerText = JSON.stringify(data, null, 2);
@@ -66,10 +110,19 @@ async function login(){
 async function loadDashboard(){
   if(!token) return;
   const res = await fetch(baseURL + '/api/dashboard', {
-    headers: { 'Authorization': token }
+    headers: {'Authorization': token}
   });
   const data = await res.json();
-  document.getElementById('dashboard').innerText = JSON.stringify(data, null, 2);
+  document.getElementById('dashboardContent').innerText = "Welcome " + data.user.name + "!\nRole: " + data.user.role + "\nID: " + data.user.id;
+  
+  // Simulated accounts
+  document.getElementById('accountsContent').innerText = `Checking: $1200\nSavings: $5000`;
+  
+  // Simulated digital assets
+  document.getElementById('assetsContent').innerText = `BTC: 0.05\nETH: 1.2\nUSDT: 300`;
+  
+  // Payments tab placeholder
+  document.getElementById('paymentsContent').innerText = `Send money or pay bills here.`;
 }
 </script>
 
